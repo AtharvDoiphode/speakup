@@ -20,3 +20,9 @@ export const protect = async (req, res, next) => {
   req.user = user;
   next();
 };
+
+// Only lets admins through. Must run after `protect`, which sets req.user
+export const adminOnly = (req, res, next) => {
+  if (req.user?.role !== 'admin') throw new HttpError(403, 'Admins only');
+  next();
+};

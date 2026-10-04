@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema(
     },
     // select: false means the password is never returned by queries unless asked for
     password: { type: String, required: true, select: false },
+    // 'admin' is only given at registration to the email in ADMIN_EMAIL
+    role: { type: String, enum: ['member', 'admin'], default: 'member' },
   },
   { timestamps: true }
 );

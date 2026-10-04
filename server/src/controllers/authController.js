@@ -49,7 +49,11 @@ export const register = async (req, res) => {
     throw new HttpError(409, 'An account with this email already exists');
   }
 
-  const user = await User.create({ name, email, password });
+  // The person whose email matches ADMIN_EMAIL becomes admin; everyone else is a member
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const role = adminEmail && email.toLowerCase() === adminEmail ? 'admin' : 'member';
+
+  const user = await User.create({ name, email, password, role });
   setAuthCookie(res, user.id);
   res.status(201).json({ user });
 };
