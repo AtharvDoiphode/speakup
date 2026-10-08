@@ -1,32 +1,68 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from '../context/useAuth';
 import { getErrorMessage } from '../lib/api';
+import VoiceOrb from '../components/VoiceOrb';
+import CorrectionDemo from '../components/CorrectionDemo';
 
 const inputClass =
-  'w-full rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15';
+  'w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-base outline-none transition-colors placeholder:text-ink-soft/60 focus:border-brand focus:ring-2 focus:ring-inset focus:ring-brand/30';
+
+// One labeled input. The id doubles as the form field name.
+function Field({ label, id, hint, ...props }) {
+  return (
+    <div className="pb-5">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold">
+        {label}
+      </label>
+      <input id={id} name={id} className={inputClass} {...props} />
+      {hint && <p className="mt-1.5 text-xs text-ink-soft">{hint}</p>}
+    </div>
+  );
+}
+
+// Slides a field open or closed when switching between login and signup
+function Reveal({ children }) {
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="overflow-hidden"
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function AuthPage() {
   const { user, loading, login, register } = useAuth();
-  const [mode, setMode] = useState('login'); // 'login' or 'register'
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    signupCode: '',
-  });
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState({ name: '', email: '', password: '', signupCode: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Wait for the login check, and skip this page if already logged in
+  // The orb reads this number every frame. Typing sets it briefly.
+  const levelRef = useRef(0);
+  const pulseTimer = useRef(null);
+  const pulse = () => {
+    levelRef.current = 0.7;
+    clearTimeout(pulseTimer.current);
+    pulseTimer.current = setTimeout(() => {
+      levelRef.current = 0;
+    }, 90);
+  };
+
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
 
   const isLogin = mode === 'login';
 
-  // One handler for all inputs: uses each input's "name" to update the right field
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    pulse(); // the orb answers every keystroke
   };
 
   const switchMode = () => {
@@ -35,16 +71,16 @@ export default function AuthPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // stop the browser from reloading the page
+    e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
       if (isLogin) {
         await login(form.email, form.password);
       } else {
-        await register(form); // form has exactly { name, email, password, signupCode }
+        await register(form); // register expects one object: { name, email, password, signupCode }
       }
-      // On success the user state updates and this page redirects automatically
+      // On success the user state changes and this page redirects by itself
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -53,133 +89,138 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-cloud">
-      {/* Left: brand panel, hidden on small screens */}
-      <div className="hidden w-1/2 flex-col justify-between bg-brand p-16 text-white lg:flex">
-        <div className="font-display text-2xl font-extrabold">SpeakUp</div>
+    <div className="min-h-screen lg:grid lg:grid-cols-[1.15fr_1fr]">
+      {/* Left: headline, the orb, and the correction example */}
+      <section className="relative flex min-h-[620px] flex-col justify-between overflow-hidden p-6 lg:min-h-screen lg:p-14">
         <div>
-          <h1 className="text-4xl font-extrabold leading-tight">
-            Speak English with confidence, every day.
+          <p className="font-display text-2xl font-bold text-brand">SpeakUp</p>
+          <h1 className="mt-10 max-w-xl text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
+            Speak first. We tidy the grammar after.
           </h1>
-          <p className="mt-5 max-w-md text-lg text-white/85">
-            Practice real conversations, get instant grammar corrections, and
-            track your progress in one place.
-          </p>
         </div>
-        <p className="text-sm text-white/90">
-          Made for the family. Practice together.
-        </p>
-      </div>
 
-      {/* Right: the form */}
-      <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
-          {/* On phones the brand panel is hidden, so show the name here instead */}
-          <div className="font-display text-2xl font-extrabold text-brand lg:hidden">
-            SpeakUp
-          </div>
+        {/* The orb blooms in first */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 60, damping: 14, delay: 0.1 }}
+          className="pointer-events-none absolute -bottom-20 -left-16 h-[360px] w-[360px] lg:-bottom-28 lg:-left-28 lg:h-[680px] lg:w-[680px]"
+        >
+          <VoiceOrb levelRef={levelRef} state={submitting ? 'thinking' : 'idle'} />
+        </motion.div>
 
-          <div>
-            <h2 className="text-3xl font-extrabold text-ink">
-              {isLogin ? 'Welcome back' : 'Create your account'}
-            </h2>
-            <p className="mt-2 text-sm text-ink-soft">
-              {isLogin
-                ? 'Log in to continue your practice.'
-                : 'You need the family signup code to join.'}
-            </p>
-          </div>
+        <div className="flex justify-end">
+          <CorrectionDemo />
+        </div>
+      </section>
 
-          {!isLogin && (
-            <div>
-              <label htmlFor="name" className="mb-1.5 block text-sm font-semibold text-ink">
-                Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={form.name}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-          )}
+      {/* Right: the form fades in last */}
+      <section className="flex items-center justify-center p-6 lg:p-14">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="w-full max-w-sm"
+        >
+          <h2 className="text-3xl font-bold">
+            {isLogin ? 'Welcome back' : 'Join the family'}
+          </h2>
+          <p className="mb-7 mt-2 text-sm text-ink-soft">
+            {isLogin
+              ? 'Pick up where you left off.'
+              : 'Ask for the family code if you do not have it yet.'}
+          </p>
 
-          <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-ink">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={form.email}
-              onChange={handleChange}
-              className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-ink">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-              required
-              minLength={isLogin ? undefined : 8}
-              value={form.password}
-              onChange={handleChange}
-              className={inputClass}
-            />
+          <AnimatePresence initial={false}>
             {!isLogin && (
-              <p className="mt-1.5 text-xs text-ink-soft">At least 8 characters.</p>
+              <Reveal key="name">
+                <Field
+                  label="Your name"
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={form.name}
+                  onChange={handleChange}
+                />
+              </Reveal>
             )}
-          </div>
+          </AnimatePresence>
 
-          {!isLogin && (
-            <div>
-              <label htmlFor="signupCode" className="mb-1.5 block text-sm font-semibold text-ink">
-                Family signup code
-              </label>
-              <input
-                id="signupCode"
-                name="signupCode"
-                type="text"
-                autoComplete="off"
-                required
-                value={form.signupCode}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-          )}
+          <Field
+            label="Email"
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={form.email}
+            onChange={handleChange}
+          />
 
-          {error && (
-            <p
-              role="alert"
-              className="rounded-lg border border-mistake/30 bg-mistake/10 px-4 py-3 text-sm font-medium text-mistake-deep"
-            >
-              {error}
-            </p>
-          )}
+          <Field
+            label="Password"
+            id="password"
+            type="password"
+            autoComplete={isLogin ? 'current-password' : 'new-password'}
+            required
+            minLength={isLogin ? undefined : 8}
+            hint={isLogin ? undefined : 'At least 8 characters.'}
+            value={form.password}
+            onChange={handleChange}
+          />
 
-          <button
+          <AnimatePresence initial={false}>
+            {!isLogin && (
+              <Reveal key="code">
+                <Field
+                  label="Family signup code"
+                  id="signupCode"
+                  type="text"
+                  autoComplete="off"
+                  required
+                  value={form.signupCode}
+                  onChange={handleChange}
+                />
+              </Reveal>
+            )}
+          </AnimatePresence>
+
+          {/* A new error shakes in once */}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                key={error}
+                role="alert"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, x: [0, -8, 8, -5, 5, 0] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mb-5 rounded-xl bg-mistake/10 px-4 py-3 text-sm font-medium text-mistake-deep"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          <motion.button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-deep disabled:opacity-60"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            className="w-full rounded-xl bg-brand px-4 py-3.5 font-semibold text-white hover:bg-brand-deep disabled:opacity-60"
           >
-            {submitting ? 'Please wait...' : isLogin ? 'Log in' : 'Create account'}
-          </button>
+            {submitting
+              ? isLogin
+                ? 'Logging in...'
+                : 'Creating account...'
+              : isLogin
+                ? 'Log in'
+                : 'Create account'}
+          </motion.button>
 
-          <p className="text-center text-sm text-ink-soft">
+          <p className="mt-6 text-center text-sm text-ink-soft">
             {isLogin ? 'New here?' : 'Already have an account?'}{' '}
             <button
               type="button"
@@ -189,8 +230,8 @@ export default function AuthPage() {
               {isLogin ? 'Create an account' : 'Log in'}
             </button>
           </p>
-        </form>
-      </div>
+        </motion.form>
+      </section>
     </div>
   );
 }
