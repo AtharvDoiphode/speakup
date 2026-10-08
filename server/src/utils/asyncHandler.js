@@ -3,3 +3,7 @@
 // ever move back to Express 4. Kept here so older tutorials' code still works.
 export const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
+
+// Also the default export, so both import styles work:
+// import asyncHandler from '...'  and  import { asyncHandler } from '...'
+export default asyncHandler;
