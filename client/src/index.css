@@ -1,1 +1,58 @@
 @import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/hanken-grotesk";
+
+/* Design tokens. Tailwind turns each one into classes automatically,
+   e.g. --color-brand becomes bg-brand, text-brand, border-brand. */
+@theme {
+  --color-cloud: #eef2fb;
+  --color-surface: #ffffff;
+  --color-ink: #10163a;
+  --color-ink-soft: #4a5280;
+  --color-line: #d9dff2;
+
+  --color-brand: #2f3cff;
+  --color-brand-deep: #2230d6;
+
+  --color-mistake: #ff3d7f;
+  --color-mistake-deep: #c71f58; /* use this one for small text */
+  --color-correct: #19c98b;
+  --color-correct-deep: #0b7a55; /* use this one for small text */
+  --color-marker: #ffd23f;
+
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background: var(--color-cloud);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+}
+
+/* Respect the "reduce motion" setting for CSS animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
