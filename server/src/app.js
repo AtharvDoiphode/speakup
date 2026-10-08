@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 const app = express();
 
@@ -24,7 +25,9 @@ app.get('/api/health', (req, res) => {
 // Feature routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
+// Must come after all routes: anything not matched above is a 404
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
