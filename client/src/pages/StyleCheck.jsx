@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 
 const swatches = [
-  ['bg-cloud', 'cloud'],
+  ['bg-canvas', 'canvas'],
   ['bg-ink', 'ink'],
   ['bg-brand', 'brand'],
   ['bg-mistake', 'mistake'],
@@ -28,7 +28,7 @@ export default function StyleCheck() {
       </div>
 
       <p className="mt-8 text-lg">
-        I work <span className="text-mistake-deep line-through">since</span>{' '}
+        I work <span className="text-mistake-ink line-through">since</span>{' '}
         <span className="rounded bg-marker px-1 font-semibold">for</span> two
         years.
       </p>

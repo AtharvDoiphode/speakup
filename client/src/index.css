@@ -5,43 +5,58 @@
 /* Design tokens. Tailwind turns each one into classes automatically,
    e.g. --color-brand becomes bg-brand, text-brand, border-brand. */
 @theme {
-  --color-cloud: #eef2fb;
-  --color-surface: #ffffff;
-  --color-ink: #10163a;
-  --color-ink-soft: #4a5280;
-  --color-line: #d9dff2;
+  /* Surfaces */
+  --color-canvas: #EEF2FB;       /* page background (was "cloud") */
+  --color-surface: #FFFFFF;      /* panels, cards, inputs */
+  --color-line: #D9DFF2;         /* every border */
 
-  --color-brand: #2f3cff;
-  --color-brand-deep: #2230d6;
+  /* Text */
+  --color-ink: #10163A;
+  --color-ink-soft: #4A5280;
+  --color-ink-faint: #6B739E;    /* placeholders and hints: 4.59:1 on white, passes AA */
 
-  --color-mistake: #ff3d7f;
-  --color-mistake-deep: #c71f58; /* use this one for small text */
-  --color-correct: #19c98b;
-  --color-correct-deep: #0b7a55; /* use this one for small text */
-  --color-marker: #ffd23f;
+  /* Brand */
+  --color-brand: #2F3CFF;
+  --color-brand-hover: #2230D6;  /* was "brand-deep" */
 
+  /* Correction language */
+  --color-mistake: #FF3D7F;      /* strike line, dots, fills */
+  --color-mistake-ink: #C71F58;  /* mistake text (was "mistake-deep") */
+  --color-correct: #19C98B;
+  --color-correct-ink: #0B7A55;  /* correct text (was "correct-deep") */
+  --color-marker: #FFD23F;       /* yellow highlighter behind the fix */
+
+  /* Type */
   --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii from the design system */
+  --radius-tag: 8px;             /* rounded-tag */
+  --radius-field: 12px;          /* rounded-field: inputs, buttons, nav items */
+  --radius-panel: 16px;          /* rounded-panel: cards and panels */
 }
 
 @layer base {
-  html {
-    background: var(--color-cloud);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
+  /* html too, so the area beyond the page when you over-scroll isn't white */
+  html,
+  body {
+    background: var(--color-canvas);
   }
-
-  h1,
-  h2,
-  h3 {
+  body {
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+  h1, h2, h3 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
-
+  ::placeholder {
+    color: var(--color-ink-faint);
+  }
   /* Visible keyboard focus everywhere */
   :focus-visible {
-    outline: 3px solid var(--color-brand);
-    outline-offset: 3px;
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
   }
 }
 

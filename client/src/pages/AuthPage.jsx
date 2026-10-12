@@ -196,7 +196,7 @@ export default function AuthPage() {
                 animate={{ opacity: 1, x: [0, -8, 8, -5, 5, 0] }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mb-5 rounded-xl bg-mistake/10 px-4 py-3 text-sm font-medium text-mistake-deep"
+                className="mb-5 rounded-xl bg-mistake/10 px-4 py-3 text-sm font-medium text-mistake-ink"
               >
                 {error}
               </motion.p>
@@ -209,7 +209,7 @@ export default function AuthPage() {
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="w-full rounded-xl bg-brand px-4 py-3.5 font-semibold text-white hover:bg-brand-deep disabled:opacity-60"
+            className="w-full rounded-xl bg-brand px-4 py-3.5 font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
           >
             {submitting
               ? isLogin
