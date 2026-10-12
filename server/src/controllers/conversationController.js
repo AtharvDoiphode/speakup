@@ -191,3 +191,94 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
   res.status(201).json({ userMessage, aiMessage, isCorrect });
 });
+
+// ---------- end a conversation ----------
+
+const MAX_SESSION_SEC = 60 * 60; // a tab left open overnight must not count as 8 hours
+
+// The short version of a conversation that "end" returns
+const summarise = (c) => ({
+  id: c._id,
+  status: c.status,
+  endedAt: c.endedAt,
+  durationSec: c.durationSec,
+  score: c.score,
+  mistakeCount: c.mistakeCount,
+  messageCount: c.messages.length,
+});
+
+// POST /api/conversations/:id/end
+export const endConversation = asyncHandler(async (req, res) => {
+  const convo = await findOwned(req);
+
+  // Ending twice is harmless: return what was already saved
+  if (convo.status === 'ended') {
+    return res.json({ conversation: summarise(convo) });
+  }
+
+  const userMsgs = convo.messages.filter((m) => m.role === 'user');
+  const correct = userMsgs.filter((m) => m.mistakes.length === 0).length;
+  const mistakeCount = userMsgs.reduce((n, m) => n + m.mistakes.length, 0);
+  const score = userMsgs.length ? Math.round((correct / userMsgs.length) * 100) : null;
+
+  // Time from the opening line to the last message, not to the click on "End"
+  const first = convo.messages[0]?.createdAt;
+  const last = convo.messages[convo.messages.length - 1]?.createdAt;
+  const rawSec = first && last ? Math.round((new Date(last) - new Date(first)) / 1000) : 0;
+  const durationSec = Math.min(Math.max(rawSec, 0), MAX_SESSION_SEC);
+
+  const endedAt = new Date();
+  const result = await Conversation.updateOne(
+    { _id: convo._id, user: req.user._id, status: 'active' },
+    { $set: { status: 'ended', endedAt, durationSec, score, mistakeCount } }
+  );
+  if (result.modifiedCount === 0) {
+    throw httpError(409, 'This conversation was already ended');
+  }
+
+  res.json({
+    conversation: {
+      id: convo._id,
+      status: 'ended',
+      endedAt,
+      durationSec,
+      score,
+      mistakeCount,
+      messageCount: convo.messages.length,
+    },
+  });
+});
+
+// ---------- change difficulty mid-conversation ----------
+
+const difficultySchema = z.object({
+  difficulty: z.enum(['friendly', 'neutral', 'tough'], {
+    error: 'Difficulty must be friendly, neutral or tough',
+  }),
+});
+
+// PATCH /api/conversations/:id/difficulty   (the "Make it easier / tougher" buttons)
+export const changeDifficulty = asyncHandler(async (req, res) => {
+  const { difficulty } = parse(difficultySchema, req.body);
+  const convo = await findOwned(req);
+  if (convo.status !== 'active') throw httpError(409, 'This conversation has ended');
+
+  await Conversation.updateOne(
+    { _id: convo._id, user: req.user._id, status: 'active' },
+    { $set: { difficulty } }
+  );
+  res.json({ difficulty });
+});
+
+// ---------- history ----------
+
+// GET /api/conversations?limit=20
+export const listConversations = asyncHandler(async (req, res) => {
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+  const items = await Conversation.find({ user: req.user._id })
+    .select('scenarioId title persona difficulty level status createdAt endedAt durationSec score mistakeCount')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+  res.json({ conversations: items });
+});

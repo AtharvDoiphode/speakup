@@ -39,6 +39,9 @@ const conversationSchema = new mongoose.Schema(
     status: { type: String, enum: ['active', 'ended'], default: 'active' },
     messages: [messageSchema],
     endedAt: Date,
+    durationSec: { type: Number, default: 0 },
+    score: { type: Number, default: null }, // 0-100, null if nothing was said
+    mistakeCount: { type: Number, default: 0 },
   },
   {
     timestamps: true,
