@@ -5,6 +5,7 @@ export const MISTAKE_TYPES = [
   'article',
   'preposition',
   'subject-verb',
+  'plural',
   'word-choice',
   'word-order',
   'spelling',

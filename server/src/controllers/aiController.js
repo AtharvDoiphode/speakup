@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { httpError } from '../utils/httpError.js';
 import { parse } from '../utils/validate.js';
+import { isRealMistake } from '../utils/mistakes.js';
 import { generateJson } from '../services/aiService.js';
 import { buildCorrectionPrompt, MISTAKE_TYPES } from '../prompts/correctionPrompt.js';
 
@@ -30,13 +31,6 @@ const aiResultSchema = z.object({
     .default([]),
   natural: z.string().default(''),
 });
-
-// "Pune." and "pune" are the same words: lowercase, letters/numbers/spaces only
-const bareWords = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
-
-// Safety net: drop "mistakes" that only change capitals or punctuation,
-// in case the AI reports them anyway (speech-to-text has neither)
-const isRealMistake = (m) => bareWords(m.wrong) !== bareWords(m.right);
 
 // POST /api/ai/correct
 export const correctText = asyncHandler(async (req, res) => {

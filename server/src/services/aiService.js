@@ -17,11 +17,14 @@ const getClient = () => {
 // Turns an AI-provider error into a friendly error for our own API
 const toHttpError = (err) => {
   console.error('AI error:', err.status, err.message); // full details stay in the server log
-  if (err.status === 429) {
-    return new HttpError(429, 'The AI is busy right now. Wait a minute and try again.');
+  // 429 = our free quota is used up, 503 = Google's servers are overloaded
+  if (err.status === 429 || err.status === 503) {
+    return new HttpError(err.status, 'The AI is busy right now. Wait a minute and try again.');
   }
   return new HttpError(502, 'The AI service failed. Please try again.');
 };
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Sends a prompt to the AI and returns its text answer.
@@ -31,17 +34,27 @@ const toHttpError = (err) => {
  */
 export const generateText = async ({ system, prompt, json = false, temperature = 0.4 }) => {
   const ai = getClient();
+  const request = {
+    model: process.env.GEMINI_MODEL,
+    contents: prompt,
+    config: {
+      systemInstruction: system,
+      temperature, // lower = more consistent, higher = more creative
+      ...(json && { responseMimeType: 'application/json' }),
+    },
+  };
+
   try {
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL,
-      contents: prompt,
-      config: {
-        systemInstruction: system,
-        temperature, // lower = more consistent, higher = more creative
-        ...(json && { responseMimeType: 'application/json' }),
-      },
-    });
-    return response.text;
+    try {
+      return (await ai.models.generateContent(request)).text;
+    } catch (err) {
+      // "High demand" (503) is usually over in a second or two, so try once more.
+      // Never retry a 429: that would only burn more of the free quota.
+      if (err.status !== 503) throw err;
+      console.warn('AI overloaded (503), retrying once...');
+      await wait(2000);
+      return (await ai.models.generateContent(request)).text;
+    }
   } catch (err) {
     throw toHttpError(err);
   }
