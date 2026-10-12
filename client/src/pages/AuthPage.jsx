@@ -1,237 +1,260 @@
-import { useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
+import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
 import { getErrorMessage } from '../lib/api';
+import Logo from '../components/Logo';
 import VoiceOrb from '../components/VoiceOrb';
-import CorrectionDemo from '../components/CorrectionDemo';
 
-const inputClass =
-  'w-full rounded-xl border border-line bg-surface px-4 py-3.5 text-base outline-none transition-colors placeholder:text-ink-soft/60 focus:border-brand focus:ring-2 focus:ring-inset focus:ring-brand/30';
+const spring = { type: 'spring', stiffness: 500, damping: 40 };
+const EMPTY = { name: '', email: '', password: '', signupCode: '' };
 
-// One labeled input. The id doubles as the form field name.
-function Field({ label, id, hint, ...props }) {
+export default function AuthPage() {
+  const { user, loading, login, register } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState(EMPTY);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  // Wait for the "who am I?" check, so a logged-in user doesn't see the form flash
+  if (loading) return null;
+  if (user) return <Navigate to={from} replace />;
+
+  const update = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    if (error) setError('');
+  };
+
+  const switchMode = (next) => {
+    if (next === mode) return;
+    setMode(next);
+    setError('');
+    setForm((f) => ({ ...EMPTY, email: f.email })); // keep the email, clear the rest
+  };
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      if (mode === 'login') {
+        await login(form.email, form.password);
+      } else {
+        await register({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          signupCode: form.signupCode,
+        });
+      }
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <div className="pb-5">
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold">
-        {label}
-      </label>
-      <input id={id} name={id} className={inputClass} {...props} />
-      {hint && <p className="mt-1.5 text-xs text-ink-soft">{hint}</p>}
+    <div className="min-h-dvh bg-surface lg:grid lg:grid-cols-[minmax(0,1fr)_560px] lg:bg-canvas">
+      {/* Left: story (desktop only) */}
+      <section className="relative hidden overflow-hidden px-20 py-14 lg:block">
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-[330px] -left-[210px] size-[760px]">
+          <VoiceOrb state="listening" />
+        </div>
+
+        <div className="relative">
+          <Logo />
+          <h1 className="mt-[clamp(48px,12vh,120px)] max-w-[760px] font-display text-[clamp(56px,6.4vw,92px)] font-semibold leading-[0.94] tracking-[-0.04em]">
+            Speak first.
+            <br />
+            We tidy the grammar after.
+          </h1>
+          <p className="mt-7 max-w-[470px] text-xl leading-normal text-pretty text-ink-soft">
+            Roleplay real conversations out loud. SpeakUp listens, answers in character, and marks what to fix
+            once you've finished your sentence.
+          </p>
+        </div>
+
+        <CorrectionCard className="absolute bottom-24 left-[clamp(320px,35vw,500px)] w-[340px] [@media(max-height:760px)]:hidden" />
+      </section>
+
+      {/* Right: form */}
+      <section className="flex flex-col px-5 py-8 sm:px-10 lg:border-l lg:border-line lg:bg-surface lg:px-[72px] lg:py-14">
+        <div className="flex items-center">
+          <span className="lg:hidden"><Logo /></span>
+          <span className="ml-auto text-sm text-ink-soft">Private · family members only</span>
+        </div>
+
+        <div className="mx-auto mt-12 w-full max-w-[416px] lg:mx-0 lg:mt-24 lg:max-w-none">
+          <div role="tablist" className="grid grid-cols-2 gap-1 rounded-field border border-line bg-canvas p-1">
+            {[['login', 'Log in'], ['signup', 'Create account']].map(([m, label]) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={mode === m}
+                onClick={() => switchMode(m)}
+                className={`relative h-10 rounded-[9px] text-[15px] transition-colors ${
+                  mode === m ? 'font-semibold text-ink' : 'font-medium text-ink-soft hover:text-ink'
+                }`}
+              >
+                {mode === m && (
+                  <motion.span
+                    layoutId="auth-tab"
+                    transition={spring}
+                    className="absolute inset-0 rounded-[9px] border border-line bg-surface"
+                  />
+                )}
+                <span className="relative">{label}</span>
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.form
+              key={mode}
+              onSubmit={onSubmit}
+              noValidate
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+            >
+              {mode === 'login' ? (
+                <>
+                  <h2 className="mb-1.5 mt-10 text-[34px] font-semibold tracking-[-0.03em]">Pick up where you stopped</h2>
+                  <p className="mb-7 text-base text-ink-soft">Your conversations are saved right where you left them.</p>
+                  <div className="flex flex-col gap-[18px]">
+                    <Field label="Email" name="email" type="email" autoComplete="email" placeholder="you@example.com"
+                      value={form.email} onChange={update('email')} required />
+                    <Field label="Password" name="password" type="password" autoComplete="current-password" placeholder="Your password"
+                      value={form.password} onChange={update('password')} error={error} required />
+                    <SubmitButton busy={busy} label="Log in" busyLabel="Logging in…" />
+                  </div>
+                  <p className="mt-7 text-[15px] leading-normal text-ink-soft">
+                    New to SpeakUp? Ask your family admin for the signup code, then{' '}
+                    <button type="button" onClick={() => switchMode('signup')} className="text-brand hover:text-brand-hover hover:underline">
+                      create an account
+                    </button>
+                    .
+                    <br />
+                    Forgot your password? Ask your family admin.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="mb-1.5 mt-10 text-[34px] font-semibold tracking-[-0.03em]">Join your family's SpeakUp</h2>
+                  <p className="mb-7 text-base text-ink-soft">Takes a minute. Your first conversation starts right after.</p>
+                  <div className="flex flex-col gap-4">
+                    <Field label="Name" name="name" autoComplete="given-name" placeholder="What should the AI call you?"
+                      value={form.name} onChange={update('name')} required />
+                    <Field label="Email" name="email" type="email" autoComplete="email" placeholder="you@example.com"
+                      value={form.email} onChange={update('email')} required />
+                    <Field label="Password" name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters"
+                      value={form.password} onChange={update('password')} minLength={8} required />
+                    <Field label="Family signup code" name="signupCode" placeholder="From your family admin" autoCapitalize="characters"
+                      spellCheck={false} hint="Ask your family admin for this code." value={form.signupCode}
+                      onChange={update('signupCode')} inputClassName="font-medium tracking-[0.06em]" required />
+                    {error && <ErrorLine>{error}</ErrorLine>}
+                    <SubmitButton busy={busy} label="Create account" busyLabel="Creating account…" />
+                  </div>
+                </>
+              )}
+            </motion.form>
+          </AnimatePresence>
+        </div>
+      </section>
     </div>
   );
 }
 
-// Slides a field open or closed when switching between login and signup
-function Reveal({ children }) {
+function Field({ label, hint, error, inputClassName = '', ...input }) {
   return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="overflow-hidden"
-    >
-      {children}
-    </motion.div>
+    <label className="flex flex-col gap-2 text-sm font-semibold">
+      {label}
+      <input
+        {...input}
+        aria-invalid={!!error}
+        className={`h-[50px] w-full rounded-field bg-surface px-3.5 text-base font-normal text-ink transition-colors ${
+          error ? 'border-[1.5px] border-mistake focus-visible:outline-mistake' : 'border border-line'
+        } ${inputClassName}`}
+      />
+      {hint && <span className="text-[13px] font-normal text-ink-soft">{hint}</span>}
+      {error && <ErrorLine>{error}</ErrorLine>}
+    </label>
   );
 }
 
-export default function AuthPage() {
-  const { user, loading, login, register } = useAuth();
-  const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ name: '', email: '', password: '', signupCode: '' });
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  // The orb reads this number every frame. Typing sets it briefly.
-  const levelRef = useRef(0);
-  const pulseTimer = useRef(null);
-  const pulse = () => {
-    levelRef.current = 0.7;
-    clearTimeout(pulseTimer.current);
-    pulseTimer.current = setTimeout(() => {
-      levelRef.current = 0;
-    }, 90);
-  };
-
-  if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
-
-  const isLogin = mode === 'login';
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    pulse(); // the orb answers every keystroke
-  };
-
-  const switchMode = () => {
-    setMode(isLogin ? 'register' : 'login');
-    setError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-    try {
-      if (isLogin) {
-        await login(form.email, form.password);
-      } else {
-        await register(form); // register expects one object: { name, email, password, signupCode }
-      }
-      // On success the user state changes and this page redirects by itself
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+function ErrorLine({ children }) {
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[1.15fr_1fr]">
-      {/* Left: headline, the orb, and the correction example */}
-      <section className="relative flex min-h-[620px] flex-col justify-between overflow-hidden p-6 lg:min-h-screen lg:p-14">
-        <div>
-          <p className="font-display text-2xl font-bold text-brand">SpeakUp</p>
-          <h1 className="mt-10 max-w-xl text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
-            Speak first. We tidy the grammar after.
-          </h1>
-        </div>
+    <span role="alert" className="flex items-start gap-2 text-sm font-medium leading-snug text-mistake-ink">
+      <WarningCircleIcon size={18} className="mt-px shrink-0" />
+      {children}
+    </span>
+  );
+}
 
-        {/* The orb blooms in first */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 60, damping: 14, delay: 0.1 }}
-          className="pointer-events-none absolute -bottom-20 -left-16 h-[360px] w-[360px] lg:-bottom-28 lg:-left-28 lg:h-[680px] lg:w-[680px]"
-        >
-          <VoiceOrb levelRef={levelRef} state={submitting ? 'thinking' : 'idle'} />
-        </motion.div>
+function SubmitButton({ busy, label, busyLabel }) {
+  return (
+    <button
+      type="submit"
+      disabled={busy}
+      className="mt-2 h-[54px] rounded-field bg-brand text-[17px] font-semibold text-white transition duration-150 hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
+    >
+      {busy ? busyLabel : label}
+    </button>
+  );
+}
 
-        <div className="flex justify-end">
-          <CorrectionDemo />
-        </div>
-      </section>
-
-      {/* Right: the form fades in last */}
-      <section className="flex items-center justify-center p-6 lg:p-14">
-        <motion.form
-          onSubmit={handleSubmit}
+// The correction rewrite moment: strike 260ms, marker 380ms, note 240ms
+function CorrectionCard({ className = '' }) {
+  return (
+    <div className={`flex flex-col gap-2.5 rounded-panel border border-line bg-surface px-[22px] py-5 ${className}`}>
+      <div className="flex justify-between text-[13px] text-ink-soft">
+        <span>Café order with Leo</span>
+        <span>0:18</span>
+      </div>
+      <p className="relative w-fit text-[19px] leading-snug text-mistake-ink">
+        She don't like coffee
+        <motion.span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-[2px] origin-left bg-mistake"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.8, duration: 0.26, ease: 'easeOut' }}
+        />
+      </p>
+      <p className="relative w-fit text-[19px] leading-snug">
+        <motion.span
+          aria-hidden="true"
+          className="absolute -inset-x-1.5 inset-y-0 origin-left rounded-[3px_6px_4px_7px] bg-marker"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 1.1, duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }}
+        />
+        <motion.span
+          className="relative"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="w-full max-w-sm"
+          transition={{ delay: 1.1, duration: 0.2 }}
         >
-          <h2 className="text-3xl font-bold">
-            {isLogin ? 'Welcome back' : 'Join the family'}
-          </h2>
-          <p className="mb-7 mt-2 text-sm text-ink-soft">
-            {isLogin
-              ? 'Pick up where you left off.'
-              : 'Ask for the family code if you do not have it yet.'}
-          </p>
-
-          <AnimatePresence initial={false}>
-            {!isLogin && (
-              <Reveal key="name">
-                <Field
-                  label="Your name"
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={form.name}
-                  onChange={handleChange}
-                />
-              </Reveal>
-            )}
-          </AnimatePresence>
-
-          <Field
-            label="Email"
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={form.email}
-            onChange={handleChange}
-          />
-
-          <Field
-            label="Password"
-            id="password"
-            type="password"
-            autoComplete={isLogin ? 'current-password' : 'new-password'}
-            required
-            minLength={isLogin ? undefined : 8}
-            hint={isLogin ? undefined : 'At least 8 characters.'}
-            value={form.password}
-            onChange={handleChange}
-          />
-
-          <AnimatePresence initial={false}>
-            {!isLogin && (
-              <Reveal key="code">
-                <Field
-                  label="Family signup code"
-                  id="signupCode"
-                  type="text"
-                  autoComplete="off"
-                  required
-                  value={form.signupCode}
-                  onChange={handleChange}
-                />
-              </Reveal>
-            )}
-          </AnimatePresence>
-
-          {/* A new error shakes in once */}
-          <AnimatePresence>
-            {error && (
-              <motion.p
-                key={error}
-                role="alert"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, x: [0, -8, 8, -5, 5, 0] }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="mb-5 rounded-xl bg-mistake/10 px-4 py-3 text-sm font-medium text-mistake-ink"
-              >
-                {error}
-              </motion.p>
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            type="submit"
-            disabled={submitting}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="w-full rounded-xl bg-brand px-4 py-3.5 font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
-          >
-            {submitting
-              ? isLogin
-                ? 'Logging in...'
-                : 'Creating account...'
-              : isLogin
-                ? 'Log in'
-                : 'Create account'}
-          </motion.button>
-
-          <p className="mt-6 text-center text-sm text-ink-soft">
-            {isLogin ? 'New here?' : 'Already have an account?'}{' '}
-            <button
-              type="button"
-              onClick={switchMode}
-              className="font-semibold text-brand hover:underline"
-            >
-              {isLogin ? 'Create an account' : 'Log in'}
-            </button>
-          </p>
-        </motion.form>
-      </section>
+          She doesn't like coffee
+        </motion.span>
+      </p>
+      <motion.p
+        className="border-t border-line pt-2 text-[13px] leading-snug text-ink-soft"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.55, duration: 0.24 }}
+      >
+        With he, she or it, use <b className="font-semibold text-ink">doesn't</b> in the present tense.
+      </motion.p>
     </div>
   );
 }
