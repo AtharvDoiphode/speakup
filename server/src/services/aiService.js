@@ -4,6 +4,7 @@ import { HttpError } from '../utils/httpError.js';
 const ATTEMPT_TIMEOUT_MS = 20_000; // longest we wait for one answer
 const TOTAL_BUDGET_MS = 45_000; // longest one request may take, whatever is left in the chain
 const RETRY_PAUSE_MS = 2_000; // pause before the single 503 retry on the last model
+const COOLDOWN_MS = 5 * 60_000; // how long a failing model is skipped
 const BUSY_MESSAGE = 'The AI is busy right now. Try again in a minute.';
 
 let client; // created on first use, so a missing key doesn't crash the server at startup
@@ -46,6 +47,19 @@ const reasonOf = (err) => (err instanceof AiTimeout ? 'timeout' : String(err?.st
 const shouldTryNextModel = (err) =>
   err instanceof AiTimeout || [404, 429, 500, 502, 503, 504].includes(err?.status);
 
+// ---------- cooldown ----------
+// A model that just timed out, was overloaded (503), ran out of quota (429) or
+// doesn't exist (404) is skipped for 5 minutes. So a dead model costs one slow
+// request, not 20 seconds on every request. Kept in memory: a restart clears it.
+const cooldownUntil = new Map(); // model name -> time (ms) when it may be tried again
+
+const shouldCoolDown = (err) => err instanceof AiTimeout || [404, 429, 503].includes(err?.status);
+const isCoolingDown = (model) => (cooldownUntil.get(model) ?? 0) > Date.now();
+const startCooldown = (model) => {
+  cooldownUntil.set(model, Date.now() + COOLDOWN_MS);
+  console.warn(`AI cooldown: ${model} for ${COOLDOWN_MS / 60_000}m`);
+};
+
 // One attempt on one model, cut off after timeoutMs
 const callModel = async (ai, model, request, timeoutMs) => {
   const controller = new AbortController();
@@ -84,7 +98,14 @@ const callModel = async (ai, model, request, timeoutMs) => {
  */
 export const generateText = async ({ system, prompt, json = false, temperature = 0.4 }) => {
   const ai = getClient();
-  const models = getModelChain();
+  const chain = getModelChain();
+  // Skip models that failed in the last 5 minutes. If that leaves nothing
+  // (for example Google was briefly overloaded on every model at once), don't
+  // fail instantly: try the whole chain again, primary first.
+  const ready = chain.filter((model) => !isCoolingDown(model));
+  const models = ready.length > 0 ? ready : chain;
+  if (ready.length === 0) console.warn(`AI cooldown: every model is cooling down, trying ${chain[0]} anyway`);
+
   const request = {
     contents: prompt,
     config: {
@@ -96,7 +117,11 @@ export const generateText = async ({ system, prompt, json = false, temperature =
 
   const deadline = Date.now() + TOTAL_BUDGET_MS;
   const timeLeft = () => deadline - Date.now();
-  const attempt = (model) => callModel(ai, model, request, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft()));
+  const attempt = async (model) => {
+    const text = await callModel(ai, model, request, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft()));
+    cooldownUntil.delete(model); // it answered, so it's healthy again
+    return text;
+  };
 
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
@@ -128,6 +153,8 @@ export const generateText = async ({ system, prompt, json = false, temperature =
         console.error(`AI error: ${model} (${reasonOf(failure)})`, String(failure?.message ?? '').slice(0, 200));
         throw new HttpError(502, 'The AI service failed. Please try again.');
       }
+
+      if (shouldCoolDown(failure)) startCooldown(model);
 
       if (isLast) {
         console.error(`AI failed: ${model} (${reasonOf(failure)}), no models left`);
