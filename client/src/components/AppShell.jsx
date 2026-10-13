@@ -7,11 +7,21 @@ export default function AppShell() {
   const location = useLocation();
   const outlet = useOutlet(); // captured so the old page can animate out
 
+  // The live conversation (/practice/<id>) needs the room, so the sidebar
+  // stays as the narrow icon rail there, even on wide screens
+  const isLive = /^\/practice\/[^/]+/.test(location.pathname);
+
   return (
-    <div className="min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] lg:grid-cols-[240px_1fr]">
+    <div className={`min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
       <aside className="sticky top-0 hidden h-dvh md:block">
-        <div className="hidden h-full lg:block"><Sidebar /></div>
-        <div className="h-full lg:hidden"><Sidebar compact /></div>
+        {isLive ? (
+          <Sidebar compact />
+        ) : (
+          <>
+            <div className="hidden h-full lg:block"><Sidebar /></div>
+            <div className="h-full lg:hidden"><Sidebar compact /></div>
+          </>
+        )}
       </aside>
 
       <main className="min-w-0 pb-[96px] md:pb-0">

@@ -5,6 +5,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ComingSoon from './pages/ComingSoon';
 import PracticePage from './pages/PracticePage';
+import LivePage from './pages/LivePage';
 
 export default function App() {
   return (
@@ -17,7 +18,7 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route index element={<Dashboard />} />
           <Route path="practice" element={<PracticePage />} />
-          <Route path="practice/:id" element={<ComingSoon title="Live conversation" />} />
+          <Route path="practice/:id" element={<LivePage />} />
           <Route path="writing" element={<ComingSoon title="Writing" />} />
           <Route path="read-aloud" element={<ComingSoon title="Read Aloud" />} />
           <Route path="grammar" element={<ComingSoon title="Grammar" />} />
