@@ -45,7 +45,8 @@ export const correctText = asyncHandler(async (req, res) => {
 
   const checked = aiResultSchema.safeParse(raw);
   if (!checked.success) {
-    console.error('Unexpected AI shape:', raw);
+    // The answer can quote the learner, so log only which fields came back
+    console.error('Unexpected AI shape, fields:', Object.keys(raw ?? {}).join(', ') || '(none)');
     throw httpError(502, 'The AI sent an unexpected answer. Please try again.');
   }
 
