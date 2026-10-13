@@ -28,9 +28,17 @@ const conversationSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     scenarioId: { type: String, required: true },
     title: { type: String, required: true },
+    // A copy of the character at the time the conversation started,
+    // so later edits to scenarios.js don't change history
     persona: {
-      name: String,
-      role: String,
+      name: String, // "Ms. Rao"
+      role: String, // short: "Hiring manager"
+      roleLong: String, // "Hiring manager, Finlytics, Pune"
+      traits: { type: [String], default: [] }, // the scene's traits plus the learner's extras
+      mood: String, // one of MOODS
+      brief: String, // the situation, written to the learner
+      // Only on conversations created before the Round 1 scenarios.
+      // Kept so those still load and can be continued.
       personality: String,
       setting: String,
     },

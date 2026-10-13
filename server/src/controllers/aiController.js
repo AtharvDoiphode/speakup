@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { httpError } from '../utils/httpError.js';
 import { parse } from '../utils/validate.js';
-import { isRealMistake } from '../utils/mistakes.js';
+import { isRealMistake, ensureCorrected } from '../utils/mistakes.js';
 import { generateJson } from '../services/aiService.js';
 import { buildCorrectionPrompt, MISTAKE_TYPES } from '../prompts/correctionPrompt.js';
 
@@ -53,7 +53,7 @@ export const correctText = asyncHandler(async (req, res) => {
   const mistakes = checked.data.mistakes.filter(isRealMistake);
   res.json({
     original: text,
-    corrected,
+    corrected: ensureCorrected(text, corrected, mistakes),
     mistakes,
     natural,
     isCorrect: mistakes.length === 0,

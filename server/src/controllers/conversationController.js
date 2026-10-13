@@ -4,18 +4,24 @@ import Conversation from '../models/Conversation.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { httpError } from '../utils/httpError.js';
 import { parse } from '../utils/validate.js';
-import { isRealMistake } from '../utils/mistakes.js';
+import { isRealMistake, ensureCorrected } from '../utils/mistakes.js';
 import { generateJson } from '../services/aiService.js';
 import { buildRoleplayPrompt } from '../prompts/roleplayPrompt.js';
 import { MISTAKE_TYPES } from '../prompts/correctionPrompt.js';
-import { SCENARIOS, findScenario } from '../data/scenarios.js';
+import { CATEGORIES, EXTRA_TRAITS, MOODS, SCENARIOS, getScenario } from '../data/scenarios.js';
 
 const MAX_MESSAGES = 100; // hard cap per conversation, protects the free AI quota
 const HISTORY_FOR_AI = 20; // how many recent messages the AI sees
+const MAX_EXTRA_TRAITS = 3;
 
-// GET /api/scenarios
+// GET /api/scenarios   (everything the scenario picker needs, in one call)
 export const listScenarios = (req, res) => {
-  res.json({ scenarios: SCENARIOS });
+  res.json({
+    categories: CATEGORIES,
+    scenarios: SCENARIOS,
+    extraTraits: EXTRA_TRAITS,
+    moods: MOODS,
+  });
 };
 
 // ---------- helpers ----------
@@ -49,21 +55,41 @@ const createSchema = z.object({
   difficulty: z
     .enum(['friendly', 'neutral', 'tough'], { error: 'Difficulty must be friendly, neutral or tough' })
     .default('neutral'),
+  // "Make it your own": up to 3 extra personality traits from the picker.
+  // Repeats are dropped first, so ["Funny", "Funny"] counts as one.
+  traits: z
+    .array(z.enum(EXTRA_TRAITS, { error: 'Unknown trait' }), { error: 'Pick up to 3 extra traits' })
+    .max(20, 'Pick up to 3 extra traits')
+    .transform((list) => [...new Set(list)])
+    .refine((list) => list.length <= MAX_EXTRA_TRAITS, 'Pick up to 3 extra traits')
+    .default([]),
+  mood: z.enum(MOODS, { error: 'Unknown mood' }).default('Neutral'),
 });
 
 const openingSchema = z.object({ reply: z.string().trim().min(1) });
 
 // POST /api/conversations
 export const createConversation = asyncHandler(async (req, res) => {
-  const { scenarioId, difficulty } = parse(createSchema, req.body);
+  const { scenarioId, difficulty, traits, mood } = parse(createSchema, req.body);
 
-  const scenario = findScenario(scenarioId);
-  if (!scenario) throw httpError(404, 'Scenario not found');
+  const scenario = getScenario(scenarioId);
+  if (!scenario) throw httpError(400, 'Pick a scenario');
+
+  // The character for this conversation: the scene's own traits plus the learner's extras.
+  // Saved as a copy, so later edits to scenarios.js don't change history.
+  const persona = {
+    name: scenario.who,
+    role: scenario.role,
+    roleLong: scenario.roleLong,
+    traits: [...new Set([...scenario.traits, ...traits])],
+    mood,
+    brief: scenario.brief,
+  };
 
   // Ask the AI for the opening line FIRST. If it fails, nothing is saved.
   const raw = await generateJson({
     system: buildRoleplayPrompt({
-      persona: scenario.persona,
+      persona,
       difficulty,
       level: req.user.level,
       mode: 'opening',
@@ -82,7 +108,7 @@ export const createConversation = asyncHandler(async (req, res) => {
     user: req.user._id,
     scenarioId: scenario.id,
     title: scenario.title,
-    persona: scenario.persona, // a copy, so later edits to scenarios don't change history
+    persona,
     difficulty,
     level: req.user.level,
     messages: [{ role: 'ai', text: opening.data.reply }],
@@ -168,7 +194,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   const userMessage = {
     role: 'user',
     text,
-    corrected: isCorrect ? text : corrected || text,
+    corrected: ensureCorrected(text, corrected, mistakes),
     mistakes,
     natural,
     createdAt: now,
