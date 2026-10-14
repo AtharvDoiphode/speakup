@@ -62,4 +62,7 @@ const conversationSchema = new mongoose.Schema(
   }
 );
 
+// The dashboard asks for "my ended sessions, newest first" on every visit
+conversationSchema.index({ user: 1, status: 1, endedAt: -1 });
+
 export default mongoose.model('Conversation', conversationSchema);

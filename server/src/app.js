@@ -7,6 +7,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import scenarioRoutes from './routes/scenarioRoutes.js';
 import conversationRoutes from './routes/conversationRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Must come after all routes: anything not matched above is a 404
 app.use((req, res) => {

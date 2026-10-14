@@ -25,7 +25,9 @@ export default function AppShell() {
       </aside>
 
       <main className="min-w-0 pb-[96px] md:pb-0">
-        <AnimatePresence mode="wait" initial={false}>
+        {/* No initial={false} here: it would be passed down and stop every animation
+            on the first page you land on (the dashboard's cards, bars and sparklines) */}
+        <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 8 }}
