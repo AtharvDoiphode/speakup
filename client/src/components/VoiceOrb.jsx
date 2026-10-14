@@ -125,7 +125,10 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
 
       // Where should the loudness be heading?
       let target = levelRef?.current ?? 0;
-      if (state === 'speaking') {
+      if (state === 'listening' && typeof window.__speakupVolume === 'number') {
+        // The real mic level, written by useVoiceInput while it listens
+        target = window.__speakupVolume;
+      } else if (state === 'speaking') {
         // Fake a speech rhythm for the AI's voice
         target = 0.3 + 0.3 * Math.abs(Math.sin(t * 3.3) * Math.sin(t * 1.3 + 1));
       }
