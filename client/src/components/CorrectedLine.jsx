@@ -53,15 +53,23 @@ export default function CorrectedLine({ text, mistakes = [] }) {
   );
 }
 
-function Fix({ seg }) {
-  return (
+/**
+ * One correction: the wrong words struck through, then the fix on a yellow marker.
+ * All props after seg are optional; the live screen passes none of them.
+ *  - delay: when the strike starts (seconds). The marker follows 0.32s later, as on the live screen.
+ *  - n: sets data-fix={n} on the element, so a page can find or scroll to it
+ *  - onSelect / active: makes the fix a button; active shows a 2px brand outline
+ */
+export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
+  const markAt = delay + (T.mark - T.strike);
+  const body = (
     <>
       <del className="relative text-mistake-ink no-underline">
         {seg.wrong}
         <motion.span aria-hidden="true"
           className="absolute inset-x-0 top-[58%] h-[3px] origin-left bg-mistake"
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-          transition={{ delay: T.strike, duration: 0.26, ease: [0.3, 0.7, 0.3, 1] }} />
+          transition={{ delay, duration: 0.26, ease: [0.3, 0.7, 0.3, 1] }} />
       </del>
       {seg.right && (
         <>
@@ -70,9 +78,9 @@ function Fix({ seg }) {
             <motion.span aria-hidden="true"
               className="absolute inset-x-0 bottom-[8%] top-[18%] origin-left rounded-[3px_6px_4px_7px] bg-marker"
               initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-              transition={{ delay: T.mark, duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }} />
+              transition={{ delay: markAt, duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }} />
             <motion.span className="relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: T.mark, duration: 0.16 }}>
+              transition={{ delay: markAt, duration: 0.16 }}>
               {seg.right}
             </motion.span>
             <sup className="relative ml-0.5 text-[0.45em] font-semibold text-ink-soft">{seg.n}</sup>
@@ -81,4 +89,15 @@ function Fix({ seg }) {
       )}
     </>
   );
+
+  if (onSelect) {
+    return (
+      <button type="button" onClick={onSelect} aria-pressed={active} data-fix={n}
+        className={`inline rounded-tag text-left align-baseline ${active ? 'outline-2 outline-offset-2 outline-brand' : ''}`}>
+        {body}
+      </button>
+    );
+  }
+  if (n != null) return <span data-fix={n}>{body}</span>;
+  return body; // exactly as before
 }

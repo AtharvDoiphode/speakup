@@ -4,6 +4,8 @@ import AppShell from './components/AppShell';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ComingSoon from './pages/ComingSoon';
+import WritingPage from './pages/WritingPage';
+import WritingResultPage from './pages/WritingResultPage';
 import PracticePage from './pages/PracticePage';
 import LivePage from './pages/LivePage';
 
@@ -19,7 +21,8 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="practice/:id" element={<LivePage />} />
-          <Route path="writing" element={<ComingSoon title="Writing" />} />
+          <Route path="writing" element={<WritingPage />} />
+          <Route path="writing/:id" element={<WritingResultPage />} />
           <Route path="read-aloud" element={<ComingSoon title="Read Aloud" />} />
           <Route path="grammar" element={<ComingSoon title="Grammar" />} />
           <Route path="vocabulary" element={<ComingSoon title="Vocabulary" />} />
