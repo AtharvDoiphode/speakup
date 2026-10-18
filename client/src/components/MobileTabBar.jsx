@@ -29,7 +29,7 @@ export default function MobileTabBar() {
   const onMorePage = MORE_NAV.some((item) => pathname.startsWith(item.to));
 
   return (
-    <div className="md:hidden">
+    <div className="md:hidden print:hidden">
       <AnimatePresence>
         {open && (
           <>

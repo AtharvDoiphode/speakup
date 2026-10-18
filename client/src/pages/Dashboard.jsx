@@ -203,7 +203,7 @@ export default function Dashboard() {
               <p className="py-4 text-[15px] text-ink-soft">Your finished sessions will appear here.</p>
             ) : (
               data.recent.map((s) => (
-                <Link key={s.id} to={s.type === 'reading' ? '/read-aloud' : `/practice/${s.id}`}
+                <Link key={s.id} to={s.type === 'reading' ? '/read-aloud' : `/history/${s.id}`}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-3.5 text-[15px] last:border-0 md:grid-cols-[minmax(0,1fr)_110px_70px_80px]">
                   <span className="flex flex-col gap-0.5">
                     <span className="font-semibold">{s.title}</span>

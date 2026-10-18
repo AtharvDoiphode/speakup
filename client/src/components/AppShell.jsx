@@ -12,8 +12,9 @@ export default function AppShell() {
   const isLive = /^\/practice\/[^/]+|^\/vocabulary\/review/.test(location.pathname);
 
   return (
-    <div className={`min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
-      <aside className="sticky top-0 hidden h-dvh md:block">
+    // print:block: on paper the sidebar is hidden, so the page must not keep its column
+    <div className={`min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] print:block print:bg-white ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
+      <aside className="sticky top-0 hidden h-dvh md:block print:hidden">
         {isLive ? (
           <Sidebar compact />
         ) : (
@@ -24,7 +25,7 @@ export default function AppShell() {
         )}
       </aside>
 
-      <main className="min-w-0 pb-[96px] md:pb-0">
+      <main className="min-w-0 pb-[96px] md:pb-0 print:pb-0">
         {/* No initial={false} here: it would be passed down and stop every animation
             on the first page you land on (the dashboard's cards, bars and sparklines) */}
         <AnimatePresence mode="wait">

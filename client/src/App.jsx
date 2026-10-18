@@ -14,6 +14,9 @@ import GrammarMinePage from './pages/GrammarMinePage';
 import GrammarLessonPage from './pages/GrammarLessonPage';
 import VocabularyPage from './pages/VocabularyPage';
 import VocabReviewPage from './pages/VocabReviewPage';
+import ProgressPage from './pages/ProgressPage';
+import HistoryPage from './pages/HistoryPage';
+import TranscriptPage from './pages/TranscriptPage';
 
 export default function App() {
   return (
@@ -36,8 +39,9 @@ export default function App() {
           <Route path="grammar/:type" element={<GrammarLessonPage />} />
           <Route path="vocabulary" element={<VocabularyPage />} />
           <Route path="vocabulary/review" element={<VocabReviewPage />} />
-          <Route path="progress" element={<ComingSoon title="Progress" />} />
-          <Route path="history" element={<ComingSoon title="History" />} />
+          <Route path="progress" element={<ProgressPage />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="history/:id" element={<TranscriptPage />} />
           <Route path="settings" element={<ComingSoon title="Settings" />} />
         </Route>
       </Route>
