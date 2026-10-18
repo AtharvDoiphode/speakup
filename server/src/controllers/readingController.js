@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidObjectId } from 'mongoose';
 import ReadingSession from '../models/ReadingSession.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { httpError } from '../utils/httpError.js';
@@ -82,4 +83,24 @@ export const listSessions = asyncHandler(async (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
   const sessions = await ReadingSession.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(limit);
   res.json({ sessions });
+});
+
+// Loads a session only if it belongs to the logged-in user; anything else is the same 404
+const findOwned = async (req) => {
+  const { id } = req.params;
+  const session = isValidObjectId(id) ? await ReadingSession.findOne({ _id: id, user: req.user._id }) : null;
+  if (!session) throw httpError(404, 'Reading session not found');
+  return session;
+};
+
+// GET /api/reading/sessions/:id
+export const getSession = asyncHandler(async (req, res) => {
+  res.json({ session: await findOwned(req) });
+});
+
+// DELETE /api/reading/sessions/:id
+export const deleteSession = asyncHandler(async (req, res) => {
+  const session = await findOwned(req);
+  await session.deleteOne();
+  res.json({ deleted: true, id: session.id });
 });

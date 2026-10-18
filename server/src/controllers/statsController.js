@@ -3,15 +3,10 @@ import ReadingSession from '../models/ReadingSession.js';
 import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { SCENARIOS } from '../data/scenarios.js';
+import { TZ, DAY, dayKey, keysBack, toMin, streaks } from '../utils/days.js';
+import { activeDayKeys } from '../services/activity.js';
 
-const TZ = process.env.APP_TIMEZONE || 'Asia/Kolkata';
-const DAY = 86_400_000;
 const GOAL_MIN = 15;
-
-const dayFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
-const dayKey = (d) => dayFmt.format(new Date(d)); // 'YYYY-MM-DD' in India time
-const keysBack = (n, now) => Array.from({ length: n }, (_, i) => dayKey(now - (n - 1 - i) * DAY)); // oldest → today
-const toMin = (sec) => Math.round((sec || 0) / 60);
 
 // GET /api/stats/dashboard
 export const getDashboard = asyncHandler(async (req, res) => {
@@ -30,7 +25,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
   const thisWeek = new Set(weekKeys);
   const lastWeek = new Set(fortnight.slice(0, 7));
 
-  const [ended, readings, withMessages, familyRows, users] = await Promise.all([
+  const [ended, readings, withMessages, familyRows, users, allActive] = await Promise.all([
     Conversation.find({ user: userId, status: 'ended', endedAt: { $gte: since60 } })
       .select('scenarioId title persona.name persona.role endedAt durationSec score')
       .sort({ endedAt: -1 })
@@ -61,9 +56,10 @@ export const getDashboard = asyncHandler(async (req, res) => {
       { $group: { _id: '$user', sec: { $sum: '$durationSec' } } },
     ]),
     User.find().select('name').lean(),
+    activeDayKeys(userId), // all time, so a streak longer than 60 days still counts
   ]);
 
-  // Minutes per day and streak: conversations and read-aloud both count
+  // Minutes per day: conversations and read-aloud both count
   const secByDay = {};
   const activeDays = new Set();
   const addTime = (at, sec) => {
@@ -75,12 +71,8 @@ export const getDashboard = asyncHandler(async (req, res) => {
   for (const r of readings) addTime(r.createdAt, r.durationSec);
   const last7 = keysBack(7, now).map((date) => ({ date, minutes: toMin(secByDay[date]), done: activeDays.has(date) }));
 
-  let streak = 0;
-  let cursor = activeDays.has(today) ? now : now - DAY; // today not done yet doesn't break the streak
-  while (activeDays.has(dayKey(cursor))) {
-    streak += 1;
-    cursor -= DAY;
-  }
+  // Today not done yet doesn't break the streak (same helper as Progress)
+  const { streak } = streaks(allActive, today);
 
   // Recurring mistakes: this week vs the week before
   const byType = {};

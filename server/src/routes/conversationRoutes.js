@@ -6,6 +6,7 @@ import {
   endConversation,
   changeDifficulty,
   listConversations,
+  deleteConversation,
 } from '../controllers/conversationController.js';
 import { protect } from '../middleware/auth.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
@@ -19,5 +20,6 @@ router.get('/:id', protect, getConversation);
 router.post('/:id/messages', protect, aiLimiter, sendMessage);
 router.post('/:id/end', protect, endConversation);
 router.patch('/:id/difficulty', protect, changeDifficulty);
+router.delete('/:id', protect, deleteConversation);
 
 export default router;

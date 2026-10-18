@@ -310,3 +310,11 @@ export const listConversations = asyncHandler(async (req, res) => {
     .lean();
   res.json({ conversations: items });
 });
+
+// DELETE /api/conversations/:id (ended or still active). Stats, history and progress are
+// worked out from the saved conversations, so it disappears from all of them too.
+export const deleteConversation = asyncHandler(async (req, res) => {
+  const convo = await findOwned(req);
+  await convo.deleteOne();
+  res.json({ deleted: true, id: String(convo._id) });
+});
