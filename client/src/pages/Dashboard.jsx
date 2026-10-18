@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MicrophoneIcon, SpeakerHighIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon, BookOpenIcon, MicrophoneIcon, SpeakerHighIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { MISTAKE_LABELS } from '../lib/corrections';
@@ -33,8 +33,12 @@ export default function Dashboard() {
     todayLabel: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' }),
   }));
 
+  const [wordsDue, setWordsDue] = useState(0);
+
   useEffect(() => {
     api.get('/stats/dashboard').then(({ data }) => setData(data)).catch((err) => setError(getErrorMessage(err)));
+    // Just a small extra line, so a failure here is ignored
+    api.get('/vocab/overview').then(({ data }) => setWordsDue(data.dueCount)).catch(() => {});
   }, []);
 
   async function startChallenge() {
@@ -67,6 +71,11 @@ export default function Dashboard() {
           <h1 className="mt-1.5 max-w-[22ch] text-[clamp(30px,3.6vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em] md:max-w-none">
             {data ? headline : `Welcome back, ${name}.`}
           </h1>
+          {wordsDue > 0 && (
+            <Link to="/vocabulary/review" className="mt-2 inline-flex items-center gap-1.5 text-[15px] font-semibold text-brand hover:text-brand-hover">
+              <BookOpenIcon size={17} aria-hidden="true" /> {wordsDue} word{wordsDue === 1 ? '' : 's'} to review <ArrowRightIcon size={15} aria-hidden="true" />
+            </Link>
+          )}
         </div>
         <Link to="/practice"
           className="flex h-11 items-center gap-2 rounded-field border border-line bg-surface px-4 text-[15px] font-semibold transition hover:-translate-y-px active:scale-[0.97]">

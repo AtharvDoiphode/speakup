@@ -7,9 +7,9 @@ export default function AppShell() {
   const location = useLocation();
   const outlet = useOutlet(); // captured so the old page can animate out
 
-  // The live conversation (/practice/<id>) needs the room, so the sidebar
-  // stays as the narrow icon rail there, even on wide screens
-  const isLive = /^\/practice\/[^/]+/.test(location.pathname);
+  // The live conversation (/practice/<id>) and the flashcards need the room,
+  // so the sidebar stays as the narrow icon rail there, even on wide screens
+  const isLive = /^\/practice\/[^/]+|^\/vocabulary\/review/.test(location.pathname);
 
   return (
     <div className={`min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
