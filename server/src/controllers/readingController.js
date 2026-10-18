@@ -78,7 +78,8 @@ export const createSession = asyncHandler(async (req, res) => {
 
 // GET /api/reading/sessions?limit=10
 export const listSessions = asyncHandler(async (req, res) => {
-  const limit = z.coerce.number().int().min(1).max(50).catch(10).parse(req.query.limit ?? 10);
+  // A bad value gives the default, a big one is capped
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
   const sessions = await ReadingSession.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(limit);
   res.json({ sessions });
 });
