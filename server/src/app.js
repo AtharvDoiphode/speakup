@@ -10,6 +10,7 @@ import conversationRoutes from './routes/conversationRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
 import writingRoutes from './routes/writingRoutes.js';
 import readingRoutes from './routes/readingRoutes.js';
+import grammarRoutes from './routes/grammarRoutes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/writing', writingRoutes);
 app.use('/api/reading', readingRoutes);
+app.use('/api/grammar', grammarRoutes);
 
 // Must come after all routes: anything not matched above is a 404
 app.use((req, res) => {
