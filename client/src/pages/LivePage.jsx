@@ -142,6 +142,7 @@ export default function LivePage() {
   const listeningForReply = voice.listening && micFor === 'reply';
   const orbState = voice.listening ? 'listening' : sending ? 'thinking' : speaking ? 'speaking' : 'idle';
   const status = ended ? 'Session ended'
+    : voice.listening && !voice.ready ? 'Getting ready…' // the mic is opening: wait before speaking
     : voice.listening ? (micFor === 'sayback' ? 'Say the natural version' : 'Listening to you')
     : sending ? `${name} is thinking`
     : speaking ? `${name} is speaking`
@@ -285,7 +286,7 @@ export default function LivePage() {
               <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.5]">
                 {voice.transcript}
                 <span className="text-ink-faint">{voice.interim}</span>
-                {!voice.transcript && !voice.interim && <span className="text-ink-faint">Listening…</span>}
+                {!voice.transcript && !voice.interim && <span className="text-ink-faint">{voice.ready ? 'Listening…' : 'Getting ready…'}</span>}
                 <span className="ml-1 inline-block h-[0.9em] w-[3px] animate-pulse bg-brand align-[-0.1em]" />
               </p>
             </div>
