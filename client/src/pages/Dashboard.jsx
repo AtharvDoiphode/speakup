@@ -264,7 +264,9 @@ function MistakeRow({ m }) {
     <div className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-4 border-b border-line py-[18px] last:border-0">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display text-[22px] font-semibold tracking-[-0.02em]">{MISTAKE_LABELS[m.type] ?? 'Other'}</span>
+          <Link to={`/grammar/${m.type}`} className="font-display text-[22px] font-semibold tracking-[-0.02em] hover:text-brand hover:underline">
+            {MISTAKE_LABELS[m.type] ?? 'Other'}
+          </Link>
           <span className="text-sm text-ink-soft">{m.count} this week</span>
         </div>
         {m.example && (

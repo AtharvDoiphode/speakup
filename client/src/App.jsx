@@ -9,6 +9,9 @@ import WritingResultPage from './pages/WritingResultPage';
 import PracticePage from './pages/PracticePage';
 import LivePage from './pages/LivePage';
 import ReadAloudPage from './pages/ReadAloudPage';
+import GrammarPage from './pages/GrammarPage';
+import GrammarMinePage from './pages/GrammarMinePage';
+import GrammarLessonPage from './pages/GrammarLessonPage';
 
 export default function App() {
   return (
@@ -25,7 +28,10 @@ export default function App() {
           <Route path="writing" element={<WritingPage />} />
           <Route path="writing/:id" element={<WritingResultPage />} />
           <Route path="read-aloud" element={<ReadAloudPage />} />
-          <Route path="grammar" element={<ComingSoon title="Grammar" />} />
+          <Route path="grammar" element={<GrammarPage />} />
+          {/* "mine" before ":type", so it isn't read as a lesson called "mine" */}
+          <Route path="grammar/mine" element={<GrammarMinePage />} />
+          <Route path="grammar/:type" element={<GrammarLessonPage />} />
           <Route path="vocabulary" element={<ComingSoon title="Vocabulary" />} />
           <Route path="progress" element={<ComingSoon title="Progress" />} />
           <Route path="history" element={<ComingSoon title="History" />} />
