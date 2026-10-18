@@ -92,11 +92,23 @@ const callModel = async (ai, model, request, timeoutMs) => {
  *  - prompt: what the user said
  *  - json: true makes the AI answer in valid JSON only
  *
- * Tries each model in the chain until one answers. If none does within
- * 45 seconds, throws a friendly 503. Callers save to the database only
- * after this returns, so a failure never leaves half a conversation behind.
+ *  - attemptTimeoutMs / totalBudgetMs: how long to wait for one model, and in total.
+ *    Chat turns use the defaults (20s / 45s); long answers such as an essay review pass more.
+ *  - maxOutputTokens: allow a longer answer (for example a full rewrite of an essay)
+ *
+ * Tries each model in the chain until one answers. If none does within the total
+ * budget, throws a friendly 503. Callers save to the database only after this
+ * returns, so a failure never leaves anything half-saved behind.
  */
-export const generateText = async ({ system, prompt, json = false, temperature = 0.4 }) => {
+export const generateText = async ({
+  system,
+  prompt,
+  json = false,
+  temperature = 0.4,
+  attemptTimeoutMs = ATTEMPT_TIMEOUT_MS,
+  totalBudgetMs = TOTAL_BUDGET_MS,
+  maxOutputTokens,
+}) => {
   const ai = getClient();
   const chain = getModelChain();
   // Skip models that failed in the last 5 minutes. If that leaves nothing
@@ -112,13 +124,14 @@ export const generateText = async ({ system, prompt, json = false, temperature =
       systemInstruction: system,
       temperature, // lower = more consistent, higher = more creative
       ...(json && { responseMimeType: 'application/json' }),
+      ...(maxOutputTokens && { maxOutputTokens }),
     },
   };
 
-  const deadline = Date.now() + TOTAL_BUDGET_MS;
+  const deadline = Date.now() + totalBudgetMs;
   const timeLeft = () => deadline - Date.now();
   const attempt = async (model) => {
-    const text = await callModel(ai, model, request, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft()));
+    const text = await callModel(ai, model, request, Math.min(attemptTimeoutMs, timeLeft()));
     cooldownUntil.delete(model); // it answered, so it's healthy again
     return text;
   };
@@ -127,7 +140,7 @@ export const generateText = async ({ system, prompt, json = false, temperature =
     const model = models[i];
     const isLast = i === models.length - 1;
     if (timeLeft() <= 0) {
-      console.error('AI failed: 45s time limit reached before trying ' + model);
+      console.error(`AI failed: ${Math.round(totalBudgetMs / 1000)}s time limit reached before trying ${model}`);
       break;
     }
 

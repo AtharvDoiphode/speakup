@@ -10,6 +10,7 @@ export const MISTAKE_TYPES = [
   'word-order',
   'spelling',
   'punctuation',
+  'capitalization', // writing only: conversations drop capital-only fixes (speech has no capitals)
   'other',
 ];
 

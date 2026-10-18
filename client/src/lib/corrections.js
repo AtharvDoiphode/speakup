@@ -8,6 +8,7 @@ export const MISTAKE_LABELS = {
   'word-order': 'Word order',
   spelling: 'Spelling',
   punctuation: 'Punctuation',
+  capitalization: 'Capitalization',
   other: 'Other',
 };
 

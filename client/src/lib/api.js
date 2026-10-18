@@ -18,4 +18,8 @@ export const getErrorMessage = (error) => {
   return 'Cannot reach the server. Is it running?';
 };
 
+// Checking an essay can take the server up to 60 seconds (a long review plus a full
+// rewrite), so this one request waits 70: we always hear the server's own answer first.
+export const checkWriting = (body) => api.post('/writing/check', body, { timeout: 70_000 });
+
 export default api;
