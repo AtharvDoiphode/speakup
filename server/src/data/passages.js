@@ -1,0 +1,26 @@
+const p = (id, level, title, text) => ({ id, level, title, text, words: text.split(/\s+/).filter(Boolean).length });
+
+export const PASSAGES = [
+  p('morning-tea', 'easy', 'Morning tea',
+    'Every morning, my grandmother makes tea for the whole family. She boils water with ginger and a little sugar, then adds milk and tea leaves. The kitchen fills with a warm smell. My father reads the newspaper, and my sister looks for her school bag. We sit together for ten minutes before the day begins. Those ten minutes are my favourite part of the morning.'),
+  p('bus-stop', 'easy', 'The bus stop',
+    "The bus to Pune leaves at eight o'clock. Today it is late, so people wait under the tree near the stop. A small boy is eating a banana. Two college students are talking about their exams. An old man checks his watch again and again. When the bus finally arrives, everyone smiles and climbs in quickly."),
+  p('rainy-sunday', 'easy', 'A rainy Sunday',
+    'It rained all day on Sunday, so we stayed at home. My brother and I played carrom in the living room. Mother made hot pakoras and green chutney. In the evening, the rain stopped and the sky turned orange. We stood on the balcony and watched the children jump in the puddles below.'),
+
+  p('first-day', 'medium', 'First day at a new job',
+    'On my first day at the new office, I arrived twenty minutes early. The receptionist gave me a visitor card and asked me to wait. I was nervous, so I read my notes again. My manager, Ms. Kapoor, came down and shook my hand. She showed me my desk and introduced me to the team. Everyone was friendly, although I forgot most of their names within an hour. At lunch, a colleague invited me to join them in the canteen. By the evening, the office no longer felt strange, and I was looking forward to the next day.'),
+  p('learning-to-cook', 'medium', 'Learning to cook',
+    'Last year, I decided to learn to cook properly. I started with simple dishes like dal and rice, and I made many mistakes. Once, I added salt twice and nobody could eat the food. Another time, I forgot the rice on the stove until it burned. Slowly, I learned to taste while cooking and to keep the heat low. Now I can make a full meal for my family, and they actually enjoy it. Cooking taught me that patience is more important than any recipe.'),
+  p('old-library', 'medium', 'The old library',
+    'The old library near our college has wooden shelves that reach the ceiling. Most students prefer to study online, but I still go there every Saturday. The librarian knows almost every book by heart. If you tell her a topic, she walks straight to the right shelf without checking the computer. The room is quiet except for the sound of the ceiling fan. It is the one place where I can read for hours without looking at my phone.'),
+
+  p('procrastination', 'hard', 'Why we put things off',
+    'Most people assume that putting things off is a problem of laziness, but many researchers describe it as a problem of emotion. When a task feels boring, difficult or uncertain, our brain looks for something that will make us feel better immediately, such as checking messages or watching a short video. The relief is real, but it is temporary, and the task is still waiting. Over time, the guilt of delaying makes the task feel even heavier. One practical strategy is to make the first step so small that it is almost impossible to refuse: open the document, write one sentence, or read one page. Once we begin, the task usually becomes less threatening, and continuing feels far easier than starting.'),
+  p('monsoon-mumbai', 'hard', 'Monsoon in Mumbai',
+    'When the monsoon reaches Mumbai, the city changes its rhythm almost overnight. Streets that were dusty a day earlier shine under heavy grey clouds, and the sea along Marine Drive throws waves high over the wall. Local trains, which carry millions of passengers every day, sometimes slow down when the tracks are flooded, yet most people still manage to reach work. Street vendors sell roasted corn and hot tea to anyone sheltering under a shop roof. For visitors, the rain can feel exhausting, but many residents describe it as their favourite season, because the city seems to breathe again after months of heat.'),
+  p('giving-feedback', 'hard', 'Giving feedback',
+    'Giving honest feedback at work is a skill that very few people are taught. Many of us either avoid difficult conversations completely or deliver criticism so directly that the other person stops listening. A more effective approach is to describe a specific situation, explain its impact, and then invite the other person to share their view. For example, instead of saying that a colleague is careless, you might say that the report on Monday had three errors in the figures, which meant the client questioned our numbers. This keeps the conversation focused on the work rather than on the person, and it makes improvement feel possible rather than personal.'),
+];
+
+export const getPassage = (id) => PASSAGES.find((x) => x.id === id);

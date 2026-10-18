@@ -1,4 +1,5 @@
 import Conversation from '../models/Conversation.js';
+import ReadingSession from '../models/ReadingSession.js';
 import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { SCENARIOS } from '../data/scenarios.js';
@@ -29,33 +30,49 @@ export const getDashboard = asyncHandler(async (req, res) => {
   const thisWeek = new Set(weekKeys);
   const lastWeek = new Set(fortnight.slice(0, 7));
 
-  const [ended, withMessages, familyRows, users] = await Promise.all([
+  const [ended, readings, withMessages, familyRows, users] = await Promise.all([
     Conversation.find({ user: userId, status: 'ended', endedAt: { $gte: since60 } })
       .select('scenarioId title persona.name persona.role endedAt durationSec score')
       .sort({ endedAt: -1 })
       .lean(),
+    ReadingSession.find({ user: userId, createdAt: { $gte: since60 } })
+      .select('title createdAt durationSec wpm')
+      .sort({ createdAt: -1 })
+      .lean(),
     Conversation.find({ user: userId, 'messages.createdAt': { $gte: since14 } })
       .select('messages.role messages.mistakes messages.createdAt')
       .lean(),
-    // Family minutes this week: ended sessions grouped by person, counted on the
-    // same India-time days as everything else
+    // Family minutes this week: ended conversations plus read-aloud sessions, grouped
+    // by person and counted on the same India-time days as everything else
     Conversation.aggregate([
       { $match: { status: 'ended', endedAt: { $gte: since8 } } },
-      { $project: { user: 1, durationSec: 1, day: { $dateToString: { format: '%Y-%m-%d', date: '$endedAt', timezone: TZ } } } },
+      { $project: { user: 1, durationSec: 1, at: '$endedAt' } },
+      {
+        $unionWith: {
+          coll: ReadingSession.collection.name,
+          pipeline: [
+            { $match: { createdAt: { $gte: since8 } } },
+            { $project: { user: 1, durationSec: 1, at: '$createdAt' } },
+          ],
+        },
+      },
+      { $project: { user: 1, durationSec: 1, day: { $dateToString: { format: '%Y-%m-%d', date: '$at', timezone: TZ } } } },
       { $match: { day: { $in: weekKeys } } },
       { $group: { _id: '$user', sec: { $sum: '$durationSec' } } },
     ]),
     User.find().select('name').lean(),
   ]);
 
-  // Minutes per day and streak
+  // Minutes per day and streak: conversations and read-aloud both count
   const secByDay = {};
   const activeDays = new Set();
-  for (const c of ended) {
-    const k = dayKey(c.endedAt);
-    secByDay[k] = (secByDay[k] || 0) + (c.durationSec || 0);
+  const addTime = (at, sec) => {
+    const k = dayKey(at);
+    secByDay[k] = (secByDay[k] || 0) + (sec || 0);
     activeDays.add(k);
-  }
+  };
+  for (const c of ended) addTime(c.endedAt, c.durationSec);
+  for (const r of readings) addTime(r.createdAt, r.durationSec);
   const last7 = keysBack(7, now).map((date) => ({ date, minutes: toMin(secByDay[date]), done: activeDays.has(date) }));
 
   let streak = 0;
@@ -108,14 +125,31 @@ export const getDashboard = asyncHandler(async (req, res) => {
     }))
     .sort((a, b) => b.minutes - a.minutes);
 
-  const recent = ended.slice(0, 3).map((c) => ({
-    id: c._id,
-    title: c.title,
-    with: [c.persona?.name, c.persona?.role].filter(Boolean).join(', '),
-    endedAt: c.endedAt,
-    minutes: Math.max(1, toMin(c.durationSec)),
-    score: c.score,
-  }));
+  // Last sessions: the newest 3 of both kinds together
+  const recent = [
+    ...ended.slice(0, 3).map((c) => ({
+      id: c._id,
+      type: 'conversation',
+      title: c.title,
+      with: [c.persona?.name, c.persona?.role].filter(Boolean).join(', '),
+      endedAt: c.endedAt,
+      minutes: Math.max(1, toMin(c.durationSec)),
+      score: c.score,
+      unit: '%',
+    })),
+    ...readings.slice(0, 3).map((r) => ({
+      id: r._id,
+      type: 'reading',
+      title: `Read aloud: ${r.title}`,
+      with: 'Read-aloud coach',
+      endedAt: r.createdAt,
+      minutes: Math.max(1, toMin(r.durationSec)),
+      score: r.wpm,
+      unit: 'wpm',
+    })),
+  ]
+    .sort((a, b) => new Date(b.endedAt) - new Date(a.endedAt))
+    .slice(0, 3);
 
   // Today's challenge: same all day, different each day, never the scene you just did.
   // Picked from the full list, and moved on by one only if it equals the last scene,
@@ -138,6 +172,6 @@ export const getDashboard = asyncHandler(async (req, res) => {
     family,
     recent,
     challenge,
-    hasSessions: ended.length > 0,
+    hasSessions: ended.length + readings.length > 0,
   });
 });
