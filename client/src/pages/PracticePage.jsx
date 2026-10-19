@@ -1,17 +1,32 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { CaretDownIcon, CheckIcon, MicrophoneIcon, XIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import Segmented from '../components/Segmented';
+import { DIFFICULTIES } from '../lib/modes';
+import { InterviewPanel, DebatePanel, PeoplePanel } from '../components/practice/ModePanels';
 
 const spring = { type: 'spring', stiffness: 500, damping: 40 };
 
-const DIFFICULTIES = [
-  { value: 'friendly', label: 'Friendly', note: 'Speaks simply and slowly, and helps you find words.' },
-  { value: 'neutral', label: 'Neutral', note: 'Normal pace, like a real conversation.' },
-  { value: 'tough', label: 'Tough', note: 'Brisk. Pushes on vague answers and asks harder follow-ups.' },
+const TABS = [
+  { value: 'scenes', label: 'Scenes' },
+  { value: 'interview', label: 'Interview' },
+  { value: 'debate', label: 'Debate' },
+  { value: 'people', label: 'My people' },
 ];
+const HEADINGS = {
+  scenes: ['Who do you want to talk to?', 'Pick a scene. The character stays in role until you end the session.'],
+  interview: ['Practise a job interview', 'Ten questions from a realistic interviewer, then a scorecard on how you did.'],
+  debate: ['Argue your side', 'Pick a motion and a side. Arjun takes the other one for five rounds.'],
+  people: ['Talk to your own people', 'Create the people you really need to talk to, and practise with them anytime.'],
+};
+
+// One of your saved people, shaped like a scene so the same start panel can show them
+const personScene = (p) => ({
+  id: p.id, isPerson: true, title: `Talk with ${p.name}`, brief: p.brief,
+  who: p.name, roleLong: p.role, traits: p.traits, personMood: p.mood, practise: [],
+});
 
 const initials = (name) =>
   name.replace(/^(Dr|Mr|Ms|Mrs)\.\s*/, '').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
@@ -30,6 +45,12 @@ function useMediaQuery(query) {
 export default function PracticePage() {
   const navigate = useNavigate();
   const isDesktop = useMediaQuery('(min-width: 1280px)');
+  const [params, setParams] = useSearchParams();
+  const tab = TABS.some((t) => t.value === params.get('tab')) ? params.get('tab') : 'scenes';
+  // The tab lives in the URL, so a reload or the back button returns to it
+  const setTab = (t) => { setSheetOpen(false); setStartError(''); setParams(t === 'scenes' ? {} : { tab: t }, { replace: true }); };
+  const [modes, setModes] = useState(null);
+  const [person, setPerson] = useState(null); // the saved person picked to start with
 
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -53,6 +74,16 @@ export default function PracticePage() {
     return () => { alive = false; };
   }, []);
 
+  // Interview focuses, debate topics and turn counts
+  useEffect(() => {
+    api.get('/modes').then(({ data }) => setModes(data)).catch(() => setModes(null));
+  }, []);
+
+  // Keep the picked person up to date when they're edited, and forget them if deleted
+  const onPeopleChange = useCallback((list) => {
+    setPerson((cur) => (cur ? list.find((x) => x.id === cur.id) ?? null : cur));
+  }, []);
+
   const groups = useMemo(
     () => (data ? data.categories.map((name) => ({ name, items: data.scenarios.filter((s) => s.category === name) })) : []),
     [data]
@@ -73,11 +104,18 @@ export default function PracticePage() {
     setTraits((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < 3 ? [...cur, t] : cur));
   }
 
+  function pickPerson(p) {
+    if (p.id !== person?.id) setStartError('');
+    setPerson(p);
+    if (!isDesktop) setSheetOpen(true);
+  }
+
   async function start() {
     setStarting(true);
     setStartError('');
     try {
-      const res = await api.post('/conversations', { scenarioId: scene.id, difficulty, traits, mood });
+      const body = tab === 'people' ? { personId: person.id, difficulty } : { scenarioId: scene.id, difficulty, traits, mood };
+      const res = await api.post('/conversations', body);
       // The server answers 201 { conversation }, and Mongo's id field is "_id"
       navigate(`/practice/${res.data.conversation._id}`);
     } catch (err) {
@@ -86,24 +124,38 @@ export default function PracticePage() {
     }
   }
 
+  const shown = tab === 'people' ? (person ? personScene(person) : null) : scene;
+  const withSheet = tab === 'scenes' || tab === 'people';
   const panelProps = {
-    scene, difficulty, setDifficulty, traits, toggleTrait, mood, setMood,
+    scene: shown, difficulty, setDifficulty, traits, toggleTrait, mood, setMood,
     extraTraits: data?.extraTraits ?? [], moods: data?.moods ?? [],
     starting, startError, onStart: start,
   };
 
   return (
-    <div className="xl:grid xl:min-h-dvh xl:grid-cols-[minmax(0,1fr)_440px]">
+    <div className={withSheet ? 'xl:grid xl:min-h-dvh xl:grid-cols-[minmax(0,1fr)_440px]' : ''}>
       <div className="flex min-w-0 flex-col gap-8 px-4 py-8 md:px-11 md:py-10">
-        <header>
-          <h1 className="text-[clamp(32px,4vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em]">Who do you want to talk to?</h1>
-          <p className="mt-2 text-base text-ink-soft">Pick a scene. The character stays in role until you end the session.</p>
+        <header className="flex flex-col gap-5">
+          <div className="max-w-[460px]">
+            <Segmented label="Practice type" layoutId="practice-tab" value={tab} onChange={setTab} options={TABS} size="sm" />
+          </div>
+          <div>
+            <h1 className="text-[clamp(32px,4vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em]">{HEADINGS[tab][0]}</h1>
+            <p className="mt-2 text-base text-ink-soft">{HEADINGS[tab][1]}</p>
+          </div>
         </header>
 
-        {loadError && <p role="alert" className="text-mistake-ink">{loadError}</p>}
-        {!data && !loadError && <ListSkeleton />}
+        {tab === 'interview' && <InterviewPanel modes={modes} />}
+        {tab === 'debate' && <DebatePanel modes={modes} />}
+        {tab === 'people' && (
+          <PeoplePanel extraTraits={data?.extraTraits ?? []} moods={data?.moods ?? ['Neutral']} selectedId={person?.id}
+            onStart={pickPerson} onPeopleChange={onPeopleChange} />
+        )}
 
-        {groups.map((g) => (
+        {tab === 'scenes' && loadError && <p role="alert" className="text-mistake-ink">{loadError}</p>}
+        {tab === 'scenes' && !data && !loadError && <ListSkeleton />}
+
+        {tab === 'scenes' && groups.map((g) => (
           <section key={g.name} className="flex flex-col">
             <div className="mb-1 flex items-baseline gap-3 border-b border-line pb-2.5">
               <h2 className="text-[22px] font-semibold tracking-[-0.02em]">{g.name}</h2>
@@ -116,15 +168,17 @@ export default function PracticePage() {
         ))}
       </div>
 
-      {isDesktop ? (
+      {withSheet && (isDesktop ? (
         <aside className="sticky top-0 flex h-dvh flex-col overflow-y-auto border-l border-line bg-surface p-10">
-          {scene && <DetailPanel {...panelProps} />}
+          {shown ? <DetailPanel {...panelProps} /> : (
+            <p className="text-[15px] text-ink-soft">Pick someone and press Start to see them here.</p>
+          )}
         </aside>
       ) : (
         <AnimatePresence>
-          {sheetOpen && scene && <DetailSheet onClose={() => !starting && setSheetOpen(false)} panelProps={panelProps} />}
+          {sheetOpen && shown && <DetailSheet onClose={() => !starting && setSheetOpen(false)} panelProps={panelProps} />}
         </AnimatePresence>
-      )}
+      ))}
     </div>
   );
 }
@@ -169,7 +223,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
         className="flex flex-1 flex-col gap-[26px]"
       >
         <div>
-          <div className="text-sm text-ink-soft">{scene.category} · {scene.minutes} min</div>
+          <div className="text-sm text-ink-soft">{scene.isPerson ? 'One of your people' : `${scene.category} · ${scene.minutes} min`}</div>
           <h2 className="mt-2 text-[clamp(30px,3vw,38px)] font-semibold leading-[1.02] tracking-[-0.035em]">{scene.title}</h2>
           <p className="mt-3.5 text-base leading-relaxed text-pretty">{scene.brief}</p>
         </div>
@@ -188,15 +242,19 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
           <span className="text-sm font-semibold">Personality</span>
           <div className="flex flex-wrap gap-1.5">
             {scene.traits.map((t) => <Chip key={t}>{t}</Chip>)}
-            {traits.map((t) => <Chip key={t} dark>{t}</Chip>)}
-            {mood !== 'Neutral' && <Chip dark>Feeling {mood.toLowerCase()}</Chip>}
+            {!scene.isPerson && traits.map((t) => <Chip key={t} dark>{t}</Chip>)}
+            {scene.isPerson
+              ? scene.personMood !== 'Neutral' && <Chip dark>Feeling {scene.personMood.toLowerCase()}</Chip>
+              : mood !== 'Neutral' && <Chip dark>Feeling {mood.toLowerCase()}</Chip>}
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-semibold">You'll practise</span>
-          {scene.practise.map((p) => <span key={p} className="text-[15px] text-ink-soft">{p}</span>)}
-        </div>
+        {scene.practise.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-semibold">You'll practise</span>
+            {scene.practise.map((p) => <span key={p} className="text-[15px] text-ink-soft">{p}</span>)}
+          </div>
+        )}
 
         <div className="flex flex-col gap-2.5">
           <span className="text-sm font-semibold">Difficulty</span>
@@ -207,7 +265,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
           </span>
         </div>
 
-        <div className="flex flex-col gap-3">
+        {!scene.isPerson && <div className="flex flex-col gap-3">
           <button type="button" onClick={() => setCustomOpen((o) => !o)} aria-expanded={customOpen}
             className="flex items-center justify-between text-sm font-semibold">
             Make it your own
@@ -249,7 +307,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </div>}
 
         <div className="mt-auto flex flex-col gap-2.5 pt-2">
           {startError && <p role="alert" className="text-sm font-medium text-mistake-ink">{startError}</p>}

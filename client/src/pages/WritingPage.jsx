@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { UploadSimpleIcon, CheckCircleIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage, checkWriting } from '../lib/api';
 import Segmented from '../components/Segmented';
+import MarkerSweep from '../components/MarkerSweep';
 import { readTextFile } from '../lib/readTextFile';
 import { titleOf, kindLabel } from '../lib/writing';
 
@@ -145,22 +145,6 @@ export default function WritingPage() {
           ))}
         </aside>
       </div>
-    </div>
-  );
-}
-
-// A marker sweeping across the page while the AI reads
-function MarkerSweep() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-panel bg-surface/40">
-      {[0, 1, 2, 3, 4].map((row) => (
-        <motion.div key={row}
-          className="absolute left-6 h-[18px] origin-left rounded-[3px_6px_4px_7px] bg-marker/60"
-          style={{ top: 34 + row * 64, width: '70%' }}
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: [0, 1, 1], opacity: [0, 1, 0] }}
-          transition={{ duration: 1.6, delay: row * 0.32, repeat: Infinity, repeatDelay: 0.6, ease: [0.2, 0.8, 0.2, 1] }} />
-      ))}
     </div>
   );
 }

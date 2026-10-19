@@ -7,6 +7,8 @@ import { buildSegments, MISTAKE_LABELS } from '../lib/corrections';
 import { longDate } from '../lib/dates';
 import { Fix } from '../components/CorrectedLine';
 import ScoreRing from '../components/ScoreRing';
+import Scorecard from '../components/Scorecard';
+import { isTurnMode, turnWord, SCORE_TITLE } from '../lib/modes';
 
 const mins = (sec) => Math.max(1, Math.round((sec || 0) / 60));
 
@@ -83,20 +85,26 @@ export default function TranscriptPage() {
   const allMistakes = mine.flatMap((m) => m.mistakes ?? []);
   const types = [...new Set(allMistakes.map((m) => m.type).filter(Boolean))];
   const when = longDate(c.endedAt ?? c.createdAt);
+  const turns = isTurnMode(c);
+  const total = c.modeConfig?.totalTurns ?? 0;
 
   return (
     <div className="flex flex-col gap-6 px-4 py-8 md:px-11 md:py-10 print:gap-4 print:p-0">
       {/* Only on paper */}
       <div className="hidden border-b-2 border-ink pb-3 print:block" data-print-header>
         <div className="text-[16pt] font-bold">SpeakUp</div>
-        <div className="text-[11pt]">{user?.name} · {c.title} · {when} · Score {c.score ?? '–'}{c.score != null ? '%' : ''}</div>
+        <div className="text-[11pt]">
+          {user?.name} · {c.title} · {when} · {turns && c.scorecard ? `${SCORE_TITLE[c.mode]} ${c.scorecard.overall}` : `Score ${c.score ?? '–'}${c.score != null ? '%' : ''}`}
+        </div>
       </div>
 
       <Link to="/history" className="flex w-fit items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink print:hidden"><ArrowLeftIcon size={16} /> History</Link>
 
       <header className="flex flex-wrap items-center gap-5 print:hidden">
-        {c.score != null && <ScoreRing score={c.score} />}
-        <div className="min-w-0 flex-1">
+        {/* Interviews and debates show their scorecard ring below instead */}
+        {c.score != null && !turns && <ScoreRing score={c.score} />}
+        {/* At least 260px for the title, so on a phone the buttons wrap below it instead of squeezing it */}
+        <div className="min-w-0 flex-1 basis-[260px]">
           <div className="text-sm text-ink-soft">{when}{c.status !== 'ended' ? ' · not finished' : ''}</div>
           <h1 className="mt-1 text-[clamp(26px,3.2vw,36px)] font-semibold leading-[1.1] tracking-[-0.03em]">{c.title}</h1>
           <p className="mt-1 text-[15px] text-ink-soft">
@@ -116,6 +124,8 @@ export default function TranscriptPage() {
       </header>
       {error && <p role="alert" className="text-sm text-mistake-ink print:hidden">{error.message}</p>}
 
+      {turns && <Scorecard convo={c} onScorecard={(card) => setC((x) => ({ ...x, scorecard: card }))} />}
+
       <div className="flex items-center gap-3 print:hidden">
         <button type="button" role="switch" aria-checked={showFixes} onClick={() => setShowFixes((v) => !v)}
           className="flex items-center gap-2.5 text-[15px] font-medium">
@@ -131,7 +141,10 @@ export default function TranscriptPage() {
           <div key={gi} className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5 md:p-6 print:break-inside-avoid print:rounded-none print:border-0 print:border-b print:p-0 print:pb-3" data-exchange={gi}>
             {group.map((m, mi) => (m.role === 'ai' ? (
               <div key={mi} className="flex flex-col gap-0.5">
-                <span className="text-[13px] font-semibold text-ink-soft print:text-[9pt]">{persona.name || 'Partner'}</span>
+                <span className="text-[13px] font-semibold text-ink-soft print:text-[9pt]">
+                  {persona.name || 'Partner'}
+                  {turns && mi === 0 && <span className="text-ink" data-turn-label> · {gi < total ? `${turnWord(c.mode)} ${gi + 1}` : 'Closing'}</span>}
+                </span>
                 <p className="text-[16px] leading-relaxed print:text-[11pt]">{m.text}</p>
               </div>
             ) : (

@@ -18,6 +18,8 @@ import { speak, stopSpeaking, ttsSupported, RATE } from '../lib/speak';
 import { matchScore } from '../lib/matchScore';
 import VoiceOrb from '../components/VoiceOrb';
 import CorrectedLine from '../components/CorrectedLine';
+import MarkerSweep from '../components/MarkerSweep';
+import { isTurnMode, turnInfo, MODE_LABEL } from '../lib/modes';
 
 const LEVELS = ['friendly', 'neutral', 'tough'];
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -48,6 +50,7 @@ export default function LivePage() {
   const [busy, setBusy] = useState(null); // 'send' | 'difficulty' | 'end' | null
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
+  const [endNote, setEndNote] = useState(''); // why an interview or debate has no scorecard
 
   // ---------- voice (Step 8.4) ----------
   // voiceRef always points at the latest handleVoiceText, so the hook's
@@ -139,9 +142,15 @@ export default function LivePage() {
   const lastAi = findLast(messages, (m) => m.role === 'ai');
   const lastUser = findLast(messages, (m) => m.role === 'user');
   const sending = busy === 'send';
+  // Interviews and debates: the server counts the turns; the screen shows where you are
+  const turns = isTurnMode(convo);
+  const ti = turns ? turnInfo(convo) : null;
+  const finished = turns && ti.done && !ended; // all answers given, the closing line said
+  const marking = turns && busy === 'end' && ti.answered > 0;
   const listeningForReply = voice.listening && micFor === 'reply';
   const orbState = voice.listening ? 'listening' : sending ? 'thinking' : speaking ? 'speaking' : 'idle';
   const status = ended ? 'Session ended'
+    : finished && !sending ? `${MODE_LABEL[convo.mode]} complete`
     : voice.listening && !voice.ready ? 'Getting ready…' // the mic is opening: wait before speaking
     : voice.listening ? (micFor === 'sayback' ? 'Say the natural version' : 'Listening to you')
     : sending ? `${name} is thinking`
@@ -190,6 +199,13 @@ export default function LivePage() {
 
   async function endSession() {
     if (!confirmEnd) return setConfirmEnd(true);
+    return endAndScore();
+  }
+
+  // Ends the session. An interview or debate with answers is marked (the scorecard is made
+  // in the same request), then its transcript shows the scorecard, or a "Try again" if the
+  // marking failed. The conversation is ended and saved either way.
+  async function endAndScore() {
     setBusy('end');
     setError('');
     try {
@@ -198,7 +214,12 @@ export default function LivePage() {
       voice.cancel();
       stopSpeaking();
       setSpeaking(false);
+      if (turns && ti.answered > 0) {
+        navigate(`/history/${id}`);
+        return;
+      }
       setConvo((c) => ({ ...c, ...data.conversation, status: 'ended' }));
+      setEndNote(data.scorecardNote ?? '');
       setShowSummary(true);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -249,6 +270,23 @@ export default function LivePage() {
             </button>
           )}
         </header>
+
+        {turns && (
+          <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-4 py-2.5 md:px-12" data-turns>
+            <span className="rounded-tag bg-brand/10 px-2.5 py-1 text-[13px] font-semibold text-brand">{MODE_LABEL[convo.mode]}</span>
+            <span className="text-[15px] font-semibold tabular-nums" data-turn-label>
+              {ti.done ? `All ${ti.total} ${convo.mode === 'debate' ? 'rounds' : 'answers'} done` : ti.label}
+            </span>
+            <span className="flex flex-1 gap-1 md:max-w-[340px]" aria-hidden="true">
+              {Array.from({ length: ti.total }, (_, k) => (
+                <span key={k} data-tick={k < ti.answered ? 'done' : k === ti.answered && !ti.done ? 'now' : 'todo'}
+                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${k < ti.answered ? 'bg-brand' : k === ti.answered && !ti.done ? 'bg-ink' : 'bg-line'}`} />
+              ))}
+            </span>
+            {/* Read out when the turn changes: "Question 4 of 10" */}
+            <span className="sr-only" aria-live="polite">{ti.done ? `${MODE_LABEL[convo.mode]} complete` : ti.label}</span>
+          </div>
+        )}
 
         <section className="flex flex-1 flex-col gap-6 px-4 pt-5 pb-6 md:px-14 lg:min-h-0 lg:overflow-y-auto">
           <div className="flex items-center gap-5 md:gap-9">
@@ -303,13 +341,29 @@ export default function LivePage() {
           )}
         </section>
 
-        {!ended && (
+        {!ended && finished && (
+          <footer className="flex flex-none flex-col items-start gap-3 border-t border-line px-4 py-4 md:flex-row md:items-center md:px-12 lg:py-5" data-finished>
+            {shownError && <p role="alert" className="text-sm font-medium text-mistake-ink">{shownError}</p>}
+            <button type="button" onClick={endAndScore} disabled={!!busy} autoFocus
+              className="flex min-h-13 items-center gap-2 rounded-field bg-brand px-6 text-[17px] font-semibold text-white transition hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:opacity-70">
+              See my scorecard
+            </button>
+            <span className="text-sm text-ink-soft">That was the last {convo.mode === 'debate' ? 'round' : 'question'}. Your answers are marked next.</span>
+          </footer>
+        )}
+
+        {!ended && !finished && (
           <footer className="flex flex-none flex-col gap-3 border-t border-line px-4 py-4 md:px-12 lg:py-5">
             {shownError && <p role="alert" className="text-sm font-medium text-mistake-ink">{shownError}</p>}
             <div className="grid items-center gap-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5">
+              {/* Difficulty is fixed for an interview or debate, so its buttons are left out */}
               <div className="order-2 flex gap-1.5 lg:order-1">
-                <ControlButton onClick={() => shiftDifficulty(-1)} disabled={level <= 0 || !!busy} icon={<ArrowDownIcon size={17} />}>Make it easier</ControlButton>
-                <ControlButton onClick={() => shiftDifficulty(1)} disabled={level >= 2 || !!busy} icon={<ArrowUpIcon size={17} />}>Make it tougher</ControlButton>
+                {!turns && (
+                  <>
+                    <ControlButton onClick={() => shiftDifficulty(-1)} disabled={level <= 0 || !!busy} icon={<ArrowDownIcon size={17} />}>Make it easier</ControlButton>
+                    <ControlButton onClick={() => shiftDifficulty(1)} disabled={level >= 2 || !!busy} icon={<ArrowUpIcon size={17} />}>Make it tougher</ControlButton>
+                  </>
+                )}
               </div>
 
               {inputMode === 'voice' ? (
@@ -361,12 +415,13 @@ export default function LivePage() {
                 </form>
               )}
 
-              <div className="order-3 flex lg:justify-end">
+              <div className="order-3 flex flex-col gap-1 lg:items-end">
                 <button type="button" onClick={endSession} disabled={busy === 'end' || sending}
-                  className="flex h-[42px] items-center gap-1.5 rounded-field border border-mistake bg-surface px-4 text-sm font-semibold text-mistake-ink transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-50">
+                  className="flex min-h-11 w-fit items-center gap-1.5 rounded-field border border-mistake bg-surface px-4 text-sm font-semibold text-mistake-ink transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-50">
                   <XIcon size={16} />
-                  {busy === 'end' ? 'Ending…' : confirmEnd ? 'Tap again to end' : 'End session'}
+                  {busy === 'end' ? 'Ending…' : confirmEnd ? 'Tap again to end' : turns ? 'End early' : 'End session'}
                 </button>
+                {turns && ti.answered === 0 && <span className="text-[13px] text-ink-soft">You need at least one answer for a scorecard.</span>}
               </div>
             </div>
           </footer>
@@ -386,7 +441,22 @@ export default function LivePage() {
 
       <AnimatePresence>
         {ended && showSummary && (
-          <Summary convo={convo} messages={messages} onReview={() => setShowSummary(false)} onNew={() => navigate('/practice')} />
+          <Summary convo={convo} messages={messages} note={endNote} onReview={() => setShowSummary(false)}
+            onNew={() => navigate(turns ? `/practice?tab=${convo.mode}` : '/practice')} newLabel={turns ? `New ${convo.mode}` : 'New scene'} />
+        )}
+      </AnimatePresence>
+
+      {/* Marking an interview or debate: up to a minute */}
+      <AnimatePresence>
+        {marking && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/85 px-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div role="status" aria-live="polite" className="relative flex w-full max-w-[460px] flex-col gap-2 overflow-hidden rounded-panel border border-line bg-surface px-7 pt-28 pb-7" data-marking>
+              <MarkerSweep rows={3} gap={30} top={24} />
+              <span className="font-display text-[24px] font-semibold tracking-[-0.02em]">Marking your answers…</span>
+              <span className="text-[15px] text-ink-soft">This can take up to a minute. Your answers are already saved.</span>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -499,7 +569,7 @@ function Stat({ label, value, accent = false }) {
   );
 }
 
-function Summary({ convo, messages, onReview, onNew }) {
+function Summary({ convo, messages, onReview, onNew, note = '', newLabel = 'New scene' }) {
   const groups = groupMistakes(messages).slice(0, 3);
   const minutes = Math.max(1, Math.round((convo.durationSec ?? 0) / 60));
   return (
@@ -519,6 +589,7 @@ function Summary({ convo, messages, onReview, onNew }) {
             {convo.score == null ? 'No answers this time' : 'of your answers had no mistakes'}
           </span>
         </div>
+        {note && <p className="mt-4 text-[15px] text-ink-soft" data-end-note>{note}</p>}
         {groups.length > 0 && (
           <div className="mt-6 flex flex-col gap-2">
             <span className="text-sm font-semibold">Work on next</span>
@@ -532,7 +603,7 @@ function Summary({ convo, messages, onReview, onNew }) {
         )}
         <div className="mt-7 grid grid-cols-2 gap-2">
           <button onClick={onReview} className="h-12 rounded-field border border-line font-semibold">Review</button>
-          <button onClick={onNew} autoFocus className="h-12 rounded-field bg-brand font-semibold text-white hover:bg-brand-hover">New scene</button>
+          <button onClick={onNew} autoFocus className="h-12 rounded-field bg-brand font-semibold text-white hover:bg-brand-hover">{newLabel}</button>
         </div>
       </motion.div>
     </>
