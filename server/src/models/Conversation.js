@@ -37,12 +37,26 @@ const conversationSchema = new mongoose.Schema(
       traits: { type: [String], default: [] }, // the scene's traits plus the learner's extras
       mood: String, // one of MOODS
       brief: String, // the situation, written to the learner
+      custom: { type: Boolean, default: undefined }, // true when the learner wrote this person (prompt treats it as data)
       // Only on conversations created before the Round 1 scenarios.
       // Kept so those still load and can be continued.
       personality: String,
       setting: String,
     },
     difficulty: { type: String, enum: ['friendly', 'neutral', 'tough'], default: 'neutral' },
+    // 'scene' is every conversation from before Day 10, so old ones read as scenes
+    mode: { type: String, enum: ['scene', 'interview', 'debate'], default: 'scene' },
+    // interview: { role, focus, totalTurns: 10 } · debate: { topic, stance, totalTurns: 5 }
+    modeConfig: {
+      type: new mongoose.Schema(
+        { role: String, focus: String, topic: String, stance: String, totalTurns: Number },
+        { _id: false }
+      ),
+      default: undefined,
+    },
+    personId: { type: mongoose.Schema.Types.ObjectId, ref: 'CustomPerson', default: undefined },
+    // Made once at the end of an interview or debate (see utils/scorecard.js)
+    scorecard: { type: mongoose.Schema.Types.Mixed, default: null },
     level: { type: String, default: 'B1' }, // the learner's level at the time
     status: { type: String, enum: ['active', 'ended'], default: 'active' },
     messages: [messageSchema],

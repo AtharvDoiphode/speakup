@@ -13,6 +13,7 @@ import readingRoutes from './routes/readingRoutes.js';
 import grammarRoutes from './routes/grammarRoutes.js';
 import vocabRoutes from './routes/vocabRoutes.js';
 import { progressRouter, historyRouter } from './routes/progressRoutes.js';
+import { peopleRouter, modesRouter } from './routes/peopleRoutes.js';
 
 const app = express();
 
@@ -43,6 +44,8 @@ app.use('/api/grammar', grammarRoutes);
 app.use('/api/vocab', vocabRoutes);
 app.use('/api/progress', progressRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/people', peopleRouter);
+app.use('/api/modes', modesRouter);
 
 // Must come after all routes: anything not matched above is a 404
 app.use((req, res) => {
