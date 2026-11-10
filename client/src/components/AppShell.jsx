@@ -13,7 +13,7 @@ export default function AppShell() {
 
   return (
     // print:block: on paper the sidebar is hidden, so the page must not keep its column
-    <div className={`min-h-dvh bg-canvas md:grid md:grid-cols-[72px_1fr] print:block print:bg-white ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
+    <div className={`min-h-dvh bg-surface-canvas md:grid md:grid-cols-[72px_1fr] print:block print:bg-print-paper ${isLive ? '' : 'lg:grid-cols-[240px_1fr]'}`}>
       <aside className="sticky top-0 hidden h-dvh md:block print:hidden">
         {isLive ? (
           <Sidebar compact />

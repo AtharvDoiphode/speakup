@@ -1,0 +1,347 @@
+{
+ "about": "Every text-on-surface and UI pair the app uses. min 4.5 for text, 3 for UI parts (WCAG 2.2 AA). The yellow marker is never text and never the only signal, so it is not listed as a UI colour on white.",
+ "pairs": [
+  {
+   "fg": "text-primary",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "brand-50",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "mistake-tint",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "success-tint",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "marker-tint",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "marker",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-primary",
+   "bg": "info-tint",
+   "min": 4.5,
+   "use": "body text"
+  },
+  {
+   "fg": "text-secondary",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "secondary text"
+  },
+  {
+   "fg": "text-secondary",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "secondary text"
+  },
+  {
+   "fg": "text-secondary",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "secondary text"
+  },
+  {
+   "fg": "text-muted",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "hints, placeholders, axis labels"
+  },
+  {
+   "fg": "text-muted",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "hints, placeholders, axis labels"
+  },
+  {
+   "fg": "text-muted",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "hints, placeholders, axis labels"
+  },
+  {
+   "fg": "text-link",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "links and brand text"
+  },
+  {
+   "fg": "text-link",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "links and brand text"
+  },
+  {
+   "fg": "text-link",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "links and brand text"
+  },
+  {
+   "fg": "brand-700",
+   "bg": "brand-50",
+   "min": 4.5,
+   "use": "brand text on brand tints (badges, selected items)"
+  },
+  {
+   "fg": "brand-700",
+   "bg": "brand-100",
+   "min": 4.5,
+   "use": "brand text on brand tints (badges, selected items)"
+  },
+  {
+   "fg": "mistake-text",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "mistake text"
+  },
+  {
+   "fg": "mistake-text",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "mistake text"
+  },
+  {
+   "fg": "mistake-text",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "mistake text"
+  },
+  {
+   "fg": "mistake-text",
+   "bg": "mistake-tint",
+   "min": 4.5,
+   "use": "mistake text"
+  },
+  {
+   "fg": "success-text",
+   "bg": "surface-canvas",
+   "min": 4.5,
+   "use": "success text"
+  },
+  {
+   "fg": "success-text",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "success text"
+  },
+  {
+   "fg": "success-text",
+   "bg": "surface-sunken",
+   "min": 4.5,
+   "use": "success text"
+  },
+  {
+   "fg": "success-text",
+   "bg": "success-tint",
+   "min": 4.5,
+   "use": "success text"
+  },
+  {
+   "fg": "warning-text",
+   "bg": "warning",
+   "min": 4.5,
+   "use": "text on yellow (always ink)"
+  },
+  {
+   "fg": "warning-text",
+   "bg": "warning-tint",
+   "min": 4.5,
+   "use": "text on yellow (always ink)"
+  },
+  {
+   "fg": "marker-text",
+   "bg": "marker",
+   "min": 4.5,
+   "use": "text under the marker"
+  },
+  {
+   "fg": "marker-text",
+   "bg": "marker-tint",
+   "min": 4.5,
+   "use": "text under the marker"
+  },
+  {
+   "fg": "info-text",
+   "bg": "surface-card",
+   "min": 4.5,
+   "use": "info text"
+  },
+  {
+   "fg": "info-text",
+   "bg": "info-tint",
+   "min": 4.5,
+   "use": "info text"
+  },
+  {
+   "fg": "on-brand",
+   "bg": "brand-600",
+   "min": 4.5,
+   "use": "primary button text, rest and hover"
+  },
+  {
+   "fg": "on-brand",
+   "bg": "brand-700",
+   "min": 4.5,
+   "use": "primary button text, rest and hover"
+  },
+  {
+   "fg": "on-brand",
+   "bg": "danger",
+   "min": 4.5,
+   "use": "danger button text, rest and hover"
+  },
+  {
+   "fg": "on-brand",
+   "bg": "danger-hover",
+   "min": 4.5,
+   "use": "danger button text, rest and hover"
+  },
+  {
+   "fg": "text-inverse",
+   "bg": "surface-inverse",
+   "min": 4.5,
+   "use": "text on dark cards"
+  },
+  {
+   "fg": "text-inverse-muted",
+   "bg": "surface-inverse",
+   "min": 4.5,
+   "use": "secondary text on dark cards"
+  },
+  {
+   "fg": "border-strong",
+   "bg": "surface-canvas",
+   "min": 3,
+   "use": "input borders"
+  },
+  {
+   "fg": "border-strong",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "input borders"
+  },
+  {
+   "fg": "border-strong",
+   "bg": "surface-sunken",
+   "min": 3,
+   "use": "input borders"
+  },
+  {
+   "fg": "focus-ring",
+   "bg": "surface-canvas",
+   "min": 3,
+   "use": "focus ring"
+  },
+  {
+   "fg": "focus-ring",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "focus ring"
+  },
+  {
+   "fg": "focus-ring",
+   "bg": "surface-sunken",
+   "min": 3,
+   "use": "focus ring"
+  },
+  {
+   "fg": "focus-ring-inverse",
+   "bg": "surface-inverse",
+   "min": 3,
+   "use": "focus ring on dark cards"
+  },
+  {
+   "fg": "brand",
+   "bg": "surface-canvas",
+   "min": 3,
+   "use": "brand fills, icons, active nav"
+  },
+  {
+   "fg": "brand",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "brand fills, icons, active nav"
+  },
+  {
+   "fg": "brand",
+   "bg": "surface-sunken",
+   "min": 3,
+   "use": "brand fills, icons, active nav"
+  },
+  {
+   "fg": "mistake",
+   "bg": "surface-canvas",
+   "min": 3,
+   "use": "mistake strike line and dots"
+  },
+  {
+   "fg": "mistake",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "mistake strike line and dots"
+  },
+  {
+   "fg": "mistake",
+   "bg": "surface-sunken",
+   "min": 3,
+   "use": "mistake strike line and dots"
+  },
+  {
+   "fg": "success",
+   "bg": "surface-canvas",
+   "min": 3,
+   "use": "success dots and icons"
+  },
+  {
+   "fg": "success",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "success dots and icons"
+  },
+  {
+   "fg": "success",
+   "bg": "surface-sunken",
+   "min": 3,
+   "use": "success dots and icons"
+  },
+  {
+   "fg": "info",
+   "bg": "surface-card",
+   "min": 3,
+   "use": "info icon"
+  }
+ ]
+}

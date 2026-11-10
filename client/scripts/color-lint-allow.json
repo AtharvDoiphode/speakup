@@ -1,0 +1,6 @@
+{
+  "about": "The only files in client/src allowed to contain raw colours (hex, rgb(), color-mix()) — everything else uses semantic tokens.",
+  "files": [
+    "src/styles/tokens.css"
+  ]
+}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SpeakUp palette direction</title>
+<!-- The real primitives; the semantic mapping below mirrors @theme in tokens.css -->
+<link rel="stylesheet" href="../../client/src/styles/tokens.css">
+<script>if (location.search.includes('b')) document.documentElement.dataset.palette = 'b';</script>
+<style>
+  :root {
+    --canvas: var(--p-canvas); --card: var(--p-card); --sunken: var(--p-sunken); --line: var(--p-line); --strong: var(--p-ink-4);
+    --ink: var(--p-ink); --ink2: var(--p-ink-2); --muted: var(--p-ink-3); --white: var(--p-white);
+    --brand: var(--p-brand-600); --brand700: var(--p-brand-700); --brand50: var(--p-brand-50);
+    --pink: var(--p-pink); --pinkText: var(--p-pink-text); --pinkTint: var(--p-pink-tint);
+    --green: var(--p-green); --greenText: var(--p-green-text); --greenTint: var(--p-green-tint);
+    --yellow: var(--p-yellow); --infoText: var(--p-info-text); --infoTint: var(--p-info-tint);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink); font: 14px/1.4 "Hanken Grotesk", system-ui, sans-serif; }
+  h1 { font: 600 20px/1.1 "Bricolage Grotesque", system-ui, sans-serif; margin: 0 0 2px; letter-spacing: -0.02em; }
+  h2 { font: 600 12px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--ink2); margin: 16px 0 8px; }
+  .sub { color: var(--ink2); margin: 0 0 4px; }
+  .muted { color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button { font: 600 14px system-ui, sans-serif; border-radius: 12px; padding: 0 14px; height: 40px; border: 1px solid transparent; cursor: pointer; }
+  .primary { background: var(--brand); color: var(--white); } .primary.hover { background: var(--brand700); }
+  .secondary { background: var(--card); color: var(--ink); border-color: var(--line); }
+  .ghost { background: transparent; color: var(--brand); }
+  .danger { background: var(--pinkText); color: var(--white); }
+  .disabled { background: var(--brand); color: var(--white); opacity: .45; cursor: not-allowed; }
+  .focus { outline: 2px solid var(--brand); outline-offset: 2px; }
+  label { font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px; }
+  input { width: 100%; height: 40px; border: 1px solid var(--strong); border-radius: 12px; padding: 0 12px; font: inherit; background: var(--card); color: var(--ink); }
+  input::placeholder { color: var(--muted); }
+  input.err { border-color: var(--pinkText); }
+  .errmsg { color: var(--pinkText); font-size: 13px; font-weight: 500; margin-top: 4px; }
+  .nav { display: flex; flex-direction: column; gap: 2px; background: var(--canvas); padding: 6px; border-radius: 12px; border: 1px solid var(--line); }
+  .nav a { display: block; padding: 8px 10px; border-radius: 12px; color: var(--ink2); font-weight: 600; text-decoration: none; }
+  .nav a.active { background: var(--card); color: var(--brand); } .nav a.hover { color: var(--ink); }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 8px; }
+  .b-brand { background: var(--brand50); color: var(--brand700); } .b-ok { background: var(--greenTint); color: var(--greenText); }
+  .b-bad { background: var(--pinkTint); color: var(--pinkText); } .b-warn { background: var(--yellow); color: var(--ink); }
+  .b-info { background: var(--infoTint); color: var(--infoText); } .b-dark { background: var(--ink); color: var(--white); }
+  del { text-decoration: none; position: relative; color: var(--ink2); }
+  del::after { content: ""; position: absolute; left: 0; right: 0; top: 55%; height: 3px; background: var(--pink); }
+  ins { text-decoration: none; background: var(--yellow); padding: 0 4px; border-radius: 4px; font-weight: 600; color: var(--ink); }
+  .fixline { font-size: 17px; margin: 4px 0 8px; } .why { color: var(--ink2); font-size: 13px; }
+  .ring { display: flex; align-items: center; gap: 12px; }
+  .toast { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-weight: 500; }
+  .toast.ok { color: var(--greenText); } .toast.bad { color: var(--pinkText); }
+  .dot { width: 10px; height: 10px; border-radius: 99px; flex: none; }
+  .dot.ok { background: var(--green); } .dot.bad { background: var(--pink); }
+  .login { display: grid; grid-template-columns: 1.2fr 1fr; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .login .story { padding: 18px; background: var(--canvas); } .login .form { padding: 18px; background: var(--card); border-left: 1px solid var(--line); }
+  .login .big { font: 600 26px/1 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: -.03em; margin: 10px 0; }
+  .brandword { color: var(--brand); font-weight: 700; }
+  .score { font-size: 22px; font-weight: 700; }
+  svg text { font: 11px system-ui, sans-serif; }
+  .track { stroke: var(--sunken); } .arc { stroke: var(--brand); } .axis { stroke: var(--line); }
+  .lbl { fill: var(--ink2); } .tick { fill: var(--muted); }
+  .s1 { fill: var(--p-chart-1); } .s2 { fill: var(--p-chart-2); } .s3 { fill: var(--p-chart-3); }
+</style>
+</head>
+<body>
+<h1 id="name">Direction</h1>
+<p class="sub" id="note"></p>
+
+<h2>Buttons</h2>
+<div class="row">
+  <button class="primary">Primary</button><button class="primary hover">Hover</button><button class="secondary">Secondary</button>
+  <button class="ghost">Ghost</button><button class="danger">Remove for good</button><button class="disabled" disabled>Disabled</button>
+  <button class="primary focus">Focused</button>
+</div>
+
+<h2>Inputs</h2>
+<div class="grid">
+  <div><label>Your name</label><input placeholder="Type your name"></div>
+  <div><label>Focused</label><input class="focus" value="Atharva"></div>
+  <div><label>Error</label><input class="err" value="a@b"><div class="errmsg">Enter a valid email</div></div>
+  <div class="card"><b>Card</b><div class="sub">Secondary text on a card, and <span class="muted">muted hint text</span>.</div></div>
+</div>
+
+<h2>Nav, badges, toasts</h2>
+<div class="grid">
+  <div class="nav"><a class="active">Home</a><a class="hover">Practice (hover)</a><a>Writing</a></div>
+  <div>
+    <div class="row"><span class="badge b-brand">You</span><span class="badge b-ok">Clean</span><span class="badge b-bad">3 mistakes</span><span class="badge b-warn">Due</span><span class="badge b-info">New</span><span class="badge b-dark">Admin</span></div>
+    <div style="display:grid;gap:6px;margin-top:8px">
+      <div class="toast ok"><span class="dot ok"></span>Saved</div>
+      <div class="toast bad"><span class="dot bad"></span>Couldn't save. Try again.</div>
+    </div>
+  </div>
+</div>
+
+<h2>Correction, score, chart</h2>
+<div class="grid">
+  <div class="card">
+    <div class="fixline">Yesterday I <del>go</del> <ins>went</ins> to the market.</div>
+    <div class="why">Past tense: <b>go</b> becomes <b>went</b> for yesterday.</div>
+    <div class="ring" style="margin-top:10px">
+      <svg width="64" height="64" viewBox="0 0 88 88" style="transform:rotate(-90deg)"><circle class="track" cx="44" cy="44" r="34" fill="none" stroke-width="8"/><circle class="arc" cx="44" cy="44" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="53"/></svg>
+      <div><div class="score">75</div><div class="sub">Score</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <svg viewBox="0 0 240 124" width="100%" role="img" aria-label="Three series by week, each bar labelled S, W or R">
+      <line class="axis" x1="10" x2="230" y1="100" y2="100"/>
+      <g id="bars"></g>
+    </svg>
+    <div class="row muted" style="font-size:12px">S Speaking · W Writing · R Reading</div>
+  </div>
+</div>
+
+<h2>Login</h2>
+<div class="login">
+  <div class="story"><span class="brandword">SpeakUp</span><div class="big">Speak first.<br>We tidy the grammar after.</div><div class="sub">Roleplay real conversations out loud.</div></div>
+  <div class="form"><label>Email</label><input placeholder="you@family.com"><div style="height:8px"></div><button class="primary" style="width:100%">Log in</button></div>
+</div>
+
+<script>
+  const isB = document.documentElement.dataset.palette === 'b';
+  document.getElementById('name').textContent = isB ? 'B · Deep Indigo' : 'A · Refined Electric (default)';
+  document.getElementById('note').textContent = isB ? 'Calmer, more professional.' : "Today's identity, deeper and cleaner.";
+  // 3 series, each bar directly labelled so colour is never the only cue
+  const series = [['S', 's1', [60, 75, 82]], ['W', 's2', [40, 55, 70]], ['R', 's3', [30, 45, 50]]];
+  const NS = 'http://www.w3.org/2000/svg', g = document.getElementById('bars');
+  const el = (tag, attrs, text) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (text) n.textContent = text; g.append(n); };
+  let x = 18;
+  ['Wk 1', 'Wk 2', 'Wk 3'].forEach((wk, w) => {
+    for (const [name, cls, v] of series) {
+      const h = v[w] * 0.95;
+      el('rect', { x, y: 100 - h, width: 18, height: h, rx: 2, class: cls });
+      el('text', { x: x + 9, y: 96 - h, 'text-anchor': 'middle', class: 'lbl' }, name);
+      x += 21;
+    }
+    el('text', { x: x - 42, y: 116, 'text-anchor': 'middle', class: 'tick' }, wk);
+    x += 12;
+  });
+</script>
+</body>
+</html>

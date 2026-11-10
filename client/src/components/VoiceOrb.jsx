@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-// Three stacked blobs: blue outside, pink inside it, a yellow core
+// Three stacked blobs: blue outside, pink inside it, a yellow core.
+// Colours come from the design tokens (styles/tokens.css), read once when the orb mounts.
 const LAYERS = [
-  { rgb: '47, 60, 255', alpha: 1, phase: 0, size: 1, depth: 1 },
-  { rgb: '255, 61, 127', alpha: 0.92, phase: 2.1, size: 0.8, depth: 0.6 },
-  { rgb: '255, 210, 63', alpha: 0.96, phase: 4.2, size: 0.52, depth: 0.3 },
+  { token: '--color-brand', alpha: 1, phase: 0, size: 1, depth: 1 },
+  { token: '--color-mistake', alpha: 0.92, phase: 2.1, size: 0.8, depth: 0.6 },
+  { token: '--color-marker', alpha: 0.96, phase: 4.2, size: 0.52, depth: 0.3 },
 ];
 
 const POINTS = 96; // more points = smoother outline
@@ -28,6 +29,8 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+    const style = getComputedStyle(canvas);
+    const colors = LAYERS.map((l) => style.getPropertyValue(l.token).trim());
     const reduceMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
@@ -79,18 +82,12 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
         ctx.closePath();
 
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = `rgba(${layer.rgb}, ${layer.alpha})`;
-        if (index === 0) {
-          ctx.shadowColor = 'rgba(47, 60, 255, 0.35)';
-          ctx.shadowBlur = 50 * dpr; // shadow size ignores the canvas scale
-        } else {
-          ctx.shadowBlur = 0;
-        }
+        ctx.globalAlpha = layer.alpha;
+        ctx.fillStyle = colors[index];
         ctx.fill();
       });
 
-      ctx.shadowBlur = 0;
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
     };
 
     // Match the canvas to its parent's size, sharp on high-DPI screens

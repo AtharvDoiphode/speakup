@@ -67,23 +67,23 @@ export default function Dashboard() {
     <div className="flex flex-col gap-7 px-4 py-8 md:px-12 md:py-10">
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <div className="text-[15px] text-ink-soft">{todayLabel}</div>
+          <div className="text-[15px] text-text-secondary">{todayLabel}</div>
           <h1 className="mt-1.5 max-w-[22ch] text-[clamp(30px,3.6vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em] md:max-w-none">
             {data ? headline : `Welcome back, ${name}.`}
           </h1>
           {wordsDue > 0 && (
-            <Link to="/vocabulary/review" className="mt-2 inline-flex items-center gap-1.5 text-[15px] font-semibold text-brand hover:text-brand-hover">
+            <Link to="/vocabulary/review" className="mt-2 inline-flex items-center gap-1.5 text-[15px] font-semibold text-brand hover:text-brand-700">
               <BookOpenIcon size={17} aria-hidden="true" /> {wordsDue} word{wordsDue === 1 ? '' : 's'} to review <ArrowRightIcon size={15} aria-hidden="true" />
             </Link>
           )}
         </div>
         <Link to="/practice"
-          className="flex h-11 items-center gap-2 rounded-field border border-line bg-surface px-4 text-[15px] font-semibold transition hover:-translate-y-px active:scale-[0.97]">
+          className="flex h-11 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-semibold transition hover:-translate-y-px active:scale-[0.97]">
           <MicrophoneIcon size={18} /> All scenes
         </Link>
       </header>
 
-      {error && <p role="alert" className="text-mistake-ink">{error}</p>}
+      {error && <p role="alert" className="text-mistake-text">{error}</p>}
 
       {!data ? (
         <DashboardSkeleton />
@@ -91,87 +91,88 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
           {/* Challenge */}
           <motion.section {...card(0)}
-            className="relative flex min-h-[340px] flex-col overflow-hidden rounded-panel bg-ink px-7 py-8 text-white md:col-span-2 xl:col-span-8 xl:row-span-2 xl:min-h-[400px] xl:px-11 xl:py-10">
+            data-surface="inverse"
+            className="relative flex min-h-[340px] flex-col overflow-hidden rounded-panel bg-surface-inverse px-7 py-8 text-text-inverse md:col-span-2 xl:col-span-8 xl:row-span-2 xl:min-h-[400px] xl:px-11 xl:py-10">
             {/* Smaller and fainter where the card is narrow, so the text on top stays readable */}
             <div aria-hidden="true" className="pointer-events-none absolute -right-[150px] -bottom-[200px] size-[340px] opacity-35 md:opacity-50 xl:-right-[130px] xl:-bottom-[150px] xl:size-[460px] xl:opacity-90">
               <VoiceOrb state="idle" />
             </div>
-            <div className="relative text-base text-[#C9CFF0]">Today's speaking challenge</div>
+            <div className="relative text-base text-text-inverse-muted">Today's speaking challenge</div>
             <h2 className="relative mt-4 max-w-[560px] font-display text-[clamp(26px,3vw,40px)] font-semibold leading-[1.08] tracking-[-0.03em] text-pretty">
               {data.challenge.brief}
             </h2>
-            <div className="relative mt-5 flex flex-wrap gap-x-[18px] gap-y-2 text-[15px] text-[#C9CFF0]">
+            <div className="relative mt-5 flex flex-wrap gap-x-[18px] gap-y-2 text-[15px] text-text-inverse-muted">
               <span>{data.challenge.category}</span>
               <span>With {data.challenge.who}, {data.challenge.role}</span>
               <span>About {data.challenge.minutes} min</span>
             </div>
             <div className="relative mt-auto flex flex-wrap items-center gap-4 pt-8">
               <button onClick={startChallenge} disabled={starting}
-                className="flex h-14 items-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold transition hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:cursor-wait disabled:opacity-80">
+                className="flex h-14 items-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-80">
                 <MicrophoneIcon size={20} />
                 {starting ? `${data.challenge.who} is getting ready…` : `Start with ${data.challenge.who}`}
               </button>
               {data.challenge.focusType && (
-                <span className="text-[15px] text-[#C9CFF0]">Focus: {MISTAKE_LABELS[data.challenge.focusType]?.toLowerCase()}</span>
+                <span className="text-[15px] text-text-inverse-muted">Focus: {MISTAKE_LABELS[data.challenge.focusType]?.toLowerCase()}</span>
               )}
             </div>
           </motion.section>
 
           {/* Minutes today */}
-          <motion.section {...card(1)} className="flex flex-col gap-3.5 rounded-panel border border-line bg-surface px-[26px] py-6 xl:col-span-4">
+          <motion.section {...card(1)} className="flex flex-col gap-3.5 rounded-panel border border-border-subtle bg-surface-card px-[26px] py-6 xl:col-span-4">
             <div className="text-[15px] font-semibold">Minutes spoken today</div>
             <div className="flex items-baseline gap-2">
               <span className="font-display text-[72px] font-semibold leading-[0.9] tracking-[-0.04em]">{data.today.minutes}</span>
-              <span className="text-[17px] text-ink-soft">of {data.goalMin} min</span>
+              <span className="text-[17px] text-text-secondary">of {data.goalMin} min</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-[4px] border border-line bg-canvas">
+            <div className="h-2 overflow-hidden rounded-[4px] border border-border-subtle bg-surface-sunken">
               <motion.div className="h-full bg-brand" initial={{ width: 0 }}
                 animate={{ width: `${Math.min(100, (data.today.minutes / data.goalMin) * 100)}%` }}
                 transition={{ delay: 0.3, duration: 0.7, ease }} />
             </div>
-            <div className="text-sm text-ink-soft">
+            <div className="text-sm text-text-secondary">
               {data.today.yesterdayMinutes ? `Yesterday you spoke for ${data.today.yesterdayMinutes}.` : 'Minutes count when you end a session.'}
             </div>
           </motion.section>
 
           {/* Streak */}
-          <motion.section {...card(2)} className="flex flex-col gap-4 rounded-panel border border-line bg-surface px-[26px] py-6 xl:col-span-4">
+          <motion.section {...card(2)} className="flex flex-col gap-4 rounded-panel border border-border-subtle bg-surface-card px-[26px] py-6 xl:col-span-4">
             <StreakCard streak={data.streak} last7={data.last7} />
           </motion.section>
 
           {/* Recurring mistakes */}
-          <motion.section {...card(3)} className="flex flex-col rounded-panel border border-line bg-surface px-[26px] py-6 xl:col-span-5 xl:row-span-2">
+          <motion.section {...card(3)} className="flex flex-col rounded-panel border border-border-subtle bg-surface-card px-[26px] py-6 xl:col-span-5 xl:row-span-2">
             <div className="mb-1.5 flex items-baseline justify-between">
               <span className="text-[15px] font-semibold">Recurring mistakes this week</span>
-              <Link to="/progress" className="text-sm text-brand hover:text-brand-hover hover:underline">Progress</Link>
+              <Link to="/progress" className="text-sm text-brand hover:text-brand-700 hover:underline">Progress</Link>
             </div>
             {data.mistakes.length === 0 ? (
-              <p className="py-4 text-[15px] text-ink-soft">No mistakes logged this week. Finish a session and they'll show up here.</p>
+              <p className="py-4 text-[15px] text-text-secondary">No mistakes logged this week. Finish a session and they'll show up here.</p>
             ) : (
               data.mistakes.map((m) => <MistakeRow key={m.type} m={m} />)
             )}
           </motion.section>
 
           {/* Word of the day */}
-          <motion.section {...card(4)} className="flex flex-col gap-2.5 rounded-panel border border-line bg-surface px-[26px] py-6 xl:col-span-4">
+          <motion.section {...card(4)} className="flex flex-col gap-2.5 rounded-panel border border-border-subtle bg-surface-card px-[26px] py-6 xl:col-span-4">
             <div className="flex items-baseline justify-between">
               <span className="text-[15px] font-semibold">Word of the day</span>
               {ttsSupported && (
                 <button onClick={() => speak(`${word.word}. ${word.example}`)} aria-label={`Hear ${word.word}`}
-                  className="rounded-tag p-1 text-brand hover:text-brand-hover">
+                  className="rounded-tag p-1 text-brand hover:text-brand-700">
                   <SpeakerHighIcon size={20} />
                 </button>
               )}
             </div>
             <div className="mt-1.5 font-display text-[38px] font-semibold leading-none tracking-[-0.03em]">{word.word}</div>
-            <div className="text-sm text-ink-soft">{word.pos} · {word.ipa}</div>
+            <div className="text-sm text-text-secondary">{word.pos} · {word.ipa}</div>
             <div className="text-base leading-snug">{word.meaning}</div>
-            <div className="border-t border-line pt-2.5 text-[15px] leading-normal text-ink-soft">"{word.example}"</div>
+            <div className="border-t border-border-subtle pt-2.5 text-[15px] leading-normal text-text-secondary">"{word.example}"</div>
           </motion.section>
 
           {/* Family */}
           {data.family.length > 1 && (
-            <motion.section {...card(5)} className="flex flex-col gap-3 rounded-panel border border-line bg-surface px-[22px] py-6 xl:col-span-3">
+            <motion.section {...card(5)} className="flex flex-col gap-3 rounded-panel border border-border-subtle bg-surface-card px-[22px] py-6 xl:col-span-3">
               <span className="text-[15px] font-semibold">Family this week</span>
               {data.family.map((f, i) => {
                 const max = data.family[0].minutes || 1;
@@ -179,10 +180,10 @@ export default function Dashboard() {
                   <div key={i} className="flex flex-col gap-1.5">
                     <div className="flex justify-between text-[15px]">
                       <span className={f.isMe ? 'font-semibold' : ''}>{i + 1}. {f.name}</span>
-                      <span className="text-ink-soft">{f.minutes} min</span>
+                      <span className="text-text-secondary">{f.minutes} min</span>
                     </div>
-                    <div className="h-1 rounded-[2px] bg-canvas">
-                      <motion.div className={`h-full rounded-[2px] ${f.isMe ? 'bg-brand' : 'bg-ink-soft'}`}
+                    <div className="h-1 rounded-[2px] bg-surface-sunken">
+                      <motion.div className={`h-full rounded-[2px] ${f.isMe ? 'bg-brand' : 'bg-text-secondary'}`}
                         initial={{ width: 0 }} animate={{ width: `${(f.minutes / max) * 100}%` }}
                         transition={{ delay: 0.4 + i * 0.08, duration: 0.6, ease }} />
                     </div>
@@ -194,25 +195,25 @@ export default function Dashboard() {
 
           {/* Last sessions */}
           <motion.section {...card(6)}
-            className={`flex flex-col rounded-panel border border-line bg-surface px-[26px] pt-[22px] pb-2 md:col-span-2 ${data.family.length > 1 ? 'xl:col-span-7' : 'xl:col-span-7 xl:col-start-6'}`}>
+            className={`flex flex-col rounded-panel border border-border-subtle bg-surface-card px-[26px] pt-[22px] pb-2 md:col-span-2 ${data.family.length > 1 ? 'xl:col-span-7' : 'xl:col-span-7 xl:col-start-6'}`}>
             <div className="flex items-baseline justify-between">
               <span className="text-[15px] font-semibold">Last sessions</span>
-              <Link to="/history" className="text-sm text-brand hover:text-brand-hover hover:underline">History</Link>
+              <Link to="/history" className="text-sm text-brand hover:text-brand-700 hover:underline">History</Link>
             </div>
             {data.recent.length === 0 ? (
-              <p className="py-4 text-[15px] text-ink-soft">Your finished sessions will appear here.</p>
+              <p className="py-4 text-[15px] text-text-secondary">Your finished sessions will appear here.</p>
             ) : (
               data.recent.map((s) => (
                 <Link key={s.id} to={s.type === 'reading' ? '/read-aloud' : `/history/${s.id}`}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-3.5 text-[15px] last:border-0 md:grid-cols-[minmax(0,1fr)_110px_70px_80px]">
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border-subtle py-3.5 text-[15px] last:border-0 md:grid-cols-[minmax(0,1fr)_110px_70px_80px]">
                   <span className="flex flex-col gap-0.5">
                     <span className="font-semibold">{s.title}</span>
-                    <span className="text-sm text-ink-soft">{s.with}</span>
+                    <span className="text-sm text-text-secondary">{s.with}</span>
                   </span>
-                  <span className="hidden text-ink-soft md:block">{shortDate(s.endedAt)}</span>
-                  <span className="hidden text-ink-soft md:block">{s.minutes} min</span>
+                  <span className="hidden text-text-secondary md:block">{shortDate(s.endedAt)}</span>
+                  <span className="hidden text-text-secondary md:block">{s.minutes} min</span>
                   <span className="text-right font-display text-xl font-semibold">
-                    {s.score ?? '–'}<span className="font-body text-[13px] font-normal text-ink-soft">{s.score != null ? (s.unit === 'wpm' ? ' wpm' : '%') : ''}</span>
+                    {s.score ?? '–'}<span className="font-body text-[13px] font-normal text-text-secondary">{s.score != null ? (s.unit === 'wpm' ? ' wpm' : '%') : ''}</span>
                   </span>
                 </Link>
               ))
@@ -234,7 +235,7 @@ function StreakCard({ streak, last7 }) {
     <>
       <div className="flex items-baseline justify-between">
         <span className="text-[15px] font-semibold">{title}</span>
-        <span className="text-sm text-ink-soft">{note}</span>
+        <span className="text-sm text-text-secondary">{note}</span>
       </div>
       <div className="grid grid-cols-7 items-end gap-1.5" aria-label={`Last 7 days: ${last7.filter((d) => d.done).length} with practice`}>
         {last7.map((d, i) => {
@@ -248,12 +249,12 @@ function StreakCard({ streak, last7 }) {
                     initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
                     transition={{ delay: 0.35 + i * 0.06, duration: 0.4, ease }} />
                 ) : isToday ? (
-                  <div className="h-10 w-[9px] rounded-[5px] border-[1.5px] border-dashed border-ink-soft" />
+                  <div className="h-10 w-[9px] rounded-[5px] border-[1.5px] border-dashed border-text-secondary" />
                 ) : (
-                  <div className="h-2.5 w-[9px] rounded-[3px] bg-line" />
+                  <div className="h-2.5 w-[9px] rounded-[3px] bg-border-subtle" />
                 )}
               </div>
-              <span className="text-[13px] text-ink-soft">{weekday(d.date)}</span>
+              <span className="text-[13px] text-text-secondary">{weekday(d.date)}</span>
             </div>
           );
         })}
@@ -263,24 +264,24 @@ function StreakCard({ streak, last7 }) {
 }
 
 function MistakeRow({ m }) {
-  let trend = { text: 'New this week', cls: 'text-ink-soft' };
+  let trend = { text: 'New this week', cls: 'text-text-secondary' };
   if (m.prevCount > 0) {
-    if (m.count < m.prevCount) trend = { text: `Down from ${m.prevCount}`, cls: 'text-correct-ink' };
-    else if (m.count > m.prevCount) trend = { text: `Up from ${m.prevCount}`, cls: 'text-mistake-ink' };
-    else trend = { text: 'Same as last week', cls: 'text-ink-soft' };
+    if (m.count < m.prevCount) trend = { text: `Down from ${m.prevCount}`, cls: 'text-success-text' };
+    else if (m.count > m.prevCount) trend = { text: `Up from ${m.prevCount}`, cls: 'text-mistake-text' };
+    else trend = { text: 'Same as last week', cls: 'text-text-secondary' };
   }
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-4 border-b border-line py-[18px] last:border-0">
+    <div className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-4 border-b border-border-subtle py-[18px] last:border-0">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline gap-2.5">
           <Link to={`/grammar/${m.type}`} className="font-display text-[22px] font-semibold tracking-[-0.02em] hover:text-brand hover:underline">
             {MISTAKE_LABELS[m.type] ?? 'Other'}
           </Link>
-          <span className="text-sm text-ink-soft">{m.count} this week</span>
+          <span className="text-sm text-text-secondary">{m.count} this week</span>
         </div>
         {m.example && (
           <div className="text-[15px]">
-            <span className="text-mistake-ink line-through decoration-mistake decoration-2">{m.example.wrong}</span>{' '}
+            <span className="text-mistake-text line-through decoration-mistake decoration-2">{m.example.wrong}</span>{' '}
             <span className="rounded-[2px_4px_3px_5px] bg-marker px-1">{m.example.right}</span>
           </div>
         )}
@@ -311,11 +312,11 @@ function Sparkline({ values }) {
 function DashboardSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12" aria-hidden="true">
-      <div className="h-[400px] animate-pulse rounded-panel bg-ink/10 md:col-span-2 xl:col-span-8 xl:row-span-2" />
-      <div className="h-[190px] animate-pulse rounded-panel bg-surface/70 xl:col-span-4" />
-      <div className="h-[190px] animate-pulse rounded-panel bg-surface/70 xl:col-span-4" />
-      <div className="h-[300px] animate-pulse rounded-panel bg-surface/70 xl:col-span-5" />
-      <div className="h-[300px] animate-pulse rounded-panel bg-surface/70 xl:col-span-7" />
+      <div className="h-[400px] animate-pulse rounded-panel bg-surface-inverse/10 md:col-span-2 xl:col-span-8 xl:row-span-2" />
+      <div className="h-[190px] animate-pulse rounded-panel bg-surface-card/70 xl:col-span-4" />
+      <div className="h-[190px] animate-pulse rounded-panel bg-surface-card/70 xl:col-span-4" />
+      <div className="h-[300px] animate-pulse rounded-panel bg-surface-card/70 xl:col-span-5" />
+      <div className="h-[300px] animate-pulse rounded-panel bg-surface-card/70 xl:col-span-7" />
     </div>
   );
 }

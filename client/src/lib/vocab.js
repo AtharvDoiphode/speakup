@@ -4,10 +4,10 @@ export const INTERVALS = [0, 1, 3, 7, 14, 30]; // days, by box
 
 // The 6 boxes shown as 4 stages
 export const STAGES = [
-  { key: 'new', label: 'New', boxes: [0], dot: 'bg-ink-faint', badge: 'bg-canvas text-ink-soft' },
-  { key: 'learning', label: 'Learning', boxes: [1, 2], dot: 'bg-marker', badge: 'bg-marker/45 text-ink' },
-  { key: 'known', label: 'Known', boxes: [3, 4], dot: 'bg-brand', badge: 'bg-brand/10 text-brand' },
-  { key: 'mastered', label: 'Mastered', boxes: [5], dot: 'bg-correct', badge: 'bg-correct/12 text-correct-ink' },
+  { key: 'new', label: 'New', boxes: [0], dot: 'bg-text-muted', badge: 'bg-surface-sunken text-text-secondary' },
+  { key: 'learning', label: 'Learning', boxes: [1, 2], dot: 'bg-marker', badge: 'bg-marker/45 text-text-primary' },
+  { key: 'known', label: 'Known', boxes: [3, 4], dot: 'bg-brand', badge: 'bg-brand-50 text-brand' },
+  { key: 'mastered', label: 'Mastered', boxes: [5], dot: 'bg-success', badge: 'bg-success-tint text-success-text' },
 ];
 export const stageOf = (box) => STAGES.find((s) => s.boxes.includes(box)) ?? STAGES[0];
 

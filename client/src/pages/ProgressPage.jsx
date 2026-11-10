@@ -45,15 +45,15 @@ export default function ProgressPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[clamp(30px,3.4vw,38px)] font-semibold leading-[1.05] tracking-[-0.035em]">Progress</h1>
-          <p className="mt-2 text-[15px] text-ink-soft">How your practice is going, day by day.</p>
+          <p className="mt-2 text-[15px] text-text-secondary">How your practice is going, day by day.</p>
         </div>
         <div className="w-full max-w-[340px]">
           <Segmented label="Time range" layoutId="progress-range" value={days} onChange={pickRange} options={RANGES} />
         </div>
       </header>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-ink">{error}</p>}
-      {!shown && !error && <div className="h-96 animate-pulse rounded-panel bg-surface/70" />}
+      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
+      {!shown && !error && <div className="h-96 animate-pulse rounded-panel bg-surface-card/70" />}
       {shown && <ProgressBody data={shown} goal={goal} />}
     </div>
   );
@@ -100,19 +100,19 @@ function ProgressBody({ data, goal }) {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map(([label, value, sub]) => (
-          <div key={label} className="rounded-panel border border-line bg-surface px-5 py-4" data-tile={label}>
+          <div key={label} className="rounded-panel border border-border-subtle bg-surface-card px-5 py-4" data-tile={label}>
             <div className="font-display text-[34px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{value}</div>
             <div className="mt-1.5 text-sm font-medium">{label}</div>
-            <div className="text-[13px] text-ink-soft">{sub}</div>
+            <div className="text-[13px] text-text-secondary">{sub}</div>
           </div>
         ))}
       </div>
 
       {empty ? (
-        <div className="flex flex-col items-start gap-3 rounded-panel border border-line bg-surface p-6 md:p-8">
+        <div className="flex flex-col items-start gap-3 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8">
           <h2 className="font-display text-[22px] font-semibold tracking-[-0.02em]">Your charts will appear here</h2>
-          <p className="text-[15px] text-ink-soft">Have a conversation, check some writing or read a passage aloud, and come back.</p>
-          <Link to="/practice" className="flex h-11 items-center rounded-field bg-brand px-5 font-semibold text-white hover:bg-brand-hover">Start practising</Link>
+          <p className="text-[15px] text-text-secondary">Have a conversation, check some writing or read a passage aloud, and come back.</p>
+          <Link to="/practice" className="flex h-11 items-center rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700">Start practising</Link>
         </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
@@ -132,7 +132,7 @@ function ProgressBody({ data, goal }) {
           <MistakesCard items={mistakesByType} days={data.days} />
 
           <ChartCard title="Writing scores" note="One point per writing check"
-            empty={!wPoints.length && <><span>No writing checks in this period.</span><Link to="/writing" className="font-semibold text-brand hover:text-brand-hover">Check an email or essay</Link></>}
+            empty={!wPoints.length && <><span>No writing checks in this period.</span><Link to="/writing" className="font-semibold text-brand hover:text-brand-700">Check an email or essay</Link></>}
             table={{ columns: ['Day', 'Score', 'Mistakes per 100 words'], rows: wPoints.map((p) => [p.label, p.value, p.extra]) }}>
             <LineChart points={wPoints} domain={[0, 100]}
               summary={`${s(wPoints.length, 'writing check')}, scores from ${Math.min(...wPoints.map((p) => p.value))} to ${Math.max(...wPoints.map((p) => p.value))}. Latest ${wPoints.at(-1)?.value}.`}
@@ -140,7 +140,7 @@ function ProgressBody({ data, goal }) {
           </ChartCard>
 
           <ChartCard title="Reading speed" note="Words per minute, one point per read-aloud"
-            empty={!rPoints.length && <><span>No read-alouds in this period.</span><Link to="/read-aloud" className="font-semibold text-brand hover:text-brand-hover">Read a passage aloud</Link></>}
+            empty={!rPoints.length && <><span>No read-alouds in this period.</span><Link to="/read-aloud" className="font-semibold text-brand hover:text-brand-700">Read a passage aloud</Link></>}
             table={{ columns: ['Day', 'Words per minute', 'Accuracy'], rows: rPoints.map((p) => [p.label, p.value, `${p.extra}%`]) }}>
             <LineChart points={rPoints} unit="" summary={`${s(rPoints.length, 'read-aloud', 'read-alouds')}, from ${Math.min(...rPoints.map((p) => p.value))} to ${Math.max(...rPoints.map((p) => p.value))} words per minute.`}
               readout={(p) => `${p.label}: ${p.value} words per minute, ${p.extra}% accurate`} />
@@ -163,10 +163,10 @@ function MistakesCard({ items, days }) {
         {items.map((m, i) => (
           <li key={m.type}>
             <Link to={`/grammar/${m.type}`} aria-label={`${MISTAKE_LABELS[m.type] ?? 'Other'}: ${m.count}, ${changeText(m.change)}. Open the lesson.`}
-              className="group grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-3 rounded-field px-2 py-2 hover:bg-canvas md:grid-cols-[130px_minmax(0,1fr)_auto]">
+              className="group grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-3 rounded-field px-2 py-2 hover:bg-surface-sunken md:grid-cols-[130px_minmax(0,1fr)_auto]">
               <span className="truncate text-[15px] font-medium group-hover:text-brand">{MISTAKE_LABELS[m.type] ?? 'Other'}</span>
               <span className="flex items-center gap-2">
-                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-canvas">
+                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-sunken">
                   <motion.span className="block h-full origin-left rounded-full bg-brand" style={{ width: `${(m.count / max) * 100}%` }}
                     initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.3, ease, delay: i * 0.04 }} />
                 </span>
@@ -183,7 +183,7 @@ function MistakesCard({ items, days }) {
 
 // Fewer mistakes is good (green, ↓); more is pink (↑). The arrow means it never relies on colour.
 function ChangeBadge({ change }) {
-  const cls = change < 0 ? 'bg-correct/12 text-correct-ink' : change > 0 ? 'bg-mistake/10 text-mistake-ink' : 'bg-canvas text-ink-soft';
+  const cls = change < 0 ? 'bg-success-tint text-success-text' : change > 0 ? 'bg-mistake-tint text-mistake-text' : 'bg-surface-sunken text-text-secondary';
   const Icon = change < 0 ? ArrowDownIcon : change > 0 ? ArrowUpIcon : MinusIcon;
   return (
     <span className={`flex h-6 min-w-12 items-center justify-center gap-0.5 rounded-tag px-1.5 text-[12px] font-semibold tabular-nums ${cls}`} data-change={change}>

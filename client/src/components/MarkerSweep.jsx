@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 // A marker sweeping across the page while the AI reads (Writing, and marking a scorecard)
 export default function MarkerSweep({ rows = 5, gap = 64, top = 34 }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-panel bg-surface/40">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-panel bg-surface-card/40">
       {Array.from({ length: rows }, (_, row) => (
         <motion.div key={row}
           className="absolute left-6 h-[18px] origin-left rounded-[3px_6px_4px_7px] bg-marker/60"

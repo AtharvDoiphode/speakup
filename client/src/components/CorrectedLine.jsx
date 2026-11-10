@@ -13,11 +13,11 @@ export default function CorrectedLine({ text, mistakes = [] }) {
   return (
     <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_220px] md:gap-9">
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-3.5 text-sm text-ink-soft">
+        <div className="flex items-center gap-3.5 text-sm text-text-secondary">
           <span>Your last answer</span>
           {mistakes.length > 0 && (
             <button type="button" onClick={() => setRun((r) => r + 1)}
-              className="flex items-center gap-1.5 text-[13px] font-medium text-brand hover:text-brand-hover">
+              className="flex items-center gap-1.5 text-[13px] font-medium text-brand hover:text-brand-700">
               <ArrowCounterClockwiseIcon size={14} />
               Replay correction
             </button>
@@ -33,17 +33,17 @@ export default function CorrectedLine({ text, mistakes = [] }) {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: mistakes.length ? T.notes : 0.2, duration: 0.24 }}
-        className="flex flex-col gap-4 md:gap-[22px] md:border-l md:border-line md:pl-[18px] md:pt-[34px]"
+        className="flex flex-col gap-4 md:gap-[22px] md:border-l md:border-border-subtle md:pl-[18px] md:pt-[34px]"
       >
         {mistakes.length ? (
           mistakes.map((m, i) => (
-            <li key={i} className="flex gap-2 text-[13px] leading-[1.45] text-ink-soft">
-              <span className="font-semibold text-ink">{i + 1}</span>
+            <li key={i} className="flex gap-2 text-[13px] leading-[1.45] text-text-secondary">
+              <span className="font-semibold text-text-primary">{i + 1}</span>
               <span>{m.rule}</span>
             </li>
           ))
         ) : (
-          <li className="flex gap-2 text-[13px] leading-[1.45] text-correct-ink">
+          <li className="flex gap-2 text-[13px] leading-[1.45] text-success-text">
             <CheckIcon size={15} className="mt-0.5 shrink-0" />
             No mistakes in that one. Nice.
           </li>
@@ -64,7 +64,7 @@ export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
   const markAt = delay + (T.mark - T.strike);
   const body = (
     <>
-      <del className="relative text-mistake-ink no-underline">
+      <del className="relative text-mistake-text no-underline">
         {seg.wrong}
         <motion.span aria-hidden="true"
           className="absolute inset-x-0 top-[58%] h-[3px] origin-left bg-mistake"
@@ -83,7 +83,7 @@ export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
               transition={{ delay: markAt, duration: 0.16 }}>
               {seg.right}
             </motion.span>
-            <sup className="relative ml-0.5 text-[0.45em] font-semibold text-ink-soft">{seg.n}</sup>
+            <sup className="relative ml-0.5 text-[0.45em] font-semibold text-text-secondary">{seg.n}</sup>
           </ins>
         </>
       )}

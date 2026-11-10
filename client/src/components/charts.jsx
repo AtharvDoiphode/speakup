@@ -17,31 +17,31 @@ export function ChartCard({ title, note, table, empty, children, className = '' 
   const [asTable, setAsTable] = useState(false);
   const id = useId();
   return (
-    <section aria-labelledby={id} className={`flex min-w-0 flex-col gap-3 rounded-panel border border-line bg-surface p-5 md:p-6 ${className}`}>
+    <section aria-labelledby={id} className={`flex min-w-0 flex-col gap-3 rounded-panel border border-border-subtle bg-surface-card p-5 md:p-6 ${className}`}>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         <div>
           <h2 id={id} className="text-[15px] font-semibold">{title}</h2>
-          {note && <p className="text-[13px] text-ink-soft">{note}</p>}
+          {note && <p className="text-[13px] text-text-secondary">{note}</p>}
         </div>
         {!empty && table && (
           <button type="button" onClick={() => setAsTable((v) => !v)} aria-pressed={asTable}
-            className="flex h-8 items-center gap-1.5 rounded-[9px] border border-line px-2.5 text-[13px] font-medium text-ink-soft hover:text-ink">
+            className="flex h-8 items-center gap-1.5 rounded-[9px] border border-border-subtle px-2.5 text-[13px] font-medium text-text-secondary hover:text-text-primary">
             {asTable ? <ChartBarIcon size={14} /> : <TableIcon size={14} />} {asTable ? 'View as chart' : 'View as table'}
           </button>
         )}
       </div>
       {empty ? (
-        <div className="flex min-h-32 flex-col items-start justify-center gap-1.5 text-[15px] text-ink-soft">{empty}</div>
+        <div className="flex min-h-32 flex-col items-start justify-center gap-1.5 text-[15px] text-text-secondary">{empty}</div>
       ) : asTable ? (
-        <div className="max-h-80 overflow-auto rounded-field border border-line">
+        <div className="max-h-80 overflow-auto rounded-field border border-border-subtle">
           <table className="w-full text-left text-[13px] tabular-nums">
             <caption className="sr-only">{title}</caption>
-            <thead className="sticky top-0 bg-canvas">
+            <thead className="sticky top-0 bg-surface-sunken">
               <tr>{table.columns.map((c) => <th key={c} scope="col" className="px-3 py-2 font-semibold">{c}</th>)}</tr>
             </thead>
             <tbody>
               {table.rows.map((r, i) => (
-                <tr key={i} className="border-t border-line">
+                <tr key={i} className="border-t border-border-subtle">
                   {r.map((v, j) => (j === 0 ? <th key={j} scope="row" className="px-3 py-1.5 font-medium">{v}</th> : <td key={j} className="px-3 py-1.5">{v}</td>))}
                 </tr>
               ))}
@@ -71,7 +71,7 @@ function usePick(n) {
 
 function Readout({ id, text, hint }) {
   return (
-    <p id={id} aria-live="polite" className={`min-h-5 text-[13px] ${text ? 'font-medium text-ink' : 'text-ink-faint'}`}>
+    <p id={id} aria-live="polite" className={`min-h-5 text-[13px] ${text ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
       {text || hint}
     </p>
   );
@@ -103,13 +103,13 @@ export function BarChart({ points, height = 200, goal, readout, summary, unit = 
       <Readout id={rid} text={pick != null ? readout(points[pick]) : ''} hint="Hover, tap or use the arrow keys for a day's numbers" />
       {W > 0 && (
         <svg width={w} height={height} viewBox={`0 0 ${w} ${height}`} role="img" aria-label={summary} aria-describedby={rid}
-          tabIndex={0} onKeyDown={onKeyDown} className="block max-w-full touch-pan-y select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          tabIndex={0} onKeyDown={onKeyDown} className="block max-w-full touch-pan-y select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
           onPointerMove={(e) => e.pointerType === 'mouse' && setPick(at(e.clientX, e.currentTarget))}
           onPointerDown={(e) => setPick(at(e.clientX, e.currentTarget))}
           onPointerLeave={(e) => e.pointerType === 'mouse' && setPick(null)}>
-          <text x={PAD.l - 6} y={PAD.t + 4} textAnchor="end" className="fill-ink-faint text-[12px]">{max}{unit}</text>
-          <text x={PAD.l - 6} y={PAD.t + ih} textAnchor="end" className="fill-ink-faint text-[12px]">0</text>
-          <line x1={PAD.l} x2={w - PAD.r} y1={PAD.t + ih + 0.5} y2={PAD.t + ih + 0.5} className="stroke-line" />
+          <text x={PAD.l - 6} y={PAD.t + 4} textAnchor="end" className="fill-text-muted text-[12px]">{max}{unit}</text>
+          <text x={PAD.l - 6} y={PAD.t + ih} textAnchor="end" className="fill-text-muted text-[12px]">0</text>
+          <line x1={PAD.l} x2={w - PAD.r} y1={PAD.t + ih + 0.5} y2={PAD.t + ih + 0.5} className="stroke-border-subtle" />
           {pick != null && <rect x={PAD.l + pick * step} y={PAD.t} width={step} height={ih} className="fill-marker/35" />}
           {points.map((p, i) => {
             const h = (p.value / max) * ih;
@@ -117,19 +117,19 @@ export function BarChart({ points, height = 200, goal, readout, summary, unit = 
               // Real y and height, so the bar is always drawn where it belongs. It grows in with
               // a CSS animation (.bar-grow in index.css), which reduced motion and print switch off.
               <rect key={p.key} x={PAD.l + i * step + (step - bw) / 2} y={y(p.value)} width={bw} height={h} rx={Math.min(3, bw / 2)}
-                className={`bar-grow ${p.highlight ? 'fill-brand' : 'fill-brand/45'}`} data-value={p.value}
+                className={`bar-grow ${p.highlight ? 'fill-chart-1' : 'fill-chart-1/70'}`} data-value={p.value}
                 style={{ animationDelay: `${Math.min(i * 4, 100)}ms` }} />
             ) : null;
           })}
           {goal != null && goal > 0 && (
             <g>
-              <line x1={PAD.l} x2={w - PAD.r} y1={y(goal)} y2={y(goal)} strokeDasharray="5 4" className="stroke-ink-soft" strokeWidth="1.25" />
-              <text x={w - PAD.r} y={y(goal) - 5} textAnchor="end" className="fill-ink-soft text-[12px] font-medium">Goal {goal}{unit}</text>
+              <line x1={PAD.l} x2={w - PAD.r} y1={y(goal)} y2={y(goal)} strokeDasharray="5 4" className="stroke-text-secondary" strokeWidth="1.25" />
+              <text x={w - PAD.r} y={y(goal) - 5} textAnchor="end" className="fill-text-secondary text-[12px] font-medium">Goal {goal}{unit}</text>
             </g>
           )}
           {ticks.map((i) => (
             <text key={i} x={PAD.l + i * step + step / 2} y={height - 6} textAnchor={i === 0 && n > 7 ? 'start' : i === n - 1 && n > 7 ? 'end' : 'middle'}
-              className={`text-[12px] ${points[i].highlight ? 'fill-ink font-semibold' : 'fill-ink-faint'}`}>{points[i].tick}</text>
+              className={`text-[12px] ${points[i].highlight ? 'fill-text-primary font-semibold' : 'fill-text-muted'}`}>{points[i].tick}</text>
           ))}
         </svg>
       )}
@@ -176,17 +176,17 @@ export function LineChart({ points, height = 180, domain, readout, summary, unit
       <Readout id={rid} text={pick != null ? readout(points[pick]) : ''} hint="Hover, tap or use the arrow keys for the exact numbers" />
       {W > 0 && (
         <svg width={w} height={height} viewBox={`0 0 ${w} ${height}`} role="img" aria-label={summary} aria-describedby={rid}
-          tabIndex={0} onKeyDown={onKeyDown} className="block max-w-full touch-pan-y select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          tabIndex={0} onKeyDown={onKeyDown} className="block max-w-full touch-pan-y select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
           onPointerMove={(e) => e.pointerType === 'mouse' && setPick(at(e.clientX, e.currentTarget))}
           onPointerDown={(e) => setPick(at(e.clientX, e.currentTarget))}
           onPointerLeave={(e) => e.pointerType === 'mouse' && setPick(null)}>
-          <text x={PAD.l - 6} y={PAD.t + 4} textAnchor="end" className="fill-ink-faint text-[12px]">{hi}{unit}</text>
-          <text x={PAD.l - 6} y={PAD.t + ih} textAnchor="end" className="fill-ink-faint text-[12px]">{lo}</text>
-          <line x1={PAD.l} x2={w - PAD.r} y1={PAD.t + ih + 0.5} y2={PAD.t + ih + 0.5} className="stroke-line" />
+          <text x={PAD.l - 6} y={PAD.t + 4} textAnchor="end" className="fill-text-muted text-[12px]">{hi}{unit}</text>
+          <text x={PAD.l - 6} y={PAD.t + ih} textAnchor="end" className="fill-text-muted text-[12px]">{lo}</text>
+          <line x1={PAD.l} x2={w - PAD.r} y1={PAD.t + ih + 0.5} y2={PAD.t + ih + 0.5} className="stroke-border-subtle" />
           {pick != null && <line x1={x(pick)} x2={x(pick)} y1={PAD.t} y2={PAD.t + ih} className="stroke-marker" strokeWidth="6" strokeLinecap="round" opacity="0.6" />}
           {runs.filter((r) => r.length > 1).map((r) => (
             <motion.path key={r[0]} d={r.map((i, k) => `${k ? 'L' : 'M'}${x(i).toFixed(1)},${y(points[i].value).toFixed(1)}`).join(' ')}
-              fill="none" className="stroke-brand" strokeWidth="2.25" strokeLinejoin="round" strokeLinecap="round" data-run={r.length}
+              fill="none" className="stroke-chart-1" strokeWidth="2.25" strokeLinejoin="round" strokeLinecap="round" data-run={r.length}
               // A fade, not a draw-on: a resize mid-draw can never leave half a line
               initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease }} />
           ))}
@@ -194,11 +194,11 @@ export function LineChart({ points, height = 180, domain, readout, summary, unit
             if (p.value == null) return null;
             const alone = runs.some((r) => r.length === 1 && r[0] === i);
             if (!dots && !alone && pick !== i) return null;
-            return <circle key={p.key} cx={x(i)} cy={y(p.value)} r={pick === i ? 4.5 : 3} className={pick === i ? 'fill-ink' : 'fill-brand'} data-alone={alone || undefined} />;
+            return <circle key={p.key} cx={x(i)} cy={y(p.value)} r={pick === i ? 4.5 : 3} className={pick === i ? 'fill-text-primary' : 'fill-chart-1'} data-alone={alone || undefined} />;
           })}
           {ticks.map((i) => (
             // The first and last labels sit inside the chart so they're never cut off
-            <text key={i} x={x(i)} y={height - 6} textAnchor={n === 1 ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} className="fill-ink-faint text-[12px]">{points[i].tick}</text>
+            <text key={i} x={x(i)} y={height - 6} textAnchor={n === 1 ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} className="fill-text-muted text-[12px]">{points[i].tick}</text>
           ))}
         </svg>
       )}

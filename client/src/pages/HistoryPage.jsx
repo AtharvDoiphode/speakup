@@ -24,7 +24,7 @@ const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export function Highlight({ text, q }) {
   if (!q || !text) return text ?? null;
   const parts = text.split(new RegExp(`(${escapeRegex(q)})`, 'ig'));
-  return parts.map((p, i) => (i % 2 ? <mark key={i} className="rounded-[2px_4px_3px_5px] bg-marker px-0.5 text-ink">{p}</mark> : <Fragment key={i}>{p}</Fragment>));
+  return parts.map((p, i) => (i % 2 ? <mark key={i} className="rounded-[2px_4px_3px_5px] bg-marker px-0.5 text-text-primary">{p}</mark> : <Fragment key={i}>{p}</Fragment>));
 }
 
 export default function HistoryPage() {
@@ -100,23 +100,23 @@ export default function HistoryPage() {
     <div className="flex flex-col gap-6 px-4 py-8 md:px-11 md:py-10">
       <header>
         <h1 className="text-[clamp(30px,3.4vw,38px)] font-semibold leading-[1.05] tracking-[-0.035em]">History</h1>
-        <p className="mt-2 text-[15px] text-ink-soft">Everything you've done. Search finds your own words too.</p>
+        <p className="mt-2 text-[15px] text-text-secondary">Everything you've done. Search finds your own words too.</p>
       </header>
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <label className="relative flex-1 lg:max-w-[420px]">
             <span className="sr-only">Search your history</span>
-            <MagnifyingGlassIcon size={18} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-ink-soft" aria-hidden="true" />
+            <MagnifyingGlassIcon size={18} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-text-secondary" aria-hidden="true" />
             <input type="search" value={text} onChange={(e) => setText(e.target.value)} maxLength={40}
               placeholder='Try "salary" or a scene'
-              className="h-11 w-full rounded-field border border-line bg-surface pr-3 pl-10 text-[15px] outline-none placeholder:text-ink-faint focus:border-brand" />
+              className="h-11 w-full rounded-field border border-border-strong bg-surface-card pr-3 pl-10 text-[15px] placeholder:text-text-muted focus:border-brand" />
           </label>
           <div className="w-full lg:w-[420px]">
             <Segmented label="Show" layoutId="history-type" value={type} onChange={changeType} options={TYPES} size="sm" />
           </div>
           <button type="button" onClick={() => setShowDates((v) => !v)} aria-expanded={showDates} aria-controls="history-dates"
-            className={`flex h-10 w-fit items-center gap-1.5 rounded-field border px-3 text-sm font-medium ${from || to ? 'border-brand text-brand' : 'border-line text-ink-soft hover:text-ink'}`}>
+            className={`flex h-10 w-fit items-center gap-1.5 rounded-field border px-3 text-sm font-medium ${from || to ? 'border-brand text-brand' : 'border-border-subtle text-text-secondary hover:text-text-primary'}`}>
             <CalendarBlankIcon size={16} /> Dates{from || to ? ': on' : ''}
           </button>
         </div>
@@ -127,14 +127,14 @@ export default function HistoryPage() {
               <div className="flex flex-wrap items-end gap-3 pt-1">
                 <label className="flex flex-col gap-1 text-sm font-medium">From
                   <input type="date" value={from} max={to || undefined} onChange={(e) => changeDate('from', e.target.value)}
-                    className="h-10 rounded-field border border-line bg-surface px-3 text-[15px] outline-none focus:border-brand" />
+                    className="h-10 rounded-field border border-border-strong bg-surface-card px-3 text-[15px] focus:border-brand" />
                 </label>
                 <label className="flex flex-col gap-1 text-sm font-medium">To
                   <input type="date" value={to} min={from || undefined} onChange={(e) => changeDate('to', e.target.value)}
-                    className="h-10 rounded-field border border-line bg-surface px-3 text-[15px] outline-none focus:border-brand" />
+                    className="h-10 rounded-field border border-border-strong bg-surface-card px-3 text-[15px] focus:border-brand" />
                 </label>
                 {(from || to) && (
-                  <button type="button" onClick={() => { setItems(null); setFilters({ from: '', to: '' }); }} className="flex h-10 items-center gap-1 text-sm font-semibold text-brand hover:text-brand-hover">
+                  <button type="button" onClick={() => { setItems(null); setFilters({ from: '', to: '' }); }} className="flex h-10 items-center gap-1 text-sm font-semibold text-brand hover:text-brand-700">
                     <XIcon size={14} /> Clear dates
                   </button>
                 )}
@@ -144,22 +144,22 @@ export default function HistoryPage() {
         </AnimatePresence>
       </div>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-ink">{error}</p>}
-      {!items && !error && <div className="h-64 animate-pulse rounded-panel bg-surface/70" />}
+      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
+      {!items && !error && <div className="h-64 animate-pulse rounded-panel bg-surface-card/70" />}
 
       {items && items.length === 0 && (
-        <div className="flex flex-col items-start gap-3 rounded-panel border border-line bg-surface p-6 md:p-8">
+        <div className="flex flex-col items-start gap-3 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8">
           {filtered ? (
             <>
               <h2 className="font-display text-[22px] font-semibold tracking-[-0.02em]">No sessions match</h2>
-              <p className="text-[15px] text-ink-soft">Try a different word, or widen the dates.</p>
-              <button type="button" onClick={clearAll} className="flex h-11 items-center rounded-field border border-line px-5 font-semibold hover:border-ink-faint">Clear filters</button>
+              <p className="text-[15px] text-text-secondary">Try a different word, or widen the dates.</p>
+              <button type="button" onClick={clearAll} className="flex h-11 items-center rounded-field border border-border-subtle px-5 font-semibold hover:border-border-strong">Clear filters</button>
             </>
           ) : (
             <>
               <h2 className="font-display text-[22px] font-semibold tracking-[-0.02em]">Nothing here yet</h2>
-              <p className="text-[15px] text-ink-soft">Your conversations, writing checks and read-alouds will be listed here.</p>
-              <Link to="/practice" className="flex h-11 items-center rounded-field bg-brand px-5 font-semibold text-white hover:bg-brand-hover">Start a conversation</Link>
+              <p className="text-[15px] text-text-secondary">Your conversations, writing checks and read-alouds will be listed here.</p>
+              <Link to="/practice" className="flex h-11 items-center rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700">Start a conversation</Link>
             </>
           )}
         </div>
@@ -169,10 +169,10 @@ export default function HistoryPage() {
         <div className="flex flex-col gap-5">
           {groups.map((g) => (
             <section key={g.key} aria-label={dayHeading(g.key, now)} className="flex flex-col gap-2">
-              <h2 className="text-sm font-semibold text-ink-soft">{dayHeading(g.key, now)}</h2>
-              <ul className="flex flex-col overflow-hidden rounded-panel border border-line bg-surface">
+              <h2 className="text-sm font-semibold text-text-secondary">{dayHeading(g.key, now)}</h2>
+              <ul className="flex flex-col overflow-hidden rounded-panel border border-border-subtle bg-surface-card">
                 {g.items.map((it) => (
-                  <li key={it.id} className="border-b border-line last:border-0" data-type={it.type}>
+                  <li key={it.id} className="border-b border-border-subtle last:border-0" data-type={it.type}>
                     <Row item={it} q={q} open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
                       onDeleted={() => setItems((list) => list.filter((x) => x.id !== it.id))} />
                   </li>
@@ -183,10 +183,10 @@ export default function HistoryPage() {
           {next && (
             <div className="flex flex-col items-start gap-2">
               <button type="button" onClick={loadMore} disabled={loadingMore}
-                className="flex h-11 items-center gap-2 rounded-field border border-line bg-surface px-5 font-semibold hover:border-ink-faint disabled:opacity-60">
+                className="flex h-11 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-5 font-semibold hover:border-border-strong disabled:opacity-60">
                 {loadingMore && <SpinnerGapIcon size={16} className="animate-spin" />} Load more
               </button>
-              {moreError && <p role="alert" className="text-sm text-mistake-ink">{moreError}</p>}
+              {moreError && <p role="alert" className="text-sm text-mistake-text">{moreError}</p>}
             </div>
           )}
         </div>
@@ -206,21 +206,21 @@ function Row({ item, q, open, onToggle, onDeleted }) {
   const saidIt = item.type === 'conversation' && q && !inText(item.title) && !inText(item.subtitle);
   const body = (
     <>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-field bg-canvas text-ink-soft"><Icon size={20} aria-hidden="true" /></span>
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-field bg-surface-sunken text-text-secondary"><Icon size={20} aria-hidden="true" /></span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-[16px] font-semibold"><Highlight text={item.title} q={q} /></span>
-        <span className="truncate text-sm text-ink-soft">
+        <span className="truncate text-sm text-text-secondary">
           <Highlight text={item.subtitle} q={q} />
-          {saidIt && <span className="ml-1.5 text-ink">· found in what you said</span>}
+          {saidIt && <span className="ml-1.5 text-text-primary">· found in what you said</span>}
         </span>
       </span>
-      <span className="hidden w-20 text-sm text-ink-soft md:block">{timeOf(item.date)}</span>
-      <span className="hidden w-16 text-sm text-ink-soft md:block">{item.minutes != null ? `${item.minutes} min` : ''}</span>
-      {scoreTag(item) && <span className="shrink-0 rounded-tag bg-canvas px-2 py-0.5 text-[13px] font-semibold tabular-nums">{scoreTag(item)}</span>}
-      <CaretRightIcon size={16} aria-hidden="true" className={`shrink-0 text-ink-faint transition-transform ${open ? 'rotate-90' : ''}`} />
+      <span className="hidden w-20 text-sm text-text-secondary md:block">{timeOf(item.date)}</span>
+      <span className="hidden w-16 text-sm text-text-secondary md:block">{item.minutes != null ? `${item.minutes} min` : ''}</span>
+      {scoreTag(item) && <span className="shrink-0 rounded-tag bg-surface-sunken px-2 py-0.5 text-[13px] font-semibold tabular-nums">{scoreTag(item)}</span>}
+      <CaretRightIcon size={16} aria-hidden="true" className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-90' : ''}`} />
     </>
   );
-  const cls = 'flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-canvas/50 md:px-5';
+  const cls = 'flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-sunken/50 md:px-5';
 
   if (item.type === 'conversation') return <Link to={`/history/${item.id}`} className={cls}>{body}</Link>;
   if (item.type === 'writing') return <Link to={`/writing/${item.id}`} className={cls}>{body}</Link>;
@@ -266,15 +266,15 @@ function ReadingDetail({ id, onDeleted }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-line bg-canvas/40 px-4 py-4 md:px-5 md:pl-[72px]">
-      {error && <p role="alert" className="text-sm text-mistake-ink">{error}</p>}
-      {!s && !error && <p className="text-sm text-ink-soft">Loading…</p>}
+    <div className="flex flex-col gap-3 border-t border-border-subtle bg-surface-sunken/40 px-4 py-4 md:px-5 md:pl-[72px]">
+      {error && <p role="alert" className="text-sm text-mistake-text">{error}</p>}
+      {!s && !error && <p className="text-sm text-text-secondary">Loading…</p>}
       {s && (
         <>
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-[15px]">
             <span><strong className="font-semibold tabular-nums">{s.accuracy}%</strong> accurate</span>
             <span><strong className="font-semibold tabular-nums">{s.wpm}</strong> words per minute</span>
-            <span className="text-ink-soft">{s.wordsRead} of {s.wordsReached} words read clearly</span>
+            <span className="text-text-secondary">{s.wordsRead} of {s.wordsReached} words read clearly</span>
           </div>
           {s.missed.length > 0 ? (
             <div className="flex flex-col gap-1.5">
@@ -282,17 +282,17 @@ function ReadingDetail({ id, onDeleted }) {
               <div className="flex flex-wrap gap-1.5">
                 {s.missed.map((w) => (
                   <button key={w} type="button" onClick={() => speak(w, { rate: 0.8 })} disabled={!ttsSupported}
-                    className="flex h-8 items-center gap-1 rounded-tag border border-line bg-surface px-2.5 text-sm">
+                    className="flex h-8 items-center gap-1 rounded-tag border border-border-subtle bg-surface-card px-2.5 text-sm">
                     {ttsSupported && <SpeakerHighIcon size={13} className="text-brand" />}{w}
                   </button>
                 ))}
               </div>
             </div>
-          ) : <p className="text-sm text-correct-ink">Every word came through clearly.</p>}
+          ) : <p className="text-sm text-success-text">Every word came through clearly.</p>}
           <div className="flex flex-wrap gap-2">
-            <Link to="/read-aloud" className="flex h-10 items-center rounded-field border border-line bg-surface px-4 text-sm font-semibold hover:border-ink-faint">Read again</Link>
+            <Link to="/read-aloud" className="flex h-10 items-center rounded-field border border-border-subtle bg-surface-card px-4 text-sm font-semibold hover:border-border-strong">Read again</Link>
             <button type="button" onClick={remove} disabled={busy}
-              className="flex h-10 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-ink">
+              className="flex h-10 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-text">
               <TrashIcon size={15} /> {confirm ? 'Tap again' : 'Delete'}
             </button>
           </div>

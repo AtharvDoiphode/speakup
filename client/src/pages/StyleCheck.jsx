@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 
 const swatches = [
-  ['bg-canvas', 'canvas'],
-  ['bg-ink', 'ink'],
+  ['bg-surface-sunken', 'canvas'],
+  ['bg-surface-inverse', 'ink'],
   ['bg-brand', 'brand'],
   ['bg-mistake', 'mistake'],
-  ['bg-correct', 'correct'],
+  ['bg-success', 'correct'],
   ['bg-marker', 'marker'],
 ];
 
@@ -13,7 +13,7 @@ export default function StyleCheck() {
   return (
     <div className="mx-auto max-w-3xl p-8">
       <h1 className="text-5xl font-extrabold">Say it clearly.</h1>
-      <p className="mt-3 max-w-prose text-ink-soft">
+      <p className="mt-3 max-w-prose text-text-secondary">
         Body text in Hanken Grotesk. Headings use Bricolage Grotesque. If both
         look different from the default browser font, the fonts are working.
       </p>
@@ -21,14 +21,14 @@ export default function StyleCheck() {
       <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6">
         {swatches.map(([cls, name]) => (
           <div key={name}>
-            <div className={`${cls} h-16 rounded-lg border border-line`} />
+            <div className={`${cls} h-16 rounded-lg border border-border-subtle`} />
             <p className="mt-1 text-xs">{name}</p>
           </div>
         ))}
       </div>
 
       <p className="mt-8 text-lg">
-        I work <span className="text-mistake-ink line-through">since</span>{' '}
+        I work <span className="text-mistake-text line-through">since</span>{' '}
         <span className="rounded bg-marker px-1 font-semibold">for</span> two
         years.
       </p>
@@ -39,7 +39,7 @@ export default function StyleCheck() {
           whileHover={{ y: -3 }}
           whileTap={{ scale: 0.93 }}
           transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-          className="rounded-full bg-brand px-6 py-3 font-semibold text-white"
+          className="rounded-full bg-brand px-6 py-3 font-semibold text-on-brand"
         >
           Press me
         </motion.button>

@@ -81,12 +81,12 @@ export default function GrammarMinePage() {
 
   return (
     <div className="flex flex-col gap-7 px-4 py-8 md:px-11 md:py-10">
-      <Link to={from ? `/grammar/${from}` : '/grammar'} className="flex w-fit items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink">
+      <Link to={from ? `/grammar/${from}` : '/grammar'} className="flex w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
         <ArrowLeftIcon size={16} /> {from ? MISTAKE_LABELS[from] : 'Grammar'}
       </Link>
       <header className="max-w-[760px]">
         <h1 className="text-[clamp(28px,3.4vw,38px)] font-semibold leading-[1.05] tracking-[-0.03em]">Practise your mistakes</h1>
-        <p className="mt-2 text-[15px] text-ink-soft">Real mistakes from your Practice and Writing. Pick the right version.</p>
+        <p className="mt-2 text-[15px] text-text-secondary">Real mistakes from your Practice and Writing. Pick the right version.</p>
       </header>
 
       {from && (
@@ -97,20 +97,20 @@ export default function GrammarMinePage() {
       )}
 
       <div className="max-w-[760px]">
-        {error && <p role="alert" className="text-sm font-medium text-mistake-ink">{error}</p>}
-        {!quiz && !error && <div className="h-48 animate-pulse rounded-panel bg-surface/70" />}
+        {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
+        {!quiz && !error && <div className="h-48 animate-pulse rounded-panel bg-surface-card/70" />}
 
         {quiz && quiz.items.length === 0 && (
-          <div className="flex flex-col items-start gap-3 rounded-panel border border-line bg-surface p-6 md:p-8">
+          <div className="flex flex-col items-start gap-3 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8">
             <h2 className="font-display text-[22px] font-semibold tracking-[-0.02em]">Not enough mistakes yet</h2>
-            <p className="text-[15px] text-ink-soft">
+            <p className="text-[15px] text-text-secondary">
               {filter === 'all'
                 ? `Do a few more practice sessions first (you have ${quiz.have} of ${quiz.needed}).`
                 : `You have ${mistakePhrase(filter, quiz.have)} saved, and this needs ${quiz.needed}. Try all your mistakes instead.`}
             </p>
             {filter === 'all'
-              ? <Link to="/practice" className="font-semibold text-brand hover:text-brand-hover">Go to Practice</Link>
-              : <button type="button" onClick={() => changeFilter('all')} className="font-semibold text-brand hover:text-brand-hover">Use all my mistakes</button>}
+              ? <Link to="/practice" className="font-semibold text-brand hover:text-brand-700">Go to Practice</Link>
+              : <button type="button" onClick={() => changeFilter('all')} className="font-semibold text-brand hover:text-brand-700">Use all my mistakes</button>}
           </div>
         )}
 
@@ -119,11 +119,11 @@ export default function GrammarMinePage() {
         {results && (
           <QuizResult results={results} saving={saving} saveError={saveError}>
             <button type="button" onClick={again}
-              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-white transition hover:bg-brand-hover active:scale-[0.97]">
+              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 active:scale-[0.97]">
               <ArrowClockwiseIcon size={18} /> Try again
             </button>
             <Link to={from ? `/grammar/${from}` : '/grammar'}
-              className="flex h-12 items-center gap-2 rounded-field border border-line px-5 font-semibold hover:border-ink-faint">
+              className="flex h-12 items-center gap-2 rounded-field border border-border-subtle px-5 font-semibold hover:border-border-strong">
               {from ? `Back to ${MISTAKE_LABELS[from]}` : 'Back to Grammar'}
             </Link>
           </QuizResult>

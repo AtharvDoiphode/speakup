@@ -1,0 +1,173 @@
+/* SpeakUp design tokens: the only file with raw colour values (see scripts/color-lint-allow.json).
+   Components use the semantic names from @theme below (bg-surface-card, text-text-secondary, ...),
+   never these primitives. Contrast is checked by `npm run contrast` (scripts/check-contrast.mjs).
+
+   Two palettes:
+   - A, Refined Electric (default): the :root block.
+   - B, Deep Indigo: the :root[data-palette="b"] block. To make B the default, rename its
+     selector to `:root` and delete the A block (or put data-palette="b" on <html>).
+   The logo (scripts/make-icons.mjs) reads the same primitives. */
+
+:root {
+  /* Brand */
+  --p-brand-50: #EEF0FF;
+  --p-brand-100: #DDE1FF;
+  --p-brand-500: #5B66FF;
+  --p-brand-600: #2F3CFF;
+  --p-brand-700: #2230D6;
+  /* Ink and surfaces */
+  --p-ink: #10163A;
+  --p-ink-2: #4A5280;
+  --p-ink-3: #5C6490;
+  --p-ink-4: #6B739E;
+  --p-inverse-2: #C9CFF0;
+  --p-canvas: #F4F6FD;
+  --p-card: #FFFFFF;
+  --p-sunken: #EEF2FB;
+  --p-line: #D9DFF2;
+  /* Status */
+  --p-pink: #FF3D7F;
+  --p-pink-text: #C71F58;
+  --p-pink-deep: #A8164A;
+  --p-pink-tint: #FFE9F0;
+  --p-green: #0F9A6A;
+  --p-green-text: #0B7A55;
+  --p-green-tint: #E3F7EF;
+  --p-yellow: #FFD23F;
+  --p-yellow-tint: #FFF6D6;
+  --p-info: #1F74D6;
+  --p-info-text: #135CA8;
+  --p-info-tint: #E7F1FC;
+  /* Chart series: greyscale-distinct and colour-blind-distinct, all 3:1 on cards */
+  --p-chart-1: #2F3CFF;
+  --p-chart-2: #9E6A04;
+  --p-chart-3: #059BB9;
+  --p-chart-4: #5B0386;
+  --p-chart-5: #02592E;
+  --p-chart-6: #10163A;
+  /* Paper */
+  --p-white: #FFFFFF;
+  --p-black: #000000;
+}
+
+:root[data-palette="b"] {
+  --p-brand-50: #F0EFFF;
+  --p-brand-100: #E1DFFF;
+  --p-brand-500: #6A64EA;
+  --p-brand-600: #3B34D6;
+  --p-brand-700: #2D27B0;
+  --p-ink: #12123A;
+  --p-ink-2: #4B4A78;
+  --p-ink-3: #5D5C88;
+  --p-ink-4: #6E6D99;
+  --p-inverse-2: #CCCBEF;
+  --p-canvas: #F6F5FF;
+  --p-card: #FFFFFF;
+  --p-sunken: #EFEEFA;
+  --p-line: #DCDBF0;
+  --p-pink: #E8366F;
+  --p-pink-text: #B8204F;
+  --p-pink-deep: #981A41;
+  --p-pink-tint: #FDE8EF;
+  --p-green: #0F9A68;
+  --p-green-text: #0B7350;
+  --p-green-tint: #E2F6EE;
+  --p-yellow: #F7C948;
+  --p-yellow-tint: #FEF5D9;
+  --p-info: #2A6FD0;
+  --p-info-text: #17589F;
+  --p-info-tint: #E8F0FB;
+  --p-chart-1: #3B34D6;
+  --p-chart-2: #A87006;
+  --p-chart-3: #059BB9;
+  --p-chart-4: #5B0386;
+  --p-chart-5: #0A7440;
+  --p-chart-6: #12123A;
+}
+
+@theme inline {
+  /* Surfaces */
+  --color-surface-canvas: var(--p-canvas);    /* page background */
+  --color-surface-card: var(--p-card);        /* cards, panels, inputs */
+  --color-surface-sunken: var(--p-sunken);    /* wells inside cards, chips, tracks */
+  --color-surface-overlay: color-mix(in srgb, var(--p-ink) 30%, transparent); /* scrim behind sheets */
+  --color-surface-inverse: var(--p-ink);      /* dark cards and dark buttons */
+  --color-border-subtle: var(--p-line);       /* dividers and card edges */
+  --color-border-strong: var(--p-ink-4);      /* input borders, hover edges: 3:1 */
+
+  /* Text */
+  --color-text-primary: var(--p-ink);
+  --color-text-secondary: var(--p-ink-2);
+  --color-text-muted: var(--p-ink-3);         /* hints, placeholders: 4.5:1 on every surface */
+  --color-text-inverse: var(--p-white);
+  --color-text-inverse-muted: var(--p-inverse-2);
+  --color-text-link: var(--p-brand-600);
+
+  /* Brand */
+  --color-brand: var(--p-brand-600);
+  --color-brand-50: var(--p-brand-50);
+  --color-brand-100: var(--p-brand-100);
+  --color-brand-500: var(--p-brand-500);
+  --color-brand-600: var(--p-brand-600);
+  --color-brand-700: var(--p-brand-700);      /* hover / pressed, and brand text on tints */
+  --color-on-brand: var(--p-white);
+
+  /* Status: fill (shapes only), tint (backgrounds), text (text-safe) */
+  --color-mistake: var(--p-pink);
+  --color-mistake-tint: var(--p-pink-tint);
+  --color-mistake-text: var(--p-pink-text);
+  --color-danger: var(--p-pink-text);         /* filled destructive buttons, white text on top */
+  --color-danger-hover: var(--p-pink-deep);
+  --color-success: var(--p-green);
+  --color-success-tint: var(--p-green-tint);
+  --color-success-text: var(--p-green-text);
+  --color-warning: var(--p-yellow);
+  --color-warning-tint: var(--p-yellow-tint);
+  --color-warning-text: var(--p-ink);         /* text on yellow is always ink */
+  --color-marker: var(--p-yellow);
+  --color-marker-tint: var(--p-yellow-tint);
+  --color-marker-text: var(--p-ink);
+  --color-info: var(--p-info);
+  --color-info-tint: var(--p-info-tint);
+  --color-info-text: var(--p-info-text);
+
+  /* Focus: 2px ring, 2px offset (see index.css) */
+  --color-focus-ring: var(--p-brand-600);
+  --color-focus-ring-inverse: var(--p-white);
+
+  /* Charts */
+  --color-chart-1: var(--p-chart-1);
+  --color-chart-2: var(--p-chart-2);
+  --color-chart-3: var(--p-chart-3);
+  --color-chart-4: var(--p-chart-4);
+  --color-chart-5: var(--p-chart-5);
+  --color-chart-6: var(--p-chart-6);
+
+  /* Print: always white paper and black ink */
+  --color-print-paper: var(--p-white);
+  --color-print-ink: var(--p-black);
+}
+
+@theme {
+  /* Type: Bricolage Grotesque for headings, Hanken Grotesk for body */
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  /* The sizes the app uses today, beside Tailwind's own scale (text-xs 12, text-sm 14, text-base 16, text-xl 20) */
+  --text-caption: 12px;
+  --text-label: 13px;
+  --text-body: 15px;
+  --text-lead: 17px;
+
+  /* Spacing: Tailwind's 4px step, written down so it can't drift */
+  --spacing: 0.25rem;
+
+  /* Radii */
+  --radius-tag: 8px;      /* rounded-tag */
+  --radius-field: 12px;   /* rounded-field: inputs, buttons, nav items */
+  --radius-panel: 16px;   /* rounded-panel: cards and panels */
+}
+
+/* Dark cards switch the focus ring to white so it stays visible (3:1) */
+[data-surface="inverse"] {
+  --color-focus-ring: var(--color-focus-ring-inverse);
+}

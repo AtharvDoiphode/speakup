@@ -83,7 +83,7 @@ export default function WritingPage() {
     <div className="flex flex-col gap-8 px-4 py-8 md:px-11 md:py-10">
       <header>
         <h1 className="text-[clamp(32px,4vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em]">Write it. We'll mark it like a teacher.</h1>
-        <p className="mt-2 text-base text-ink-soft">Essays, emails, messages. Every fix comes with the rule behind it.</p>
+        <p className="mt-2 text-base text-text-secondary">Essays, emails, messages. Every fix comes with the rule behind it.</p>
       </header>
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -94,51 +94,51 @@ export default function WritingPage() {
             </div>
             <input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 100))} placeholder="Title (optional)"
               aria-label="Title" disabled={busy}
-              className="h-[46px] min-w-0 flex-1 rounded-field border border-line bg-surface px-3.5 text-base" />
+              className="h-[46px] min-w-0 flex-1 rounded-field border border-border-strong bg-surface-card px-3.5 text-base" />
           </div>
 
           <div className="relative">
             <textarea value={text} onChange={onType} readOnly={busy}
               aria-label="Your writing"
               placeholder={kind === 'email' ? 'Dear Mr. Shah,\n\nI am writing to…' : 'Start writing, or paste your text here…'}
-              className="min-h-[380px] w-full resize-y rounded-panel border border-line bg-surface p-5 text-[18px] leading-[1.8] md:p-7" />
+              className="min-h-[380px] w-full resize-y rounded-panel border border-border-strong bg-surface-card p-5 text-[18px] leading-[1.8] md:p-7" />
             {busy && <MarkerSweep />}
           </div>
 
-          {error && <p role="alert" className="text-sm font-medium text-mistake-ink">{error}</p>}
+          {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
 
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-ink-soft">
-              {words} words · <span className={nearLimit ? 'font-semibold text-mistake-ink' : ''}>{text.length.toLocaleString()}</span> / 6,000
+            <span className="text-sm text-text-secondary">
+              {words} words · <span className={nearLimit ? 'font-semibold text-mistake-text' : ''}>{text.length.toLocaleString()}</span> / 6,000
             </span>
-            <span className="text-sm text-ink-faint">{text ? 'Draft saved on this device' : ''}</span>
+            <span className="text-sm text-text-muted">{text ? 'Draft saved on this device' : ''}</span>
             <div className="ml-auto flex gap-2">
               <input ref={fileRef} type="file" accept=".txt,.md,.docx" onChange={onFile} hidden />
               <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
-                className="flex h-12 items-center gap-2 rounded-field border border-line bg-surface px-4 text-[15px] font-medium transition hover:-translate-y-px active:scale-[0.97] disabled:opacity-50">
+                className="flex h-12 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-medium transition hover:-translate-y-px active:scale-[0.97] disabled:opacity-50">
                 <UploadSimpleIcon size={18} /> Upload
               </button>
               <button type="button" onClick={check} disabled={busy || text.trim().length < 20}
-                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 text-[15px] font-semibold text-white transition hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0">
+                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 text-[15px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0">
                 <CheckCircleIcon size={18} /> {busy ? 'Reading like a teacher…' : 'Check my writing'}
               </button>
             </div>
           </div>
-          {busy && <p className="text-sm text-ink-soft" aria-live="polite">Long essays can take up to a minute.</p>}
+          {busy && <p className="text-sm text-text-secondary" aria-live="polite">Long essays can take up to a minute.</p>}
         </section>
 
         <aside className="flex flex-col">
-          <div className="mb-1 flex items-baseline justify-between border-b border-line pb-2.5">
+          <div className="mb-1 flex items-baseline justify-between border-b border-border-subtle pb-2.5">
             <h2 className="text-[22px] font-semibold tracking-[-0.02em]">Past checks</h2>
           </div>
-          {past === null && <div className="mt-3 h-24 animate-pulse rounded-field bg-surface/70" />}
-          {past?.length === 0 && <p className="py-3 text-[15px] text-ink-soft">Your checked writing will be listed here.</p>}
+          {past === null && <div className="mt-3 h-24 animate-pulse rounded-field bg-surface-card/70" />}
+          {past?.length === 0 && <p className="py-3 text-[15px] text-text-secondary">Your checked writing will be listed here.</p>}
           {past?.map((c) => (
             <Link key={c.id} to={`/writing/${c.id}`}
-              className="-mx-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-field px-3 py-3 transition-colors hover:bg-surface/70">
+              className="-mx-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-field px-3 py-3 transition-colors hover:bg-surface-card/70">
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{titleOf(c)}</span>
-                <span className="block text-sm text-ink-soft">{kindLabel(c.kind)} · {c.wordCount} words · {shortDate(c.createdAt)}</span>
+                <span className="block text-sm text-text-secondary">{kindLabel(c.kind)} · {c.wordCount} words · {shortDate(c.createdAt)}</span>
               </span>
               <span className="font-display text-xl font-semibold">{c.score}</span>
             </Link>

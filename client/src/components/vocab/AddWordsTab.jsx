@@ -4,7 +4,7 @@ import api, { getErrorMessage } from '../../lib/api';
 import { CATEGORIES, lookupError } from '../../lib/vocab';
 import Segmented from '../Segmented';
 
-const LEVEL_TAG = { easy: 'bg-correct/12 text-correct-ink', medium: 'bg-marker/45 text-ink', hard: 'bg-mistake/10 text-mistake-ink' };
+const LEVEL_TAG = { easy: 'bg-success-tint text-success-text', medium: 'bg-marker/45 text-text-primary', hard: 'bg-mistake-tint text-mistake-text' };
 
 export default function AddWordsTab() {
   return (
@@ -55,31 +55,31 @@ function Library() {
     <section className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-[15px] font-semibold">Starter library</h2>
-        <p className="text-sm text-ink-soft">120 useful words and phrases, 30 in each group.</p>
+        <p className="text-sm text-text-secondary">120 useful words and phrases, 30 in each group.</p>
       </div>
       <Segmented label="Category" layoutId="library-cat" value={category} onChange={pick} options={CATEGORIES} size="sm" />
-      {error && <p role="alert" className="text-sm text-mistake-ink">{error}</p>}
-      {!words && !error && <div className="h-64 animate-pulse rounded-panel bg-surface/70" />}
+      {error && <p role="alert" className="text-sm text-mistake-text">{error}</p>}
+      {!words && !error && <div className="h-64 animate-pulse rounded-panel bg-surface-card/70" />}
       {words && (
         <>
-          <p className="text-sm text-ink-soft">{added} of {words.length} in your deck</p>
-          <ul className="flex flex-col overflow-hidden rounded-panel border border-line bg-surface">
+          <p className="text-sm text-text-secondary">{added} of {words.length} in your deck</p>
+          <ul className="flex flex-col overflow-hidden rounded-panel border border-border-subtle bg-surface-card">
             {words.map((w) => (
-              <li key={w.id} className="flex items-start gap-4 border-b border-line px-5 py-3.5 last:border-0">
+              <li key={w.id} className="flex items-start gap-4 border-b border-border-subtle px-5 py-3.5 last:border-0">
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span className="text-[16px] font-semibold">{w.word}</span>
-                    <span className="text-[13px] text-ink-faint">{w.pos}</span>
+                    <span className="text-[13px] text-text-muted">{w.pos}</span>
                     <span className={`rounded-tag px-1.5 py-px text-[11px] font-semibold capitalize ${LEVEL_TAG[w.level]}`}>{w.level}</span>
                   </div>
-                  <p className="text-sm text-ink">{w.meaning}</p>
-                  <p className="text-[13px] text-ink-soft italic">{w.example}</p>
+                  <p className="text-sm text-text-primary">{w.meaning}</p>
+                  <p className="text-[13px] text-text-secondary italic">{w.example}</p>
                 </div>
                 {w.inDeck ? (
-                  <span className="flex h-10 shrink-0 items-center gap-1 px-1 text-sm font-semibold text-correct-ink"><CheckIcon size={16} /> In deck</span>
+                  <span className="flex h-10 shrink-0 items-center gap-1 px-1 text-sm font-semibold text-success-text"><CheckIcon size={16} /> In deck</span>
                 ) : (
                   <button type="button" onClick={() => add(w)} disabled={state[w.id] === 'adding'} aria-label={`Add ${w.word}`}
-                    className="flex h-10 shrink-0 items-center gap-1 rounded-[10px] border border-line px-3 text-sm font-semibold hover:border-ink-faint disabled:opacity-60">
+                    className="flex h-10 shrink-0 items-center gap-1 rounded-[10px] border border-border-subtle px-3 text-sm font-semibold hover:border-border-strong disabled:opacity-60">
                     {state[w.id] === 'adding' ? <SpinnerGapIcon size={15} className="animate-spin" /> : <PlusIcon size={15} />} Add
                   </button>
                 )}
@@ -142,35 +142,35 @@ function AddYourOwn() {
     setSaving(false);
   }
 
-  const tone = { error: 'text-mistake-ink', ok: 'text-correct-ink', info: 'text-ink-soft' };
+  const tone = { error: 'text-mistake-text', ok: 'text-success-text', info: 'text-text-secondary' };
 
   return (
     // Below xl it comes first: on a phone it would otherwise sit under all 30 library words
-    <section className="order-first flex flex-col gap-4 rounded-panel border border-line bg-surface p-6 xl:sticky xl:top-8 xl:order-none">
+    <section className="order-first flex flex-col gap-4 rounded-panel border border-border-subtle bg-surface-card p-6 xl:sticky xl:top-8 xl:order-none">
       <div>
         <h2 className="font-display text-[22px] font-semibold tracking-[-0.02em]">Add your own</h2>
-        <p className="mt-1 text-sm text-ink-soft">Met a new word? Save it here.</p>
+        <p className="mt-1 text-sm text-text-secondary">Met a new word? Save it here.</p>
       </div>
       <form onSubmit={add} className="flex flex-col gap-3">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold">Word or phrase</span>
           <input value={word} onChange={(e) => { setWord(e.target.value); setPos(''); }} maxLength={40} required
             placeholder="e.g. serendipity" autoComplete="off" autoCapitalize="none"
-            className="h-11 rounded-field border border-line bg-surface px-3 text-[15px] outline-none placeholder:text-ink-faint focus:border-brand" />
+            className="h-11 rounded-field border border-border-strong bg-surface-card px-3 text-[15px] placeholder:text-text-muted focus:border-brand" />
         </label>
         <button type="button" onClick={fill} disabled={!word.trim() || looking}
-          className="flex h-11 w-fit items-center gap-2 rounded-field border border-line px-4 text-sm font-semibold hover:border-ink-faint disabled:opacity-50">
+          className="flex h-11 w-fit items-center gap-2 rounded-field border border-border-subtle px-4 text-sm font-semibold hover:border-border-strong disabled:opacity-50">
           {looking ? <SpinnerGapIcon size={16} className="animate-spin" /> : <SparkleIcon size={16} className="text-brand" />}
           {looking ? 'Filling in…' : 'Fill it in for me'}
         </button>
         <div aria-live="polite" className="flex flex-col gap-1.5">
           {msg && <p role={msg.tone === 'error' ? 'alert' : undefined} className={`text-sm ${tone[msg.tone]}`}>{msg.text}</p>}
           {suggested && (
-            <div className="flex flex-col gap-1 rounded-field bg-canvas px-3 py-2 text-sm">
+            <div className="flex flex-col gap-1 rounded-field bg-surface-sunken px-3 py-2 text-sm">
               <span>{suggested.meaning}</span>
-              {suggested.example && <span className="text-ink-soft italic">{suggested.example}</span>}
+              {suggested.example && <span className="text-text-secondary italic">{suggested.example}</span>}
               <button type="button" onClick={() => { setMeaning(suggested.meaning); setExample(suggested.example); setSuggested(null); setMsg(null); }}
-                className="w-fit font-semibold text-brand hover:text-brand-hover">Use this instead</button>
+                className="w-fit font-semibold text-brand hover:text-brand-700">Use this instead</button>
             </div>
           )}
         </div>
@@ -178,16 +178,16 @@ function AddYourOwn() {
           <span className="text-sm font-semibold">Meaning</span>
           <textarea value={meaning} onChange={(e) => setMeaning(e.target.value)} rows={2} maxLength={140} required minLength={3}
             placeholder="What it means, in simple words"
-            className="resize-none rounded-field border border-line bg-surface px-3 py-2 text-[15px] outline-none placeholder:text-ink-faint focus:border-brand" />
+            className="resize-none rounded-field border border-border-strong bg-surface-card px-3 py-2 text-[15px] placeholder:text-text-muted focus:border-brand" />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-semibold">Example <span className="font-normal text-ink-soft">(optional)</span></span>
+          <span className="text-sm font-semibold">Example <span className="font-normal text-text-secondary">(optional)</span></span>
           <textarea value={example} onChange={(e) => setExample(e.target.value)} rows={2} maxLength={200}
             placeholder="A sentence that uses it"
-            className="resize-none rounded-field border border-line bg-surface px-3 py-2 text-[15px] outline-none placeholder:text-ink-faint focus:border-brand" />
+            className="resize-none rounded-field border border-border-strong bg-surface-card px-3 py-2 text-[15px] placeholder:text-text-muted focus:border-brand" />
         </label>
         <button type="submit" disabled={saving || !word.trim() || meaning.trim().length < 3}
-          className="flex h-12 items-center justify-center gap-2 rounded-field bg-brand font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50">
+          className="flex h-12 items-center justify-center gap-2 rounded-field bg-brand font-semibold text-on-brand transition hover:bg-brand-700 disabled:opacity-50">
           {saving ? <SpinnerGapIcon size={18} className="animate-spin" /> : <PlusIcon size={18} />} Add to my deck
         </button>
       </form>

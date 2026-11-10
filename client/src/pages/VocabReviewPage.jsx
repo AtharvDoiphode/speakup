@@ -120,26 +120,26 @@ export default function VocabReviewPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[760px] flex-col gap-5 px-4 py-6 md:px-8 md:py-8">
       <div className="flex items-center justify-between gap-3">
-        <Link to="/vocabulary" className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink">
+        <Link to="/vocabulary" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
           <ArrowLeftIcon size={16} /> {card ? 'End session' : 'Vocabulary'}
         </Link>
-        {card && <span className="text-sm text-ink-soft tabular-nums">{left} left · {reviewed} reviewed</span>}
+        {card && <span className="text-sm text-text-secondary tabular-nums">{left} left · {reviewed} reviewed</span>}
       </div>
 
       {failed.length > 0 && (
-        <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field border border-mistake/40 bg-mistake/10 px-4 py-2.5 text-sm text-mistake-ink">
+        <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field border border-mistake/40 bg-mistake-tint px-4 py-2.5 text-sm text-mistake-text">
           <WarningIcon size={16} weight="fill" />
           <span>{failed.length} answer{failed.length === 1 ? '' : 's'} didn't save.</span>
           <button type="button" onClick={retry} className="font-semibold underline underline-offset-2">Retry</button>
         </div>
       )}
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-ink">{error}</p>}
-      {!queue && !error && <div className="h-[360px] animate-pulse rounded-panel bg-surface/70" />}
+      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
+      {!queue && !error && <div className="h-[360px] animate-pulse rounded-panel bg-surface-card/70" />}
 
       {card && (
         <>
-          <div className="h-1.5 overflow-hidden rounded-full bg-line" aria-hidden="true">
+          <div className="h-1.5 overflow-hidden rounded-full bg-border-subtle" aria-hidden="true">
             <motion.div className="h-full rounded-full bg-brand" animate={{ width: `${(reviewed / (reviewed + left)) * 100}%` }} transition={{ duration: 0.3, ease }} />
           </div>
           <Flashcard key={`${card.id}-${turn}`} card={card} flipped={flipped} onFlip={() => setFlipped((f) => !f)} cardRef={cardRef} />
@@ -147,27 +147,27 @@ export default function VocabReviewPage() {
             <StageBadge box={card.box} />
             {ttsSupported && (
               <button type="button" onClick={() => speak(card.display, { rate: 0.85 })}
-                className="flex h-10 items-center gap-1.5 rounded-[10px] border border-line bg-surface px-3 text-sm font-medium hover:border-ink-faint">
+                className="flex h-10 items-center gap-1.5 rounded-[10px] border border-border-subtle bg-surface-card px-3 text-sm font-medium hover:border-border-strong">
                 <SpeakerHighIcon size={16} /> Hear it
               </button>
             )}
           </div>
           {!flipped ? (
             <button type="button" onClick={() => setFlipped(true)}
-              className="flex min-h-13 items-center justify-center rounded-field bg-ink font-semibold text-white transition active:scale-[0.98]">
-              Show meaning <span className="ml-2 hidden text-sm font-normal text-white/60 md:inline">Space</span>
+              className="flex min-h-13 items-center justify-center rounded-field bg-surface-inverse font-semibold text-text-inverse transition active:scale-[0.98]">
+              Show meaning <span className="ml-2 hidden text-sm font-normal text-on-brand/60 md:inline">Space</span>
             </button>
           ) : (
             <div className="grid grid-cols-3 gap-2.5" role="group" aria-label="How well did you know it?">
               {[
-                ['again', 'Again', '10 min', 'border-mistake text-mistake-ink hover:bg-mistake/10'],
-                ['good', 'Good', gapLabel(card.box, 1), 'border-line hover:border-ink-faint'],
-                ['easy', 'Easy', gapLabel(card.box, 2), 'border-correct text-correct-ink hover:bg-correct/10'],
+                ['again', 'Again', '10 min', 'border-mistake text-mistake-text hover:bg-mistake-tint'],
+                ['good', 'Good', gapLabel(card.box, 1), 'border-border-subtle hover:border-border-strong'],
+                ['easy', 'Easy', gapLabel(card.box, 2), 'border-success text-success-text hover:bg-success-tint'],
               ].map(([g, label, hint, cls], i) => (
                 <button key={g} type="button" onClick={() => grade(g)}
-                  className={`flex min-h-13 flex-col items-center justify-center rounded-field border bg-surface px-2 py-2 transition active:scale-[0.97] ${cls}`}>
-                  <span className="font-semibold">{label} <span className="hidden text-[12px] font-normal text-ink-faint md:inline">{i + 1}</span></span>
-                  <span className="text-[12px] text-ink-soft">{hint}</span>
+                  className={`flex min-h-13 flex-col items-center justify-center rounded-field border bg-surface-card px-2 py-2 transition active:scale-[0.97] ${cls}`}>
+                  <span className="font-semibold">{label} <span className="hidden text-[12px] font-normal text-text-muted md:inline">{i + 1}</span></span>
+                  <span className="text-[12px] text-text-secondary">{hint}</span>
                 </button>
               ))}
             </div>
@@ -181,19 +181,19 @@ export default function VocabReviewPage() {
 
       {done && reviewed > 0 && (
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease }}
-          className="flex flex-col gap-6 rounded-panel border border-line bg-surface p-6 md:p-10">
+          className="flex flex-col gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-10">
           <div className="flex items-center gap-3">
-            <CheckCircleIcon size={34} weight="fill" className="text-correct" />
+            <CheckCircleIcon size={34} weight="fill" className="text-success" />
             <h1 className="font-display text-[clamp(26px,3vw,34px)] font-semibold tracking-[-0.02em]">Session done</h1>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-field bg-canvas px-4 py-3">
+            <div className="rounded-field bg-surface-sunken px-4 py-3">
               <div className="font-display text-[32px] font-semibold leading-none tabular-nums">{reviewed}</div>
-              <div className="mt-1 text-sm text-ink-soft">reviews</div>
+              <div className="mt-1 text-sm text-text-secondary">reviews</div>
             </div>
-            <div className="rounded-field bg-canvas px-4 py-3">
-              <div className="font-display text-[32px] font-semibold leading-none tabular-nums">{knew}<span className="text-[20px] text-ink-soft">/{seen}</span></div>
-              <div className="mt-1 text-sm text-ink-soft">words you knew first time</div>
+            <div className="rounded-field bg-surface-sunken px-4 py-3">
+              <div className="font-display text-[32px] font-semibold leading-none tabular-nums">{knew}<span className="text-[20px] text-text-secondary">/{seen}</span></div>
+              <div className="mt-1 text-sm text-text-secondary">words you knew first time</div>
             </div>
           </div>
           <p className="text-[15px]" role="status">
@@ -204,15 +204,15 @@ export default function VocabReviewPage() {
           <div className="flex flex-wrap gap-2.5">
             {summary?.moreDue > 0 && (
               <button type="button" onClick={again}
-                className="flex h-13 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-white hover:bg-brand-hover">
+                className="flex h-13 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700">
                 <ArrowClockwiseIcon size={18} /> Keep going
               </button>
             )}
             <button type="button" onClick={addFive} disabled={adding}
-              className="flex h-13 items-center gap-2 rounded-field border border-line px-5 font-semibold hover:border-ink-faint disabled:opacity-60">
+              className="flex h-13 items-center gap-2 rounded-field border border-border-subtle px-5 font-semibold hover:border-border-strong disabled:opacity-60">
               {adding ? <SpinnerGapIcon size={18} className="animate-spin" /> : <PlusIcon size={18} />} Add 5 more words
             </button>
-            <Link to="/vocabulary" className="flex h-13 items-center rounded-field px-4 font-semibold text-brand hover:text-brand-hover">Back to Vocabulary</Link>
+            <Link to="/vocabulary" className="flex h-13 items-center rounded-field px-4 font-semibold text-brand hover:text-brand-700">Back to Vocabulary</Link>
           </div>
         </motion.section>
       )}
@@ -222,16 +222,16 @@ export default function VocabReviewPage() {
 
 function EmptyState({ adding, onAdd }) {
   return (
-    <section className="flex flex-col items-start gap-4 rounded-panel border border-line bg-surface p-6 md:p-10">
-      <CheckCircleIcon size={34} weight="fill" className="text-correct" />
+    <section className="flex flex-col items-start gap-4 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-10">
+      <CheckCircleIcon size={34} weight="fill" className="text-success" />
       <h1 className="font-display text-[clamp(26px,3vw,34px)] font-semibold tracking-[-0.02em]">You're all caught up</h1>
-      <p className="text-[15px] text-ink-soft">No words are due right now. Add a few new ones, or come back later.</p>
+      <p className="text-[15px] text-text-secondary">No words are due right now. Add a few new ones, or come back later.</p>
       <div className="flex flex-wrap gap-2.5">
         <button type="button" onClick={onAdd} disabled={adding}
-          className="flex h-13 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
+          className="flex h-13 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700 disabled:opacity-60">
           {adding ? <SpinnerGapIcon size={18} className="animate-spin" /> : <PlusIcon size={18} />} Add 5 new words
         </button>
-        <Link to="/vocabulary?tab=add" className="flex h-13 items-center rounded-field border border-line px-5 font-semibold hover:border-ink-faint">Browse words</Link>
+        <Link to="/vocabulary?tab=add" className="flex h-13 items-center rounded-field border border-border-subtle px-5 font-semibold hover:border-border-strong">Browse words</Link>
       </div>
     </section>
   );
@@ -243,16 +243,16 @@ function Flashcard({ card, flipped, onFlip, cardRef }) {
   const front = (
     <div className="flex h-full flex-col items-center justify-center gap-2 px-6 py-10 text-center">
       <span className="font-display text-[clamp(34px,6vw,56px)] font-semibold leading-[1.05] tracking-[-0.03em] break-words">{card.display}</span>
-      {card.pos && <span className="text-[15px] text-ink-soft">{card.pos}</span>}
-      <span className="mt-4 text-sm text-ink-faint">Tap the card or press Space</span>
+      {card.pos && <span className="text-[15px] text-text-secondary">{card.pos}</span>}
+      <span className="mt-4 text-sm text-text-muted">Tap the card or press Space</span>
     </div>
   );
   const back = (
     <div className="flex h-full flex-col justify-center gap-4 px-6 py-8 md:px-10">
-      <span className="text-sm font-semibold text-ink-soft">{card.display}{card.pos ? ` · ${card.pos}` : ''}</span>
+      <span className="text-sm font-semibold text-text-secondary">{card.display}{card.pos ? ` · ${card.pos}` : ''}</span>
       <p className="font-display text-[clamp(22px,3vw,28px)] font-semibold leading-snug tracking-[-0.015em]">{card.meaning}</p>
       {card.example && (
-        <p className="text-[17px] leading-relaxed text-ink">
+        <p className="text-[17px] leading-relaxed text-text-primary">
           {markWord(card.example, card.display).map((p, i) => p.mark
             ? <span key={i} className="rounded-[2px_5px_3px_6px] bg-marker px-1">{p.text}</span>
             : <span key={i}>{p.text}</span>)}
@@ -268,9 +268,9 @@ function Flashcard({ card, flipped, onFlip, cardRef }) {
   return (
     <>
       <button ref={cardRef} type="button" onClick={onFlip} aria-label={label} aria-pressed={flipped}
-        className="relative block w-full rounded-panel text-left outline-offset-4 [perspective:1400px] focus-visible:outline-2 focus-visible:outline-brand">
+        className="relative block w-full rounded-panel text-left outline-offset-4 [perspective:1400px] focus-visible:outline-2">
         {reduce ? (
-          <div className="grid min-h-[300px] rounded-panel border border-line bg-surface md:min-h-[360px]">
+          <div className="grid min-h-[300px] rounded-panel border border-border-subtle bg-surface-card md:min-h-[360px]">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={flipped ? 'back' : 'front'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
                 {flipped ? back : front}
@@ -281,8 +281,8 @@ function Flashcard({ card, flipped, onFlip, cardRef }) {
           <motion.div className="grid min-h-[300px] [transform-style:preserve-3d] md:min-h-[360px]"
             initial={{ rotateY: 0, opacity: 0, y: 10 }} animate={{ rotateY: flipped ? 180 : 0, opacity: 1, y: 0 }}
             transition={{ rotateY: { duration: 0.45, ease }, opacity: { duration: 0.2 }, y: { duration: 0.25, ease } }}>
-            <div className="[grid-area:1/1] rounded-panel border border-line bg-surface [backface-visibility:hidden]">{front}</div>
-            <div className="[grid-area:1/1] rounded-panel border border-brand/40 bg-surface [backface-visibility:hidden] [transform:rotateY(180deg)]">{back}</div>
+            <div className="[grid-area:1/1] rounded-panel border border-border-subtle bg-surface-card [backface-visibility:hidden]">{front}</div>
+            <div className="[grid-area:1/1] rounded-panel border border-brand/40 bg-surface-card [backface-visibility:hidden] [transform:rotateY(180deg)]">{back}</div>
           </motion.div>
         )}
       </button>

@@ -143,7 +143,7 @@ export default function PracticePage() {
           </div>
           <div>
             <h1 className="text-[clamp(32px,4vw,42px)] font-semibold leading-[1.05] tracking-[-0.035em]">{HEADINGS[tab][0]}</h1>
-            <p className="mt-2 text-base text-ink-soft">{HEADINGS[tab][1]}</p>
+            <p className="mt-2 text-base text-text-secondary">{HEADINGS[tab][1]}</p>
           </div>
         </header>
 
@@ -154,14 +154,14 @@ export default function PracticePage() {
             onStart={pickPerson} onPeopleChange={onPeopleChange} />
         )}
 
-        {tab === 'scenes' && loadError && <p role="alert" className="text-mistake-ink">{loadError}</p>}
+        {tab === 'scenes' && loadError && <p role="alert" className="text-mistake-text">{loadError}</p>}
         {tab === 'scenes' && !data && !loadError && <ListSkeleton />}
 
         {tab === 'scenes' && groups.map((g) => (
           <section key={g.name} className="flex flex-col">
-            <div className="mb-1 flex items-baseline gap-3 border-b border-line pb-2.5">
+            <div className="mb-1 flex items-baseline gap-3 border-b border-border-subtle pb-2.5">
               <h2 className="text-[22px] font-semibold tracking-[-0.02em]">{g.name}</h2>
-              <span className="text-sm text-ink-soft">{g.items.length} scenes</span>
+              <span className="text-sm text-text-secondary">{g.items.length} scenes</span>
             </div>
             {g.items.map((s) => (
               <SceneRow key={s.id} scene={s} selected={s.id === selId} onPick={() => pick(s.id)} />
@@ -171,9 +171,9 @@ export default function PracticePage() {
       </div>
 
       {withSheet && (isDesktop ? (
-        <aside className="sticky top-0 flex h-dvh flex-col overflow-y-auto border-l border-line bg-surface p-10">
+        <aside className="sticky top-0 flex h-dvh flex-col overflow-y-auto border-l border-border-subtle bg-surface-card p-10">
           {shown ? <DetailPanel {...panelProps} /> : (
-            <p className="text-[15px] text-ink-soft">Pick someone and press Start to see them here.</p>
+            <p className="text-[15px] text-text-secondary">Pick someone and press Start to see them here.</p>
           )}
         </aside>
       ) : (
@@ -192,18 +192,18 @@ function SceneRow({ scene, selected, onPick }) {
       onClick={onPick}
       aria-pressed={selected}
       className={`relative -mx-3.5 mt-0.5 grid w-[calc(100%+28px)] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-field px-3.5 py-[13px] text-left transition-colors md:grid-cols-[minmax(0,1fr)_220px_60px_24px] ${
-        selected ? '' : 'hover:bg-surface/70'
+        selected ? '' : 'hover:bg-surface-card/70'
       }`}
     >
       {selected && (
-        <motion.span layoutId="scene-pill" transition={spring} className="absolute inset-0 rounded-field border border-brand bg-surface" />
+        <motion.span layoutId="scene-pill" transition={spring} className="absolute inset-0 rounded-field border border-brand bg-surface-card" />
       )}
       <span className="relative">
         <span className={`block text-[17px] ${selected ? 'font-semibold' : 'font-medium'}`}>{scene.title}</span>
-        <span className="block text-sm text-ink-soft md:hidden">{scene.who}, {scene.role}</span>
+        <span className="block text-sm text-text-secondary md:hidden">{scene.who}, {scene.role}</span>
       </span>
-      <span className="relative hidden text-sm text-ink-soft md:block">{scene.who}, {scene.role}</span>
-      <span className="relative text-sm text-ink-soft">{scene.minutes} min</span>
+      <span className="relative hidden text-sm text-text-secondary md:block">{scene.who}, {scene.role}</span>
+      <span className="relative text-sm text-text-secondary">{scene.minutes} min</span>
       <span className="relative hidden md:block">{selected && <CheckIcon size={18} className="text-brand" />}</span>
     </button>
   );
@@ -225,18 +225,18 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
         className="flex flex-1 flex-col gap-[26px]"
       >
         <div>
-          <div className="text-sm text-ink-soft">{scene.isPerson ? 'One of your people' : `${scene.category} · ${scene.minutes} min`}</div>
+          <div className="text-sm text-text-secondary">{scene.isPerson ? 'One of your people' : `${scene.category} · ${scene.minutes} min`}</div>
           <h2 className="mt-2 text-[clamp(30px,3vw,38px)] font-semibold leading-[1.02] tracking-[-0.035em]">{scene.title}</h2>
           <p className="mt-3.5 text-base leading-relaxed text-pretty">{scene.brief}</p>
         </div>
 
-        <div className="flex items-center gap-3.5 border-y border-line py-[18px]">
-          <span className="flex size-[52px] shrink-0 items-center justify-center rounded-full border border-line bg-canvas font-display text-lg font-semibold text-brand">
+        <div className="flex items-center gap-3.5 border-y border-border-subtle py-[18px]">
+          <span className="flex size-[52px] shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-sunken font-display text-lg font-semibold text-brand">
             {initials(scene.who)}
           </span>
           <div className="flex flex-col gap-0.5">
             <span className="font-display text-xl font-semibold tracking-[-0.02em]">{scene.who}</span>
-            <span className="text-sm text-ink-soft">{scene.roleLong}</span>
+            <span className="text-sm text-text-secondary">{scene.roleLong}</span>
           </div>
         </div>
 
@@ -254,7 +254,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
         {scene.practise.length > 0 && (
           <div className="flex flex-col gap-2">
             <span className="text-sm font-semibold">You'll practise</span>
-            {scene.practise.map((p) => <span key={p} className="text-[15px] text-ink-soft">{p}</span>)}
+            {scene.practise.map((p) => <span key={p} className="text-[15px] text-text-secondary">{p}</span>)}
           </div>
         )}
 
@@ -262,7 +262,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
           <span className="text-sm font-semibold">Difficulty</span>
           <Segmented label="Difficulty" layoutId="difficulty-pill" value={difficulty} onChange={setDifficulty}
             options={DIFFICULTIES.map(({ value, label }) => ({ value, label }))} />
-          <span className="text-sm leading-snug text-ink-soft">
+          <span className="text-sm leading-snug text-text-secondary">
             {level.note} Every mistake is marked at every level.
           </span>
         </div>
@@ -271,7 +271,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
           <button type="button" onClick={() => setCustomOpen((o) => !o)} aria-expanded={customOpen}
             className="flex items-center justify-between text-sm font-semibold">
             Make it your own
-            <CaretDownIcon size={16} className={`text-ink-soft transition-transform duration-200 ${customOpen ? 'rotate-180' : ''}`} />
+            <CaretDownIcon size={16} className={`text-text-secondary transition-transform duration-200 ${customOpen ? 'rotate-180' : ''}`} />
           </button>
           <AnimatePresence initial={false}>
             {customOpen && (
@@ -284,7 +284,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
               >
                 <div className="flex flex-col gap-4 pb-1">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[13px] text-ink-soft">Extra traits, up to 3</span>
+                    <span className="text-[13px] text-text-secondary">Extra traits, up to 3</span>
                     <div className="flex flex-wrap gap-1.5">
                       {available.map((t) => {
                         const on = traits.includes(t);
@@ -292,7 +292,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
                         return (
                           <button key={t} type="button" onClick={() => toggleTrait(t)} disabled={full} aria-pressed={on}
                             className={`h-[34px] rounded-tag border px-3 text-sm font-medium transition active:scale-[0.96] disabled:opacity-40 ${
-                              on ? 'border-ink bg-ink text-white' : 'border-line bg-surface text-ink'
+                              on ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card text-text-primary'
                             }`}>
                             {t}
                           </button>
@@ -301,7 +301,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <span className="text-[13px] text-ink-soft">Mood today</span>
+                    <span className="text-[13px] text-text-secondary">Mood today</span>
                     <Segmented label="Mood today" size="sm" layoutId="mood-pill" value={mood} onChange={setMood}
                       options={moods.map((m) => ({ value: m, label: m }))} />
                   </div>
@@ -312,16 +312,16 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
         </div>}
 
         <div className="mt-auto flex flex-col gap-2.5 pt-2">
-          {startError && <p role="alert" className="text-sm font-medium text-mistake-ink">{startError}</p>}
+          {startError && <p role="alert" className="text-sm font-medium text-mistake-text">{startError}</p>}
           <button
             type="button"
             onClick={onStart}
             disabled={starting}
-            className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand text-[17px] font-semibold text-white transition duration-150 hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0"
+            className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand text-[17px] font-semibold text-on-brand transition duration-150 hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0"
           >
             {starting ? (
               <>
-                <span className="size-2 animate-pulse rounded-full bg-white" />
+                <span className="size-2 animate-pulse rounded-full bg-surface-card" />
                 {scene.who} is getting ready…
               </>
             ) : (
@@ -346,16 +346,16 @@ function DetailSheet({ onClose, panelProps }) {
 
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-ink/30" onClick={onClose}
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" onClick={onClose}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
       <motion.div
         role="dialog"
         aria-label={panelProps.scene.title}
-        className="fixed inset-x-0 bottom-0 top-10 z-50 flex flex-col overflow-y-auto rounded-t-panel border-t border-line bg-surface px-5 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]"
+        className="fixed inset-x-0 bottom-0 top-10 z-50 flex flex-col overflow-y-auto rounded-t-panel border-t border-border-subtle bg-surface-card px-5 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]"
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 420, damping: 40 }}
       >
-        <button onClick={onClose} aria-label="Close" className="mb-2 self-end rounded-tag p-1.5 text-ink-soft">
+        <button onClick={onClose} aria-label="Close" className="mb-2 self-end rounded-tag p-1.5 text-text-secondary">
           <XIcon size={20} />
         </button>
         <DetailPanel {...panelProps} />
@@ -367,7 +367,7 @@ function DetailSheet({ onClose, panelProps }) {
 function Chip({ children, dark = false }) {
   return (
     <span className={`inline-flex h-[30px] items-center rounded-tag border px-2.5 text-sm ${
-      dark ? 'border-ink bg-ink text-white' : 'border-line'
+      dark ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle'
     }`}>
       {children}
     </span>
@@ -379,8 +379,8 @@ function ListSkeleton() {
     <div className="flex flex-col gap-8" aria-hidden="true">
       {[0, 1, 2].map((g) => (
         <div key={g} className="flex flex-col gap-3">
-          <div className="h-6 w-48 animate-pulse rounded-tag bg-line" />
-          {[0, 1, 2].map((r) => <div key={r} className="h-11 animate-pulse rounded-field bg-surface/70" />)}
+          <div className="h-6 w-48 animate-pulse rounded-tag bg-border-subtle" />
+          {[0, 1, 2].map((r) => <div key={r} className="h-11 animate-pulse rounded-field bg-surface-card/70" />)}
         </div>
       ))}
     </div>

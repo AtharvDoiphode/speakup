@@ -7,7 +7,7 @@ import { PRIMARY_NAV, MORE_NAV, visibleTo } from '../lib/nav';
 
 const tabClass = (active) =>
   `flex h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-field text-[11px] font-semibold ${
-    active ? 'text-brand' : 'text-ink-soft'
+    active ? 'text-brand' : 'text-text-secondary'
   }`;
 
 // The bottom navigation on phones (hidden from medium screens up, where the sidebar takes over).
@@ -41,7 +41,7 @@ export default function MobileTabBar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-ink/30"
+              className="fixed inset-0 z-30 bg-surface-overlay"
             />
             <motion.div
               id="more-menu"
@@ -52,7 +52,7 @@ export default function MobileTabBar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 48 }}
               transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
-              className="fixed inset-x-3 bottom-22 z-40 rounded-panel border border-line bg-surface p-2"
+              className="fixed inset-x-3 bottom-22 z-40 rounded-panel border border-border-subtle bg-surface-card p-2"
             >
               {MORE_NAV.filter(visibleTo(user)).map((item) => {
                 const Icon = item.icon;
@@ -63,7 +63,7 @@ export default function MobileTabBar() {
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       `flex h-12 items-center gap-3 rounded-field px-3 text-sm font-semibold ${
-                        isActive ? 'bg-brand/10 text-brand' : 'text-ink'
+                        isActive ? 'bg-brand-50 text-brand' : 'text-text-primary'
                       }`
                     }
                   >
@@ -75,7 +75,7 @@ export default function MobileTabBar() {
               <button
                 type="button"
                 onClick={logout}
-                className="mt-1 flex h-12 w-full items-center gap-3 rounded-field border-t border-line px-3 text-sm font-semibold text-ink-soft"
+                className="mt-1 flex h-12 w-full items-center gap-3 rounded-field border-t border-border-subtle px-3 text-sm font-semibold text-text-secondary"
               >
                 <SignOutIcon size={22} aria-hidden="true" />
                 Log out
@@ -87,7 +87,7 @@ export default function MobileTabBar() {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-3 bottom-3 z-40 flex gap-1 rounded-panel border border-line bg-surface p-1.5"
+        className="fixed inset-x-3 bottom-3 z-40 flex gap-1 rounded-panel border border-border-subtle bg-surface-card p-1.5"
       >
         {PRIMARY_NAV.map((item) => {
           const Icon = item.icon;

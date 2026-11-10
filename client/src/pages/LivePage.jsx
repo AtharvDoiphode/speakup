@@ -130,12 +130,12 @@ export default function LivePage() {
   if (loadError) {
     return (
       <div className="px-6 py-16 text-center">
-        <p className="text-mistake-ink">{loadError}</p>
+        <p className="text-mistake-text">{loadError}</p>
         <button onClick={() => navigate('/practice')} className="mt-4 font-semibold text-brand">Back to scenes</button>
       </div>
     );
   }
-  if (!convo) return <div className="px-6 py-16 text-ink-soft">Loading conversation…</div>;
+  if (!convo) return <div className="px-6 py-16 text-text-secondary">Loading conversation…</div>;
 
   const persona = convo.persona ?? {};
   const name = persona.name ?? 'Your partner';
@@ -257,30 +257,30 @@ export default function LivePage() {
     <div className="lg:grid lg:h-dvh lg:grid-cols-[minmax(0,1fr)_360px]">
       {/* A div, not <main>: the app shell already provides the page's <main> */}
       <div className="flex min-w-0 flex-col lg:min-h-0">
-        <header className="flex h-[68px] flex-none items-center gap-[18px] border-b border-line px-4 md:h-[76px] md:px-12">
+        <header className="flex h-[68px] flex-none items-center gap-[18px] border-b border-border-subtle px-4 md:h-[76px] md:px-12">
           <span className="truncate text-base font-semibold">{convo.title}</span>
-          <span className="whitespace-nowrap text-[15px] text-ink-soft">
+          <span className="whitespace-nowrap text-[15px] text-text-secondary">
             {cap(convo.difficulty)} · {fmt(ended ? convo.durationSec ?? elapsed : elapsed)}
           </span>
           {ttsSupported && (
             <button type="button" onClick={toggleVoiceOn} aria-pressed={voiceOn}
               aria-label={voiceOn ? 'Turn off read-aloud' : 'Turn on read-aloud'}
-              className="ml-auto rounded-tag p-2 text-ink-soft hover:bg-surface/60 hover:text-ink">
+              className="ml-auto rounded-tag p-2 text-text-secondary hover:bg-surface-card/60 hover:text-text-primary">
               {voiceOn ? <SpeakerHighIcon size={20} /> : <SpeakerSlashIcon size={20} />}
             </button>
           )}
         </header>
 
         {turns && (
-          <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-4 py-2.5 md:px-12" data-turns>
-            <span className="rounded-tag bg-brand/10 px-2.5 py-1 text-[13px] font-semibold text-brand">{MODE_LABEL[convo.mode]}</span>
+          <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-border-subtle px-4 py-2.5 md:px-12" data-turns>
+            <span className="rounded-tag bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand">{MODE_LABEL[convo.mode]}</span>
             <span className="text-[15px] font-semibold tabular-nums" data-turn-label>
               {ti.done ? `All ${ti.total} ${convo.mode === 'debate' ? 'rounds' : 'answers'} done` : ti.label}
             </span>
             <span className="flex flex-1 gap-1 md:max-w-[340px]" aria-hidden="true">
               {Array.from({ length: ti.total }, (_, k) => (
                 <span key={k} data-tick={k < ti.answered ? 'done' : k === ti.answered && !ti.done ? 'now' : 'todo'}
-                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${k < ti.answered ? 'bg-brand' : k === ti.answered && !ti.done ? 'bg-ink' : 'bg-line'}`} />
+                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${k < ti.answered ? 'bg-brand' : k === ti.answered && !ti.done ? 'bg-surface-inverse' : 'bg-border-subtle'}`} />
               ))}
             </span>
             {/* Read out when the turn changes: "Question 4 of 10" */}
@@ -295,7 +295,7 @@ export default function LivePage() {
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <span className="font-display text-[clamp(34px,5vw,60px)] font-semibold leading-[0.95] tracking-[-0.04em]">{name}</span>
-              <span className="text-base text-ink-soft md:text-lg">{persona.roleLong ?? persona.role}</span>
+              <span className="text-base text-text-secondary md:text-lg">{persona.roleLong ?? persona.role}</span>
               <span className="mt-2.5 flex items-center gap-2 text-[15px] font-semibold text-brand" aria-live="polite">
                 <span className={`size-2 rounded-full bg-brand ${sending || voice.listening || speaking ? 'animate-pulse' : ''}`} />
                 {status}
@@ -305,12 +305,12 @@ export default function LivePage() {
 
           {lastAi && (
             <div className="flex max-w-[780px] flex-col gap-1.5">
-              <span className="text-sm text-ink-soft">{name}</span>
+              <span className="text-sm text-text-secondary">{name}</span>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.p key={lastAi._id ?? lastAi.createdAt}
                   initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-[clamp(19px,2vw,24px)] leading-[1.4] text-ink-soft text-pretty">
+                  className="text-[clamp(19px,2vw,24px)] leading-[1.4] text-text-secondary text-pretty">
                   {lastAi.text}
                 </motion.p>
               </AnimatePresence>
@@ -320,18 +320,18 @@ export default function LivePage() {
           {listeningForReply ? (
             // Your words appear as you speak: settled words dark, guesses in progress faint
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm text-ink-soft">You</span>
+              <span className="text-sm text-text-secondary">You</span>
               <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.5]">
                 {voice.transcript}
-                <span className="text-ink-faint">{voice.interim}</span>
-                {!voice.transcript && !voice.interim && <span className="text-ink-faint">{voice.ready ? 'Listening…' : 'Getting ready…'}</span>}
+                <span className="text-text-muted">{voice.interim}</span>
+                {!voice.transcript && !voice.interim && <span className="text-text-muted">{voice.ready ? 'Listening…' : 'Getting ready…'}</span>}
                 <span className="ml-1 inline-block h-[0.9em] w-[3px] animate-pulse bg-brand align-[-0.1em]" />
               </p>
             </div>
           ) : sending ? (
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm text-ink-soft">You</span>
-              <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.5] text-ink-soft">
+              <span className="text-sm text-text-secondary">You</span>
+              <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.5] text-text-secondary">
                 {pending}
                 <span className="ml-1 inline-block h-[0.9em] w-[3px] animate-pulse bg-brand align-[-0.1em]" />
               </p>
@@ -342,19 +342,19 @@ export default function LivePage() {
         </section>
 
         {!ended && finished && (
-          <footer className="flex flex-none flex-col items-start gap-3 border-t border-line px-4 py-4 md:flex-row md:items-center md:px-12 lg:py-5" data-finished>
-            {shownError && <p role="alert" className="text-sm font-medium text-mistake-ink">{shownError}</p>}
+          <footer className="flex flex-none flex-col items-start gap-3 border-t border-border-subtle px-4 py-4 md:flex-row md:items-center md:px-12 lg:py-5" data-finished>
+            {shownError && <p role="alert" className="text-sm font-medium text-mistake-text">{shownError}</p>}
             <button type="button" onClick={endAndScore} disabled={!!busy} autoFocus
-              className="flex min-h-13 items-center gap-2 rounded-field bg-brand px-6 text-[17px] font-semibold text-white transition hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97] disabled:opacity-70">
+              className="flex min-h-13 items-center gap-2 rounded-field bg-brand px-6 text-[17px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:opacity-70">
               See my scorecard
             </button>
-            <span className="text-sm text-ink-soft">That was the last {convo.mode === 'debate' ? 'round' : 'question'}. Your answers are marked next.</span>
+            <span className="text-sm text-text-secondary">That was the last {convo.mode === 'debate' ? 'round' : 'question'}. Your answers are marked next.</span>
           </footer>
         )}
 
         {!ended && !finished && (
-          <footer className="flex flex-none flex-col gap-3 border-t border-line px-4 py-4 md:px-12 lg:py-5">
-            {shownError && <p role="alert" className="text-sm font-medium text-mistake-ink">{shownError}</p>}
+          <footer className="flex flex-none flex-col gap-3 border-t border-border-subtle px-4 py-4 md:px-12 lg:py-5">
+            {shownError && <p role="alert" className="text-sm font-medium text-mistake-text">{shownError}</p>}
             <div className="grid items-center gap-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5">
               {/* Difficulty is fixed for an interview or debate, so its buttons are left out */}
               <div className="order-2 flex gap-1.5 lg:order-1">
@@ -375,16 +375,16 @@ export default function LivePage() {
                     aria-pressed={voice.listening}
                     aria-label={voice.listening ? 'Stop and send' : 'Start speaking'}
                     whileTap={{ scale: 0.94 }}
-                    className={`flex size-[76px] items-center justify-center rounded-full text-white transition-colors disabled:opacity-40 ${
-                      listeningForReply ? 'bg-brand' : 'bg-ink hover:bg-ink/90'
+                    className={`flex size-[76px] items-center justify-center rounded-full text-on-brand transition-colors disabled:opacity-40 ${
+                      listeningForReply ? 'bg-brand' : 'bg-surface-inverse hover:bg-surface-inverse/90'
                     }`}
                   >
                     {listeningForReply ? <PaperPlaneRightIcon size={30} /> : <MicrophoneIcon size={32} />}
                   </motion.button>
                   <div className="flex flex-col gap-1 text-sm">
-                    <span className="text-ink-soft">{listeningForReply ? "Tap when you're done" : 'Tap to speak'}</span>
+                    <span className="text-text-secondary">{listeningForReply ? "Tap when you're done" : 'Tap to speak'}</span>
                     <button type="button" onClick={() => { voice.cancel(); setInputMode('type'); }}
-                      className="flex items-center gap-1.5 font-medium text-ink-soft hover:text-ink">
+                      className="flex items-center gap-1.5 font-medium text-text-secondary hover:text-text-primary">
                       <KeyboardIcon size={18} /> Type instead
                     </button>
                   </div>
@@ -400,15 +400,15 @@ export default function LivePage() {
                     aria-label={`Reply to ${name}`}
                     disabled={sending}
                     autoFocus
-                    className="h-12 min-w-0 flex-1 rounded-field border border-line bg-surface px-4 text-base"
+                    className="h-12 min-w-0 flex-1 rounded-field border border-border-strong bg-surface-card px-4 text-base"
                   />
                   <button type="submit" disabled={!draft.trim() || !!busy} aria-label="Send"
-                    className="flex size-12 flex-none items-center justify-center rounded-field bg-brand text-white transition hover:bg-brand-hover active:scale-[0.94] disabled:opacity-40">
+                    className="flex size-12 flex-none items-center justify-center rounded-field bg-brand text-on-brand transition hover:bg-brand-700 active:scale-[0.94] disabled:opacity-40">
                     <PaperPlaneRightIcon size={20} />
                   </button>
                   {voice.supported && (
                     <button type="button" onClick={() => setInputMode('voice')} aria-label="Use voice" title="Use voice"
-                      className="flex size-12 flex-none items-center justify-center rounded-field border border-line bg-surface text-ink-soft transition hover:text-ink active:scale-[0.94]">
+                      className="flex size-12 flex-none items-center justify-center rounded-field border border-border-subtle bg-surface-card text-text-secondary transition hover:text-text-primary active:scale-[0.94]">
                       <MicrophoneIcon size={20} />
                     </button>
                   )}
@@ -417,11 +417,11 @@ export default function LivePage() {
 
               <div className="order-3 flex flex-col gap-1 lg:items-end">
                 <button type="button" onClick={endSession} disabled={busy === 'end' || sending}
-                  className="flex min-h-11 w-fit items-center gap-1.5 rounded-field border border-mistake bg-surface px-4 text-sm font-semibold text-mistake-ink transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-50">
+                  className="flex min-h-11 w-fit items-center gap-1.5 rounded-field border border-mistake bg-surface-card px-4 text-sm font-semibold text-mistake-text transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-50">
                   <XIcon size={16} />
                   {busy === 'end' ? 'Ending…' : confirmEnd ? 'Tap again to end' : turns ? 'End early' : 'End session'}
                 </button>
-                {turns && ti.answered === 0 && <span className="text-[13px] text-ink-soft">You need at least one answer for a scorecard.</span>}
+                {turns && ti.answered === 0 && <span className="text-[13px] text-text-secondary">You need at least one answer for a scorecard.</span>}
               </div>
             </div>
           </footer>
@@ -449,12 +449,12 @@ export default function LivePage() {
       {/* Marking an interview or debate: up to a minute */}
       <AnimatePresence>
         {marking && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/85 px-4"
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-canvas/85 px-4"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div role="status" aria-live="polite" className="relative flex w-full max-w-[460px] flex-col gap-2 overflow-hidden rounded-panel border border-line bg-surface px-7 pt-28 pb-7" data-marking>
+            <div role="status" aria-live="polite" className="relative flex w-full max-w-[460px] flex-col gap-2 overflow-hidden rounded-panel border border-border-subtle bg-surface-card px-7 pt-28 pb-7" data-marking>
               <MarkerSweep rows={3} gap={30} top={24} />
               <span className="font-display text-[24px] font-semibold tracking-[-0.02em]">Marking your answers…</span>
-              <span className="text-[15px] text-ink-soft">This can take up to a minute. Your answers are already saved.</span>
+              <span className="text-[15px] text-text-secondary">This can take up to a minute. Your answers are already saved.</span>
             </div>
           </motion.div>
         )}
@@ -466,7 +466,7 @@ export default function LivePage() {
 function ControlButton({ icon, children, ...props }) {
   return (
     <button type="button" {...props}
-      className="flex h-[42px] items-center gap-1.5 rounded-field border border-line bg-surface px-3 text-sm font-medium transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-40 disabled:hover:translate-y-0">
+      className="flex h-[42px] items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-40 disabled:hover:translate-y-0">
       {icon}
       {children}
     </button>
@@ -493,7 +493,7 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
   const natural = lastUser?.natural && lastUser.natural !== lastUser.text ? lastUser.natural : null;
 
   return (
-    <aside className="flex flex-col gap-6 border-t border-line bg-surface px-4 py-7 md:px-[30px] lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+    <aside className="flex flex-col gap-6 border-t border-border-subtle bg-surface-card px-4 py-7 md:px-[30px] lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
       <div className="flex flex-col gap-3.5">
         <span className="text-[15px] font-semibold">This session</span>
         <div className="grid grid-cols-2 gap-3.5">
@@ -502,22 +502,22 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
         </div>
       </div>
 
-      <div className="flex flex-col border-t border-line pt-[22px]">
+      <div className="flex flex-col border-t border-border-subtle pt-[22px]">
         <div className="mb-1.5 flex items-baseline justify-between">
           <span className="text-[15px] font-semibold">Mistakes this session</span>
-          <span className="text-sm text-ink-soft">{total}</span>
+          <span className="text-sm text-text-secondary">{total}</span>
         </div>
-        {groups.length === 0 && <p className="py-2.5 text-sm text-ink-soft">None yet. Keep talking.</p>}
+        {groups.length === 0 && <p className="py-2.5 text-sm text-text-secondary">None yet. Keep talking.</p>}
         <AnimatePresence initial={false}>
           {groups.map((g) => (
             <motion.div key={g.type} layout initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col gap-1 border-b border-line py-[11px]">
+              className="flex flex-col gap-1 border-b border-border-subtle py-[11px]">
               <div className="flex justify-between text-[15px]">
                 <span className="font-medium">{MISTAKE_LABELS[g.type] ?? 'Other'}</span>
-                <span className="text-ink-soft">{g.n}</span>
+                <span className="text-text-secondary">{g.n}</span>
               </div>
               <div className="text-sm">
-                <span className="text-mistake-ink line-through decoration-mistake decoration-[1.5px]">{g.example.wrong}</span>{' '}
+                <span className="text-mistake-text line-through decoration-mistake decoration-[1.5px]">{g.example.wrong}</span>{' '}
                 <span className="rounded-[2px_4px_3px_5px] bg-marker px-1">{g.example.right}</span>
               </div>
             </motion.div>
@@ -526,21 +526,21 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
       </div>
 
       {natural && (
-        <div className="mt-auto flex flex-col gap-3 rounded-panel border border-line bg-canvas p-5">
+        <div className="mt-auto flex flex-col gap-3 rounded-panel border border-border-subtle bg-surface-sunken p-5">
           <span className="text-[15px] font-semibold">More natural way to say it</span>
           <p className="font-display text-[21px] font-medium leading-[1.3] tracking-[-0.015em] text-pretty">"{natural}"</p>
           {(ttsSupported || voiceSupported) && (
             <div className="flex flex-wrap gap-2">
               {ttsSupported && (
                 <button type="button" onClick={() => onHear(natural)} disabled={sayBackListening}
-                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] border border-line bg-surface px-3 text-sm font-medium active:scale-[0.96] disabled:opacity-40">
+                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border-subtle bg-surface-card px-3 text-sm font-medium active:scale-[0.96] disabled:opacity-40">
                   <SpeakerHighIcon size={16} />
                   Hear it
                 </button>
               )}
               {voiceSupported && (
                 <button type="button" onClick={onSayBack} disabled={busy} aria-pressed={sayBackListening}
-                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] bg-brand px-3 text-sm font-medium text-white transition hover:bg-brand-hover active:scale-[0.96] disabled:opacity-40">
+                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] bg-brand px-3 text-sm font-medium text-on-brand transition hover:bg-brand-700 active:scale-[0.96] disabled:opacity-40">
                   <MicrophoneIcon size={16} />
                   {sayBackListening ? 'Done' : 'Say it back'}
                 </button>
@@ -548,7 +548,7 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
             </div>
           )}
           {sayBack && (
-            <p aria-live="polite" className={`text-sm ${sayBack.matched / sayBack.total >= 0.9 ? 'font-medium text-correct-ink' : 'text-ink-soft'}`}>
+            <p aria-live="polite" className={`text-sm ${sayBack.matched / sayBack.total >= 0.9 ? 'font-medium text-success-text' : 'text-text-secondary'}`}>
               {sayBack.matched / sayBack.total >= 0.9
                 ? `Spot on: ${sayBack.matched} of ${sayBack.total} words.`
                 : `You matched ${sayBack.matched} of ${sayBack.total} words. Hear it and try again.`}
@@ -563,8 +563,8 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
 function Stat({ label, value, accent = false }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[15px] text-ink-soft">{label}</span>
-      <span className={`font-display text-[52px] font-semibold leading-[0.9] tracking-[-0.04em] ${accent ? 'text-correct-ink' : ''}`}>{value}</span>
+      <span className="text-[15px] text-text-secondary">{label}</span>
+      <span className={`font-display text-[52px] font-semibold leading-[0.9] tracking-[-0.04em] ${accent ? 'text-success-text' : ''}`}>{value}</span>
     </div>
   );
 }
@@ -574,36 +574,36 @@ function Summary({ convo, messages, onReview, onNew, note = '', newLabel = 'New 
   const minutes = Math.max(1, Math.round((convo.durationSec ?? 0) / 60));
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-ink/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
       <motion.div role="dialog" aria-modal="true" aria-labelledby="summary-title"
-        className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-[460px] -translate-y-1/2 rounded-panel border border-line bg-surface p-7"
+        className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-[460px] -translate-y-1/2 rounded-panel border border-border-subtle bg-surface-card p-7"
         initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
-        <span className="text-sm text-ink-soft">{convo.title} · {minutes} min</span>
+        <span className="text-sm text-text-secondary">{convo.title} · {minutes} min</span>
         <h2 id="summary-title" className="mt-1 text-[30px] font-semibold tracking-[-0.03em]">Session complete</h2>
         <div className="mt-5 flex items-end gap-3">
           <span className="font-display text-[72px] font-semibold leading-[0.85] tracking-[-0.05em]">
             {convo.score == null ? '–' : `${convo.score}%`}
           </span>
-          <span className="pb-1.5 text-sm text-ink-soft">
+          <span className="pb-1.5 text-sm text-text-secondary">
             {convo.score == null ? 'No answers this time' : 'of your answers had no mistakes'}
           </span>
         </div>
-        {note && <p className="mt-4 text-[15px] text-ink-soft" data-end-note>{note}</p>}
+        {note && <p className="mt-4 text-[15px] text-text-secondary" data-end-note>{note}</p>}
         {groups.length > 0 && (
           <div className="mt-6 flex flex-col gap-2">
             <span className="text-sm font-semibold">Work on next</span>
             {groups.map((g) => (
               <div key={g.type} className="flex justify-between text-[15px]">
                 <span>{MISTAKE_LABELS[g.type] ?? 'Other'}</span>
-                <span className="text-ink-soft">{g.n}×</span>
+                <span className="text-text-secondary">{g.n}×</span>
               </div>
             ))}
           </div>
         )}
         <div className="mt-7 grid grid-cols-2 gap-2">
-          <button onClick={onReview} className="h-12 rounded-field border border-line font-semibold">Review</button>
-          <button onClick={onNew} autoFocus className="h-12 rounded-field bg-brand font-semibold text-white hover:bg-brand-hover">{newLabel}</button>
+          <button onClick={onReview} className="h-12 rounded-field border border-border-subtle font-semibold">Review</button>
+          <button onClick={onNew} autoFocus className="h-12 rounded-field bg-brand font-semibold text-on-brand hover:bg-brand-700">{newLabel}</button>
         </div>
       </motion.div>
     </>

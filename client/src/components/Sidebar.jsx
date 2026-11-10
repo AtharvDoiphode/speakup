@@ -15,7 +15,7 @@ function Tooltip({ children }) {
   return (
     <span
       role="tooltip"
-      className="pointer-events-none absolute left-full z-50 ml-4 hidden whitespace-nowrap rounded-tag bg-ink px-2.5 py-1.5 text-xs font-semibold text-white group-hover:block group-focus-visible:block"
+      className="pointer-events-none absolute left-full z-50 ml-4 hidden whitespace-nowrap rounded-tag bg-surface-inverse px-2.5 py-1.5 text-xs font-semibold text-text-inverse group-hover:block group-focus-visible:block"
     >
       {children}
     </span>
@@ -30,7 +30,7 @@ export default function Sidebar({ compact = false }) {
   const { user, logout } = useAuth();
 
   return (
-    <div className={`flex h-full flex-col border-r border-line bg-canvas ${compact ? 'px-3' : 'px-4'} py-5`}>
+    <div className={`flex h-full flex-col border-r border-border-subtle bg-surface-canvas ${compact ? 'px-3' : 'px-4'} py-5`}>
       <div className={compact ? 'flex justify-center' : 'px-1'}>
         <Logo compact={compact} />
       </div>
@@ -46,7 +46,7 @@ export default function Sidebar({ compact = false }) {
               end={item.to === '/'} // "/" should only be active on the home page itself
               aria-label={compact ? item.label : undefined}
               className={({ isActive }) =>
-                `group ${rowClass(compact)} ${isActive ? 'text-brand' : 'text-ink-soft hover:text-ink'}`
+                `group ${rowClass(compact)} ${isActive ? 'text-brand' : 'text-text-secondary hover:text-text-primary'}`
               }
             >
               {({ isActive }) => (
@@ -58,7 +58,7 @@ export default function Sidebar({ compact = false }) {
                       layoutId={compact ? 'nav-pill-compact' : 'nav-pill-full'}
                       aria-hidden="true"
                       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                      className="absolute inset-0 rounded-field border border-line bg-surface"
+                      className="absolute inset-0 rounded-field border border-border-subtle bg-surface-card"
                     />
                   )}
                   <Icon size={22} weight={isActive ? 'fill' : 'regular'} aria-hidden="true" className="relative" />
@@ -71,18 +71,18 @@ export default function Sidebar({ compact = false }) {
         })}
       </nav>
 
-      <div className="mt-4 border-t border-line pt-4">
+      <div className="mt-4 border-t border-border-subtle pt-4">
         {!compact && (
           <div className="mb-2 px-3">
-            <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
-            <p className="truncate text-xs capitalize text-ink-faint">{user.role}</p>
+            <p className="truncate text-sm font-semibold text-text-primary">{user.name}</p>
+            <p className="truncate text-xs capitalize text-text-muted">{user.role}</p>
           </div>
         )}
         <button
           type="button"
           onClick={logout}
           aria-label={compact ? 'Log out' : undefined}
-          className={`group ${rowClass(compact)} w-full text-ink-soft hover:bg-surface hover:text-ink`}
+          className={`group ${rowClass(compact)} w-full text-text-secondary hover:bg-surface-card hover:text-text-primary`}
         >
           <SignOutIcon size={22} aria-hidden="true" />
           {!compact && <span>Log out</span>}

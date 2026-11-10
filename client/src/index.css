@@ -2,48 +2,17 @@
 @import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/hanken-grotesk";
 
-/* Design tokens. Tailwind turns each one into classes automatically,
-   e.g. --color-brand becomes bg-brand, text-brand, border-brand. */
-@theme {
-  /* Surfaces */
-  --color-canvas: #EEF2FB;       /* page background (was "cloud") */
-  --color-surface: #FFFFFF;      /* panels, cards, inputs */
-  --color-line: #D9DFF2;         /* every border */
-
-  /* Text */
-  --color-ink: #10163A;
-  --color-ink-soft: #4A5280;
-  --color-ink-faint: #6B739E;    /* placeholders and hints: 4.59:1 on white, passes AA */
-
-  /* Brand */
-  --color-brand: #2F3CFF;
-  --color-brand-hover: #2230D6;  /* was "brand-deep" */
-
-  /* Correction language */
-  --color-mistake: #FF3D7F;      /* strike line, dots, fills */
-  --color-mistake-ink: #C71F58;  /* mistake text (was "mistake-deep") */
-  --color-correct: #19C98B;
-  --color-correct-ink: #0B7A55;  /* correct text (was "correct-deep") */
-  --color-marker: #FFD23F;       /* yellow highlighter behind the fix */
-
-  /* Type */
-  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
-
-  /* Radii from the design system */
-  --radius-tag: 8px;             /* rounded-tag */
-  --radius-field: 12px;          /* rounded-field: inputs, buttons, nav items */
-  --radius-panel: 16px;          /* rounded-panel: cards and panels */
-}
+/* Design tokens (colours, type, spacing, radii) live in one file */
+@import "./styles/tokens.css";
 
 @layer base {
   /* html too, so the area beyond the page when you over-scroll isn't white */
   html,
   body {
-    background: var(--color-canvas);
+    background: var(--color-surface-canvas);
   }
   body {
-    color: var(--color-ink);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
   }
   h1, h2, h3 {
@@ -51,11 +20,11 @@
     letter-spacing: -0.02em;
   }
   ::placeholder {
-    color: var(--color-ink-faint);
+    color: var(--color-text-muted);
   }
-  /* Visible keyboard focus everywhere */
+  /* Visible keyboard focus everywhere: a 2px ring with a 2px offset */
   :focus-visible {
-    outline: 2px solid var(--color-brand);
+    outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
   }
 }
@@ -92,8 +61,8 @@
   }
   html,
   body {
-    background: #fff !important;
-    color: #000;
+    background: var(--color-print-paper) !important;
+    color: var(--color-print-ink);
     font-size: 11pt;
   }
   /* No navigation, buttons or motion on paper */

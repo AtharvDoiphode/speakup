@@ -136,23 +136,23 @@ export default function ReadAloudPage() {
   }
 
   if (!voice.supported) {
-    return <div className="px-6 py-16"><h1 className="text-3xl font-semibold">Read Aloud</h1><p className="mt-2 text-ink-soft">Read Aloud needs Chrome or Edge, which can listen to your voice.</p></div>;
+    return <div className="px-6 py-16"><h1 className="text-3xl font-semibold">Read Aloud</h1><p className="mt-2 text-text-secondary">Read Aloud needs Chrome or Edge, which can listen to your voice.</p></div>;
   }
 
   return (
     <div className="flex flex-col xl:grid xl:min-h-dvh xl:grid-cols-[300px_minmax(0,1fr)]">
-      <aside id="passages" className="flex flex-col gap-6 border-t border-line px-4 py-8 md:px-8 xl:border-t-0 xl:border-r">
+      <aside id="passages" className="flex flex-col gap-6 border-t border-border-subtle px-4 py-8 md:px-8 xl:border-t-0 xl:border-r">
         <div className="hidden xl:block"><Intro /></div>
-        {!passages && !error && <div className="h-40 animate-pulse rounded-field bg-surface/70" />}
+        {!passages && !error && <div className="h-40 animate-pulse rounded-field bg-surface-card/70" />}
         {passages && LEVELS.map(([lvl, label]) => (
           <section key={lvl} className="flex flex-col">
-            <h2 className="mb-1 border-b border-line pb-2 text-sm font-semibold">{label}</h2>
+            <h2 className="mb-1 border-b border-border-subtle pb-2 text-sm font-semibold">{label}</h2>
             {passages.filter((p) => p.level === lvl).map((p) => (
               <button key={p.id} type="button" onClick={() => choose(p.id)} aria-pressed={p.id === selId} disabled={phase === 'reading'}
                 className="relative -mx-3 mt-0.5 flex flex-col rounded-field px-3 py-2.5 text-left disabled:opacity-60">
-                {p.id === selId && <motion.span layoutId="passage-pill" transition={spring} className="absolute inset-0 rounded-field border border-brand bg-surface" />}
+                {p.id === selId && <motion.span layoutId="passage-pill" transition={spring} className="absolute inset-0 rounded-field border border-brand bg-surface-card" />}
                 <span className={`relative text-[15px] ${p.id === selId ? 'font-semibold' : 'font-medium'}`}>{p.title}</span>
-                <span className="relative text-[13px] text-ink-soft">
+                <span className="relative text-[13px] text-text-secondary">
                   {p.words} words{p.best ? ` · best ${p.best.accuracy}% at ${p.best.wpm} wpm` : ''}
                 </span>
               </button>
@@ -175,7 +175,7 @@ export default function ReadAloudPage() {
                 </div>
               </div>
               <div className="min-w-0">
-                <div className="text-sm text-ink-soft">
+                <div className="text-sm text-text-secondary">
                   <span className="capitalize">{passage.level}</span> · {passage.words} words
                   {phase !== 'reading' && <a href="#passages" className="ml-2 text-brand xl:hidden">Other passages</a>}
                 </div>
@@ -184,16 +184,16 @@ export default function ReadAloudPage() {
               <div className="ml-auto flex items-center gap-3">
                 {phase === 'reading' && <span className="font-display text-2xl font-semibold tabular-nums" aria-live="off">{clock(elapsed)}</span>}
                 {phase === 'ready' && ttsSupported && (
-                  <button onClick={() => speak(passage.text, { rate: 0.9 })} className="flex h-11 items-center gap-1.5 rounded-field border border-line bg-surface px-3 text-sm font-medium">
+                  <button onClick={() => speak(passage.text, { rate: 0.9 })} className="flex h-11 items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium">
                     <SpeakerHighIcon size={17} /> Hear it first
                   </button>
                 )}
                 {phase === 'reading' ? (
-                  <button onClick={() => finish()} className="flex h-12 items-center gap-2 rounded-field bg-ink px-5 font-semibold text-white active:scale-[0.97]">
+                  <button onClick={() => finish()} className="flex h-12 items-center gap-2 rounded-field bg-surface-inverse px-5 font-semibold text-text-inverse active:scale-[0.97]">
                     <StopIcon size={18} /> Finish
                   </button>
                 ) : phase !== 'saving' && (
-                  <button onClick={start} className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-white transition hover:-translate-y-px hover:bg-brand-hover active:scale-[0.97]">
+                  <button onClick={start} className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97]">
                     {phase === 'done' ? <ArrowClockwiseIcon size={18} /> : <MicrophoneIcon size={18} />}
                     {phase === 'done' ? 'Read again' : 'Start reading'}
                   </button>
@@ -201,16 +201,16 @@ export default function ReadAloudPage() {
               </div>
             </header>
 
-            {(error || voice.error) && <p role="alert" className="text-sm font-medium text-mistake-ink">{error || voice.error}</p>}
+            {(error || voice.error) && <p role="alert" className="text-sm font-medium text-mistake-text">{error || voice.error}</p>}
 
-            <article className="rounded-panel border border-line bg-surface p-6 md:p-10">
+            <article className="rounded-panel border border-border-subtle bg-surface-card p-6 md:p-10">
               <p ref={textRef} className="text-[clamp(20px,2.1vw,26px)] leading-[1.9]">
                 {tokens.map((tok, i) => {
                   const st = phase === 'ready' ? 'pending' : shown.status[i];
                   const current = phase === 'reading' && i === shown.position;
-                  const cls = st === 'read' ? 'text-ink'
-                    : st === 'missed' ? 'text-mistake-ink underline decoration-mistake decoration-wavy decoration-[1.5px] underline-offset-4'
-                    : phase === 'ready' ? 'text-ink' : 'text-ink-soft/70';
+                  const cls = st === 'read' ? 'text-text-primary'
+                    : st === 'missed' ? 'text-mistake-text underline decoration-mistake decoration-wavy decoration-[1.5px] underline-offset-4'
+                    : phase === 'ready' ? 'text-text-primary' : 'text-text-muted';
                   return (
                     // The space sits outside the word, so the marker covers only the word
                     <Fragment key={i}>
@@ -227,20 +227,20 @@ export default function ReadAloudPage() {
             <AnimatePresence>
               {phase === 'done' && result && (
                 <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="grid gap-6 rounded-panel border border-line bg-surface p-6 md:grid-cols-[auto_1fr] md:p-8">
+                  className="grid gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:grid-cols-[auto_1fr] md:p-8">
                   <div className="flex items-center gap-5">
                     <ScoreRing score={result.accuracy} />
                     <div>
                       <div className="font-display text-2xl font-semibold">{result.accuracy}% accurate</div>
-                      <div className="text-sm text-ink-soft">{result.wordsRead} of {result.wordsReached} words · {clock(result.durationSec)}</div>
+                      <div className="text-sm text-text-secondary">{result.wordsRead} of {result.wordsReached} words · {clock(result.durationSec)}</div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1 md:border-l md:border-line md:pl-6">
+                  <div className="flex flex-col gap-1 md:border-l md:border-border-subtle md:pl-6">
                     <div className="flex items-baseline gap-2">
                       <span className="font-display text-[44px] font-semibold leading-none tracking-[-0.04em]">{result.wpm}</span>
-                      <span className="text-ink-soft">words per minute · {pace(result.wpm)[0]}</span>
+                      <span className="text-text-secondary">words per minute · {pace(result.wpm)[0]}</span>
                     </div>
-                    <p className="text-[15px] text-ink-soft">{pace(result.wpm)[1]}</p>
+                    <p className="text-[15px] text-text-secondary">{pace(result.wpm)[1]}</p>
                   </div>
                   {result.missed.length > 0 && (
                     <div className="flex flex-col gap-2 md:col-span-2">
@@ -248,7 +248,7 @@ export default function ReadAloudPage() {
                       <div className="flex flex-wrap gap-1.5">
                         {result.missed.map((w) => (
                           <button key={w} onClick={() => speak(w, { rate: 0.8 })} disabled={!ttsSupported}
-                            className="flex h-9 items-center gap-1.5 rounded-tag border border-line px-3 text-[15px]">
+                            className="flex h-9 items-center gap-1.5 rounded-tag border border-border-subtle px-3 text-[15px]">
                             {ttsSupported && <SpeakerHighIcon size={14} className="text-brand" />}{w}
                           </button>
                         ))}
@@ -270,7 +270,7 @@ function Intro() {
   return (
     <>
       <h1 className="text-[clamp(30px,3.4vw,38px)] font-semibold leading-[1.05] tracking-[-0.035em]">Read Aloud</h1>
-      <p className="mt-2 text-[15px] text-ink-soft">Read at your own pace. The marker follows your voice.</p>
+      <p className="mt-2 text-[15px] text-text-secondary">Read at your own pace. The marker follows your voice.</p>
     </>
   );
 }
@@ -279,7 +279,7 @@ function NextPassage({ passages, current, onPick }) {
   const i = passages.findIndex((p) => p.id === current.id);
   const next = passages[(i + 1) % passages.length];
   return (
-    <button onClick={() => onPick(next.id)} className="flex items-center gap-2 text-[15px] font-semibold text-brand hover:text-brand-hover md:col-span-2">
+    <button onClick={() => onPick(next.id)} className="flex items-center gap-2 text-[15px] font-semibold text-brand hover:text-brand-700 md:col-span-2">
       Next: {next.title} <ArrowRightIcon size={16} />
     </button>
   );

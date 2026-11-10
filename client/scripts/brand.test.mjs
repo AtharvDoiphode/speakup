@@ -143,7 +143,8 @@ test('committed SVGs and manifest match what make-icons.mjs builds from brand-co
   try {
     execFileSync(process.execPath, [join(CLIENT, 'scripts', 'make-icons.mjs'), '--out', out, '--svg-only']);
     for (const f of ['favicon.svg', 'manifest.webmanifest', 'brand/logo-mark.svg', 'brand/logo-horizontal.svg', 'brand/logo-horizontal-dark.svg', 'brand/logo-stacked.svg', 'brand/logo-mono.svg']) {
-      assert.equal(read(join(PUB, f)), read(join(out, f)), `${f} is out of date: run npm run icons`);
+      const lf = (p) => read(p).replace(/\r\n/g, '\n'); // git may check files out with CRLF
+      assert.equal(lf(join(PUB, f)), lf(join(out, f)), `${f} is out of date: run npm run icons`);
     }
   } finally {
     rmSync(out, { recursive: true, force: true });

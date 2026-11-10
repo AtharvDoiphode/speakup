@@ -8,7 +8,7 @@ export default function ScoreRing({ score, size = 88 }) {
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg viewBox="0 0 88 88" className="size-full -rotate-90">
-        <circle cx="44" cy="44" r={r} fill="none" strokeWidth="8" className="stroke-canvas" />
+        <circle cx="44" cy="44" r={r} fill="none" strokeWidth="8" className="stroke-surface-sunken" />
         <motion.circle cx="44" cy="44" r={r} fill="none" strokeWidth="8" strokeLinecap="round" className="stroke-brand"
           strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - score / 100) }}
           transition={{ delay: 0.3, duration: 1, ease: [0.2, 0.8, 0.2, 1] }} />
