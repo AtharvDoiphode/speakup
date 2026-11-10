@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SpeakUp logo options</title>
+<style>
+  body { margin: 0; padding: 32px; font: 15px/1.4 system-ui, sans-serif; color: #10163A; background: #EEF2FB; }
+  h1 { font-size: 22px; margin: 0 0 4px; } p { margin: 0 0 24px; color: #4A5280; }
+  .concept { margin-bottom: 28px; } h2 { font-size: 16px; margin: 0 0 8px; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .bg { display: flex; align-items: end; gap: 20px; padding: 20px; border-radius: 14px; }
+  .light { background: #FFFFFF; } .dark { background: #10163A; } .blue { background: #2F3CFF; }
+  .bg span { display: block; font-size: 11px; opacity: .6; margin-top: 4px; text-align: center; }
+  .dark span, .blue span { color: #fff; }
+  img { display: block; image-rendering: auto; }
+</style>
+</head>
+<body>
+<h1>SpeakUp logo options</h1>
+<p>Each concept at 256, 64, 32 and 16 px on light, dark and brand-blue backgrounds.</p>
+<div id="out"></div>
+<template id="t"><section class="concept"><h2></h2><div class="row"></div></section></template>
+<script>
+  const concepts = [['A · Orb', 'concept-a-orb.svg'], ['B · Up-bubble', 'concept-b-up-bubble.svg'], ['C · Marker S', 'concept-c-marker-s.svg']];
+  for (const [name, file] of concepts) {
+    const node = document.getElementById('t').content.cloneNode(true);
+    node.querySelector('h2').textContent = name;
+    for (const bg of ['light', 'dark', 'blue']) {
+      const box = document.createElement('div');
+      box.className = 'bg ' + bg;
+      for (const s of [256, 64, 32, 16]) {
+        const fig = document.createElement('div');
+        const img = new Image(s, s); img.src = file; img.alt = name + ' at ' + s + 'px';
+        const cap = document.createElement('span'); cap.textContent = s;
+        fig.append(img, cap); box.append(fig);
+      }
+      node.querySelector('.row').append(box);
+    }
+    document.getElementById('out').append(node);
+  }
+</script>
+</body>
+</html>

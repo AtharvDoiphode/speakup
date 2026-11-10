@@ -92,7 +92,7 @@ export default function TranscriptPage() {
     <div className="flex flex-col gap-6 px-4 py-8 md:px-11 md:py-10 print:gap-4 print:p-0">
       {/* Only on paper */}
       <div className="hidden border-b-2 border-ink pb-3 print:block" data-print-header>
-        <div className="text-[16pt] font-bold">SpeakUp</div>
+        <img src="/brand/logo-mono.svg" alt="SpeakUp" width={99} height={24} className="mb-1 h-[20pt] w-auto" />
         <div className="text-[11pt]">
           {user?.name} · {c.title} · {when} · {turns && c.scorecard ? `${SCORE_TITLE[c.mode]} ${c.scorecard.overall}` : `Score ${c.score ?? '–'}${c.score != null ? '%' : ''}`}
         </div>
