@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, select: false },
     // 'admin' is only given at registration to the email in ADMIN_EMAIL
     role: { type: String, enum: ['member', 'admin'], default: 'member' },
+    // Set when an admin resets the password: the app is blocked until it's changed
+    mustChangePassword: { type: Boolean, default: false },
+    settings: {
+      goalMin: { type: Number, enum: [10, 15, 20, 30], default: 15 },
+      voiceName: { type: String, default: '', maxlength: 100 }, // '' = the device's usual choice
+      speechRate: { type: Number, min: 0.7, max: 1.3, default: 1 },
+      defaultDifficulty: { type: String, enum: ['friendly', 'neutral', 'tough'], default: 'neutral' },
+    },
   },
   { timestamps: true }
 );

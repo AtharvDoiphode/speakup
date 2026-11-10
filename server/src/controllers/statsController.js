@@ -3,10 +3,9 @@ import ReadingSession from '../models/ReadingSession.js';
 import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { SCENARIOS } from '../data/scenarios.js';
-import { TZ, DAY, dayKey, keysBack, toMin, streaks } from '../utils/days.js';
-import { activeDayKeys } from '../services/activity.js';
+import { DAY, dayKey, keysBack, toMin, streaks } from '../utils/days.js';
+import { activeDayKeys, weekSecondsByUser } from '../services/activity.js';
 
-const GOAL_MIN = 15;
 
 // GET /api/stats/dashboard
 export const getDashboard = asyncHandler(async (req, res) => {
@@ -16,7 +15,6 @@ export const getDashboard = asyncHandler(async (req, res) => {
   const yesterday = dayKey(now - DAY);
   const since60 = new Date(now - 60 * DAY);
   const since14 = new Date(now - 14 * DAY);
-  const since8 = new Date(now - 8 * DAY);
   // "This week" = the last 7 calendar days in India time, today included.
   // "Last week" = the 7 days before that. Everything below uses these same days,
   // so a week's count always equals the sum of its daily bars.
@@ -25,7 +23,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
   const thisWeek = new Set(weekKeys);
   const lastWeek = new Set(fortnight.slice(0, 7));
 
-  const [ended, readings, withMessages, familyRows, users, allActive] = await Promise.all([
+  const [ended, readings, withMessages, secByUser, users, allActive] = await Promise.all([
     Conversation.find({ user: userId, status: 'ended', endedAt: { $gte: since60 } })
       .select('scenarioId title persona.name persona.role endedAt durationSec score')
       .sort({ endedAt: -1 })
@@ -37,24 +35,8 @@ export const getDashboard = asyncHandler(async (req, res) => {
     Conversation.find({ user: userId, 'messages.createdAt': { $gte: since14 } })
       .select('messages.role messages.mistakes messages.createdAt')
       .lean(),
-    // Family minutes this week: ended conversations plus read-aloud sessions, grouped
-    // by person and counted on the same India-time days as everything else
-    Conversation.aggregate([
-      { $match: { status: 'ended', endedAt: { $gte: since8 } } },
-      { $project: { user: 1, durationSec: 1, at: '$endedAt' } },
-      {
-        $unionWith: {
-          coll: ReadingSession.collection.name,
-          pipeline: [
-            { $match: { createdAt: { $gte: since8 } } },
-            { $project: { user: 1, durationSec: 1, at: '$createdAt' } },
-          ],
-        },
-      },
-      { $project: { user: 1, durationSec: 1, day: { $dateToString: { format: '%Y-%m-%d', date: '$at', timezone: TZ } } } },
-      { $match: { day: { $in: weekKeys } } },
-      { $group: { _id: '$user', sec: { $sum: '$durationSec' } } },
-    ]),
+    // Family minutes this week (shared with the admin's member list)
+    weekSecondsByUser(now),
     User.find().select('name').lean(),
     activeDayKeys(userId), // all time, so a streak longer than 60 days still counts
   ]);
@@ -108,7 +90,6 @@ export const getDashboard = asyncHandler(async (req, res) => {
     .map((g) => ({ type: g.type, count: g.count, prevCount: g.prevCount, daily: weekKeys.map((d) => g.perDay[d]), example: g.example }));
 
   // Family: first names and minutes only
-  const secByUser = Object.fromEntries(familyRows.map((r) => [String(r._id), r.sec]));
   const family = users
     .map((u) => ({
       name: (u.name || '').trim().split(/\s+/)[0] || 'Member',
@@ -156,7 +137,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
   };
 
   res.json({
-    goalMin: GOAL_MIN,
+    goalMin: req.user.settings?.goalMin ?? 15, // the person's own daily goal (Settings)
     today: { minutes: toMin(secByDay[today]), yesterdayMinutes: toMin(secByDay[yesterday]) },
     streak,
     last7,

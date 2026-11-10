@@ -17,6 +17,11 @@ export const protect = async (req, res, next) => {
   const user = await User.findById(payload.id);
   if (!user) throw new HttpError(401, 'Account no longer exists');
 
+  // After an admin reset, only the password change (and reading your own account) works
+  if (user.mustChangePassword && !/^\/api\/(auth|me)\//.test(req.originalUrl)) {
+    throw new HttpError(403, 'Please change your password first');
+  }
+
   req.user = user;
   next();
 };

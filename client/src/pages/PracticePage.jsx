@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { CaretDownIcon, CheckIcon, MicrophoneIcon, XIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import { useAuth } from '../context/useAuth';
 import Segmented from '../components/Segmented';
 import { DIFFICULTIES } from '../lib/modes';
 import { InterviewPanel, DebatePanel, PeoplePanel } from '../components/practice/ModePanels';
@@ -55,7 +56,8 @@ export default function PracticePage() {
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [selId, setSelId] = useState(null);
-  const [difficulty, setDifficulty] = useState('neutral');
+  const { user } = useAuth();
+  const [difficulty, setDifficulty] = useState(user?.settings?.defaultDifficulty ?? 'neutral'); // from Settings
   const [traits, setTraits] = useState([]);
   const [mood, setMood] = useState('Neutral');
   const [starting, setStarting] = useState(false);

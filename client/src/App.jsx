@@ -3,7 +3,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/AppShell';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
-import ComingSoon from './pages/ComingSoon';
 import WritingPage from './pages/WritingPage';
 import WritingResultPage from './pages/WritingResultPage';
 import PracticePage from './pages/PracticePage';
@@ -17,6 +16,8 @@ import VocabReviewPage from './pages/VocabReviewPage';
 import ProgressPage from './pages/ProgressPage';
 import HistoryPage from './pages/HistoryPage';
 import TranscriptPage from './pages/TranscriptPage';
+import SettingsPage from './pages/SettingsPage';
+import FamilyPage from './pages/FamilyPage';
 
 export default function App() {
   return (
@@ -42,7 +43,8 @@ export default function App() {
           <Route path="progress" element={<ProgressPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="history/:id" element={<TranscriptPage />} />
-          <Route path="settings" element={<ComingSoon title="Settings" />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="family" element={<FamilyPage />} />
         </Route>
       </Route>
 

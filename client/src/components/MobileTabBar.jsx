@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { DotsThreeOutlineIcon, SignOutIcon, XIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
-import { PRIMARY_NAV, MORE_NAV } from '../lib/nav';
+import { PRIMARY_NAV, MORE_NAV, visibleTo } from '../lib/nav';
 
 const tabClass = (active) =>
   `flex h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-field text-[11px] font-semibold ${
@@ -13,7 +13,7 @@ const tabClass = (active) =>
 // The bottom navigation on phones (hidden from medium screens up, where the sidebar takes over).
 // Four main tabs, plus "More" which opens a sheet with the remaining pages and Log out.
 export default function MobileTabBar() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -54,7 +54,7 @@ export default function MobileTabBar() {
               transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
               className="fixed inset-x-3 bottom-22 z-40 rounded-panel border border-line bg-surface p-2"
             >
-              {MORE_NAV.map((item) => {
+              {MORE_NAV.filter(visibleTo(user)).map((item) => {
                 const Icon = item.icon;
                 return (
                   <NavLink

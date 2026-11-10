@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { SignOutIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
-import { NAV } from '../lib/nav';
+import { NAV, visibleTo } from '../lib/nav';
 import Logo from './Logo';
 
 const rowClass = (compact) =>
@@ -37,7 +37,7 @@ export default function Sidebar({ compact = false }) {
 
       {/* The compact rail must not clip its tooltips, so only the full sidebar scrolls */}
       <nav aria-label="Main" className={`mt-8 flex flex-1 flex-col gap-1 ${compact ? '' : 'overflow-y-auto'}`}>
-        {NAV.map((item) => {
+        {NAV.filter(visibleTo(user)).map((item) => {
           const Icon = item.icon;
           return (
             <NavLink

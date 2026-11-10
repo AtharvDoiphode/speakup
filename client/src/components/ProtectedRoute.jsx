@@ -18,6 +18,9 @@ export default function ProtectedRoute() {
   // so the login page can send the user back there afterwards
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
+  // An admin reset this password: nothing else opens until it's changed in Settings
+  if (user.mustChangePassword && location.pathname !== '/settings') return <Navigate to="/settings" replace />;
+
   // Logged in: show whichever page is nested inside this gate
   return <Outlet />;
 }

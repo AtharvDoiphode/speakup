@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
 import User from '../models/User.js';
+import { getSignupCode } from '../models/AppSettings.js';
 import { HttpError } from '../utils/httpError.js';
 import { setAuthCookie, clearAuthCookie } from '../utils/token.js';
 
@@ -41,7 +42,7 @@ const safeEqual = (a, b) => {
 export const register = async (req, res) => {
   const { name, email, password, signupCode } = parse(registerSchema, req.body);
 
-  const expectedCode = process.env.SIGNUP_CODE;
+  const expectedCode = await getSignupCode(); // the admin can change it; falls back to SIGNUP_CODE
   if (!expectedCode) throw new HttpError(503, 'Registration is currently closed');
   if (!safeEqual(signupCode, expectedCode)) throw new HttpError(403, 'Invalid family signup code');
 
@@ -68,6 +69,28 @@ export const login = async (req, res) => {
   }
 
   setAuthCookie(res, user.id);
+  res.json({ user });
+};
+
+const changeSchema = z.object({
+  currentPassword: z.string({ error: 'Enter your current password' }).min(1, 'Enter your current password'),
+  newPassword: z
+    .string({ error: 'Enter a new password' })
+    .min(8, 'The new password needs at least 8 characters')
+    .max(72, 'The new password can have at most 72 characters'), // bcrypt only reads 72 bytes
+});
+
+// POST /api/auth/change-password
+export const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = parse(changeSchema, req.body);
+  const user = await User.findById(req.user._id).select('+password');
+  if (!(await user.comparePassword(currentPassword))) throw new HttpError(400, 'Your current password is not right');
+  if (newPassword === currentPassword) throw new HttpError(400, 'Choose a password different from your current one');
+  if (newPassword.trim().toLowerCase() === user.email) throw new HttpError(400, "Your password can't be your email address");
+
+  user.password = newPassword; // hashed with bcrypt by the model's pre-save hook
+  user.mustChangePassword = false;
+  await user.save();
   res.json({ user });
 };
 

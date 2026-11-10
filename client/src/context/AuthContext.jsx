@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../lib/api';
+import { setSpeechPrefs } from '../lib/speak';
 import { AuthContext } from './useAuth';
 
 export function AuthProvider({ children }) {
@@ -28,13 +29,18 @@ export function AuthProvider({ children }) {
     return res.data.user;
   };
 
+  // Every read-aloud uses the person's own voice and speed from Settings
+  useEffect(() => {
+    setSpeechPrefs(user?.settings);
+  }, [user]);
+
   const logout = async () => {
     await api.post('/auth/logout');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

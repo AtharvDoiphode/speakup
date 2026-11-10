@@ -8,6 +8,7 @@ import {
   ChartLineUpIcon,
   ClockCounterClockwiseIcon,
   GearSixIcon,
+  UsersThreeIcon,
 } from '@phosphor-icons/react';
 
 // Every page in the app shell. The sidebar shows all of them.
@@ -23,7 +24,10 @@ export const NAV = [
   { to: '/progress', label: 'Progress', icon: ChartLineUpIcon, primary: true },
   { to: '/history', label: 'History', icon: ClockCounterClockwiseIcon },
   { to: '/settings', label: 'Settings', icon: GearSixIcon },
+  { to: '/family', label: 'Family', icon: UsersThreeIcon, adminOnly: true },
 ];
 
 export const PRIMARY_NAV = NAV.filter((item) => item.primary);
 export const MORE_NAV = NAV.filter((item) => !item.primary);
+// Family is for admins only; everyone else never sees the link
+export const visibleTo = (user) => (item) => !item.adminOnly || user?.role === 'admin';

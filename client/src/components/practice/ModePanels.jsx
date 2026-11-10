@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { CheckIcon, MicrophoneIcon, PencilSimpleIcon, PlusIcon, TrashIcon, UserCircleIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../../lib/api';
+import { useAuth } from '../../context/useAuth';
 import { DIFFICULTIES } from '../../lib/modes';
 import Segmented from '../Segmented';
 
@@ -54,9 +55,10 @@ function StartButton({ busy, busyText, children, onClick }) {
 
 export function InterviewPanel({ modes }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [role, setRole] = useState('');
   const [focus, setFocus] = useState('hr');
-  const [difficulty, setDifficulty] = useState('neutral');
+  const [difficulty, setDifficulty] = useState(user?.settings?.defaultDifficulty ?? 'neutral'); // from Settings
   const [tried, setTried] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
@@ -115,10 +117,11 @@ export function InterviewPanel({ modes }) {
 
 export function DebatePanel({ modes }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [topicId, setTopicId] = useState(null); // a topic id, or 'custom'
   const [custom, setCustom] = useState('');
   const [stance, setStance] = useState('for');
-  const [difficulty, setDifficulty] = useState('neutral');
+  const [difficulty, setDifficulty] = useState(user?.settings?.defaultDifficulty ?? 'neutral'); // from Settings
   const [tried, setTried] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');

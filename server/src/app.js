@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import meRoutes from './routes/meRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import scenarioRoutes from './routes/scenarioRoutes.js';
 import conversationRoutes from './routes/conversationRoutes.js';
@@ -34,6 +35,7 @@ app.get('/api/health', (req, res) => {
 // Feature routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/me', meRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/conversations', conversationRoutes);
