@@ -18,7 +18,7 @@ export default function Segmented({ label, options, value, onChange, layoutId, s
         const on = o.value === value;
         return (
           <button key={o.value} type="button" role="radio" aria-checked={on} onClick={() => onChange(o.value)}
-            className={`relative rounded-[9px] ${size === 'sm' ? 'h-8 text-sm' : 'h-[38px] text-[15px]'} ${
+            className={`relative rounded-[9px] ${size === 'sm' ? 'h-8 text-sm max-md:h-11' : 'h-[38px] text-[15px] max-md:h-11'} ${
               on ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary hover:text-text-primary'
             }`}>
             {on && <motion.span layoutId={layoutId} transition={spring} className="absolute inset-0 rounded-[9px] border border-border-subtle bg-surface-card" />}

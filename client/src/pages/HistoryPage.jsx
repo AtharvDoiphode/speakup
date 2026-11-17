@@ -8,6 +8,9 @@ import {
   PencilSimpleLineIcon, SpeakerHighIcon, SpinnerGapIcon, TrashIcon, XIcon,
 } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { ListSkeleton } from '../components/Skeleton';
 import { dayHeading, istKey, timeOf } from '../lib/dates';
 import { speak, ttsSupported } from '../lib/speak';
 import Segmented from '../components/Segmented';
@@ -58,6 +61,7 @@ export default function HistoryPage() {
     return () => clearTimeout(t);
   }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
   // Load page 1 whenever the filters change. A newer request cancels the older one,
   // so old results can never replace new ones.
   const query = { ...(q && { q }), ...(type !== 'all' && { type }), ...(from && { from }), ...(to && { to }) };
@@ -68,9 +72,9 @@ export default function HistoryPage() {
     controller.current = c;
     api.get('/history', { params: JSON.parse(key), signal: c.signal })
       .then(({ data }) => { setItems(data.items); setNext(data.nextBefore); setError(''); setMoreError(''); })
-      .catch((err) => { if (!axios.isCancel(err)) setError(getErrorMessage(err)); });
+      .catch((err) => { if (!axios.isCancel(err)) setError(err); });
     return () => c.abort();
-  }, [key]);
+  }, [key, attempt]);
 
   function changeType(t) { setItems(null); setFilters({ type: t }); }
   function changeDate(field, v) { setItems(null); setFilters({ [field]: v }); }
@@ -119,7 +123,7 @@ export default function HistoryPage() {
             <Segmented label="Show" layoutId="history-type" value={type} onChange={changeType} options={TYPES} size="sm" />
           </div>
           <button type="button" onClick={() => setShowDates((v) => !v)} aria-expanded={showDates} aria-controls="history-dates"
-            className={`flex h-10 w-fit items-center gap-1.5 rounded-field border px-3 text-sm font-medium ${from || to ? 'border-brand text-brand' : 'border-border-subtle text-text-secondary hover:text-text-primary'}`}>
+            className={`flex h-10 max-md:h-11 w-fit items-center gap-1.5 rounded-field border px-3 text-sm font-medium ${from || to ? 'border-brand text-brand' : 'border-border-subtle text-text-secondary hover:text-text-primary'}`}>
             <CalendarBlankIcon size={16} /> Dates{from || to ? ': on' : ''}
           </button>
         </div>
@@ -147,8 +151,8 @@ export default function HistoryPage() {
         </AnimatePresence>
       </div>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!items && !error && <div className="h-64 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {!items && !error && <ListSkeleton label="Loading your history" />}
 
       {items && items.length === 0 && (
         <div className="flex flex-col items-start gap-3 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8">
@@ -250,14 +254,8 @@ function ReadingDetail({ id, onDeleted }) {
   useEffect(() => {
     api.get(`/reading/sessions/${id}`).then(({ data }) => setS(data.session)).catch((err) => setError(getErrorMessage(err)));
   }, [id]);
-  useEffect(() => {
-    if (!confirm) return;
-    const t = setTimeout(() => setConfirm(false), 3000);
-    return () => clearTimeout(t);
-  }, [confirm]);
-
   async function remove() {
-    if (!confirm) return setConfirm(true);
+    if (busy) return;
     setBusy(true);
     try {
       await api.delete(`/reading/sessions/${id}`);
@@ -294,10 +292,12 @@ function ReadingDetail({ id, onDeleted }) {
           ) : <p className="text-sm text-success-text">Every word came through clearly.</p>}
           <div className="flex flex-wrap gap-2">
             <Link to="/read-aloud" className="flex h-10 items-center rounded-field border border-border-subtle bg-surface-card px-4 text-sm font-semibold hover:border-border-strong">Read again</Link>
-            <button type="button" onClick={remove} disabled={busy}
-              className="flex h-10 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-text">
-              <TrashIcon size={15} /> {confirm ? 'Tap again' : 'Delete'}
+            <button type="button" onClick={() => setConfirm(true)} disabled={busy}
+              className="flex min-h-11 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-text">
+              <TrashIcon size={15} /> Delete
             </button>
+            <ConfirmDialog open={confirm} title="Delete this read-aloud?" message="Your reading and its result are deleted for good."
+              busy={busy} onConfirm={remove} onCancel={() => setConfirm(false)} />
           </div>
         </>
       )}

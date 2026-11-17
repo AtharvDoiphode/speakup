@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { CheckIcon, SpeakerHighIcon, WarningIcon } from '@phosphor-icons/react';
+import { CheckIcon, EyeIcon, EyeSlashIcon, SpeakerHighIcon, WarningIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/useAuth';
 import { DIFFICULTIES } from '../lib/modes';
 import { englishVoices, setSpeechPrefs, speak, ttsSupported } from '../lib/speak';
 import Segmented from '../components/Segmented';
+import { useUnsavedWarning } from '../hooks/useUnsavedWarning';
+import { validate } from '../lib/validate';
 
 const GOALS = [10, 15, 20, 30];
 const PREVIEW = 'Hello! This is how I will sound when we practise together.';
@@ -90,6 +92,7 @@ function ProfileSection({ user, setUser }) {
   const [name, setName] = useState(user.name);
   const [state, setState] = useState(null);
   const saved = useRef(user.name);
+  useUnsavedWarning(name.trim() !== user.name && state !== 'saving');
 
   async function save() {
     const next = name.trim();
@@ -211,21 +214,39 @@ function PreferenceSections({ user, setUser }) {
 }
 
 function PasswordSection({ user, setUser }) {
-  const [current, setCurrent] = useState('');
-  const [next, setNext] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [form, setForm] = useState({ current: '', next: '', confirm: '' });
+  const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState(null); // { ok, text }
   const [busy, setBusy] = useState(false);
+  const [shown, setShown] = useState(false);
+  useUnsavedWarning(Boolean(form.current || form.next || form.confirm));
+
+  const ORDER = ['current', 'next', 'confirm'];
+  const check = (key, f = form) => ({
+    current: () => (f.current ? null : user.mustChangePassword ? 'Enter the temporary password' : 'Enter your current password'),
+    next: () => validate.password(f.next, { email: user.email }),
+    confirm: () => (f.confirm ? validate.confirm(f.next, f.confirm) : 'Type the new password again'),
+  })[key]();
+  const set = (key) => (e) => {
+    const f = { ...form, [key]: e.target.value };
+    setForm(f);
+    setMsg(null);
+    if (errors[key]) setErrors((x) => ({ ...x, [key]: check(key, f) }));
+  };
+  const leave = (key) => () => form[key] && setErrors((x) => ({ ...x, [key]: check(key) }));
 
   async function change(e) {
     e.preventDefault();
+    if (busy) return;
     setMsg(null);
-    if (next.length < 8) return setMsg({ text: 'The new password needs at least 8 characters' });
-    if (next !== confirm) return setMsg({ text: "The two new passwords don't match" });
+    const found = Object.fromEntries(ORDER.map((k) => [k, check(k)]).filter(([, v]) => v));
+    setErrors(found);
+    const first = ORDER.find((k) => found[k]);
+    if (first) return document.getElementById(`pw-${first}`)?.focus(); // the first field to fix
     setBusy(true);
     try {
-      const { data } = await api.post('/auth/change-password', { currentPassword: current, newPassword: next });
-      setCurrent(''); setNext(''); setConfirm('');
+      const { data } = await api.post('/auth/change-password', { currentPassword: form.current, newPassword: form.next });
+      setForm({ current: '', next: '', confirm: '' });
       setMsg({ ok: true, text: 'Password changed.' });
       setUser(data.user); // clears the forced-change gate
     } catch (err) {
@@ -234,11 +255,14 @@ function PasswordSection({ user, setUser }) {
     setBusy(false);
   }
 
-  const field = (id, label, value, set, auto) => (
+  const field = (key, label, auto, hint) => (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold">{label}</label>
-      <input id={id} type="password" value={value} onChange={(e) => set(e.target.value)} autoComplete={auto} maxLength={72}
-        className="h-12 rounded-field border border-border-strong bg-surface-card px-3.5 text-base focus:border-brand" />
+      <label htmlFor={`pw-${key}`} className="text-sm font-semibold">{label}</label>
+      <input id={`pw-${key}`} type={shown ? 'text' : 'password'} value={form[key]} onChange={set(key)} onBlur={leave(key)} autoComplete={auto} maxLength={72}
+        aria-invalid={Boolean(errors[key])} aria-describedby={[errors[key] && `pw-${key}-error`, hint && `pw-${key}-hint`].filter(Boolean).join(' ') || undefined}
+        className={`h-12 rounded-field border bg-surface-card px-3.5 text-base focus:border-brand ${errors[key] ? 'border-mistake' : 'border-border-strong'}`} />
+      {hint && <p id={`pw-${key}-hint`} className="text-[13px] text-text-secondary">{hint}</p>}
+      {errors[key] && <p id={`pw-${key}-error`} role="alert" className="text-sm font-medium text-mistake-text">{errors[key]}</p>}
     </div>
   );
 
@@ -247,14 +271,19 @@ function PasswordSection({ user, setUser }) {
       <form onSubmit={change} className="flex flex-col gap-3.5" noValidate>
         {/* For password managers */}
         <input type="text" name="username" autoComplete="username" value={user.email} readOnly hidden />
-        {field('pw-current', user.mustChangePassword ? 'Temporary password' : 'Current password', current, setCurrent, 'current-password')}
+        {field('current', user.mustChangePassword ? 'Temporary password' : 'Current password', 'current-password')}
         <div className="grid gap-3.5 md:grid-cols-2">
-          {field('pw-new', 'New password', next, setNext, 'new-password')}
-          {field('pw-confirm', 'New password again', confirm, setConfirm, 'new-password')}
+          {field('next', 'New password', 'new-password', '8 to 72 characters, and not your email.')}
+          {field('confirm', 'New password again', 'new-password')}
         </div>
+        <button type="button" onClick={() => setShown((v) => !v)} aria-pressed={shown}
+          className="flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-text-secondary hover:text-text-primary">
+          {shown ? <EyeSlashIcon size={18} aria-hidden="true" /> : <EyeIcon size={18} aria-hidden="true" />}
+          {shown ? 'Hide passwords' : 'Show passwords'}
+        </button>
         {msg && <p role={msg.ok ? 'status' : 'alert'} className={`text-sm font-medium ${msg.ok ? 'text-success-text' : 'text-mistake-text'}`}>{msg.text}</p>}
-        <button type="submit" disabled={busy || !current || !next || !confirm}
-          className="flex min-h-12 w-fit items-center rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700 disabled:opacity-50">
+        <button type="submit" disabled={busy} aria-busy={busy}
+          className="flex min-h-12 w-fit min-w-44 items-center justify-center rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700 disabled:opacity-60">
           {busy ? 'Changing…' : 'Change password'}
         </button>
       </form>

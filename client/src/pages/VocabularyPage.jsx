@@ -5,6 +5,8 @@ import SuccessCheck from '../components/SuccessCheck';
 import { listItem, reveal } from '../lib/motion';
 import { ArrowRightIcon, PlusIcon, SpinnerGapIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { CardsSkeleton } from '../components/Skeleton';
 import { STAGES } from '../lib/vocab';
 import Segmented from '../components/Segmented';
 import DeckTab from '../components/vocab/DeckTab';
@@ -49,7 +51,7 @@ function TodayTab({ onGoAdd }) {
   const [note, setNote] = useState('');
 
   const load = useCallback(() => {
-    api.get('/vocab/overview').then(({ data }) => setOv(data)).catch((err) => setError(getErrorMessage(err)));
+    api.get('/vocab/overview').then(({ data }) => { setOv(data); setError(''); }).catch((err) => setError(err));
     api.get('/vocab/suggestions').then(({ data }) => setSugs(data.suggestions)).catch(() => setSugs([]));
   }, []);
   useEffect(load, [load]);
@@ -67,8 +69,8 @@ function TodayTab({ onGoAdd }) {
     setAdding(false);
   }
 
-  if (error) return <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>;
-  if (!ov) return <div className="h-48 animate-pulse rounded-panel bg-surface-card/70" />;
+  if (error) return <ErrorState error={error} onRetry={load} />;
+  if (!ov) return <CardsSkeleton count={4} className="grid grid-cols-2 gap-3" label="Loading your words" />;
 
   const due = ov.dueCount;
   const minutes = Math.max(1, Math.round((due * 8) / 60)); // about 8 seconds a card
@@ -182,7 +184,7 @@ function FromMistakes({ suggestions, onAdded }) {
       onAdded();
     } catch (err) {
       setState((x) => ({ ...x, [s.word]: undefined }));
-      setError(err.response ? getErrorMessage(err) : err.message);
+      setError(err.isAxiosError ? getErrorMessage(err) : err.message);
     }
   }
 

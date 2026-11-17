@@ -4,6 +4,8 @@ import { m as motion } from 'motion/react';
 import { DURATION, listItem, reveal, stagger } from '../lib/motion';
 import { ArrowRightIcon, BookOpenIcon, MicrophoneIcon, SpeakerHighIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { useToast } from '../components/useToast';
 import { useAuth } from '../context/useAuth';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { wordOfTheDay } from '../lib/words';
@@ -20,6 +22,7 @@ const shortDate = (iso) =>
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
@@ -30,21 +33,22 @@ export default function Dashboard() {
   }));
 
   const [wordsDue, setWordsDue] = useState(0);
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
 
   useEffect(() => {
-    api.get('/stats/dashboard').then(({ data }) => setData(data)).catch((err) => setError(getErrorMessage(err)));
+    api.get('/stats/dashboard').then(({ data }) => { setData(data); setError(''); }).catch((err) => setError(err));
     // Just a small extra line, so a failure here is ignored
     api.get('/vocab/overview').then(({ data }) => setWordsDue(data.dueCount)).catch(() => {});
-  }, []);
+  }, [attempt]);
 
   async function startChallenge() {
+    if (starting) return;
     setStarting(true);
-    setError('');
     try {
       const res = await api.post('/conversations', { scenarioId: data.challenge.scenarioId, difficulty: 'neutral' });
       navigate(`/practice/${res.data.conversation._id}`); // the server answers 201 { conversation }
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
       setStarting(false);
     }
   }
@@ -79,9 +83,9 @@ export default function Dashboard() {
         </Link>
       </header>
 
-      {error && <p role="alert" className="text-mistake-text">{error}</p>}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
 
-      {!data ? (
+      {error ? null : !data ? (
         <DashboardSkeleton />
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
@@ -139,7 +143,7 @@ export default function Dashboard() {
           <motion.section {...card(3)} className="flex flex-col rounded-panel border border-border-subtle bg-surface-card px-[26px] py-6 xl:col-span-5 xl:row-span-2">
             <div className="mb-1.5 flex items-baseline justify-between">
               <span className="text-[15px] font-semibold">Recurring mistakes this week</span>
-              <Link to="/progress" className="text-sm text-brand hover:text-brand-700 hover:underline">Progress</Link>
+              <Link to="/progress" className="-my-3 inline-flex min-h-11 items-center text-sm text-brand hover:text-brand-700 hover:underline">Progress</Link>
             </div>
             {data.mistakes.length === 0 ? (
               <p className="py-4 text-[15px] text-text-secondary">No mistakes logged this week. Finish a session and they'll show up here.</p>
@@ -154,7 +158,7 @@ export default function Dashboard() {
               <span className="text-[15px] font-semibold">Word of the day</span>
               {ttsSupported && (
                 <button onClick={() => speak(`${word.word}. ${word.example}`)} aria-label={`Hear ${word.word}`}
-                  className="rounded-tag p-1 text-brand hover:text-brand-700">
+                  className="-m-2 flex size-11 items-center justify-center rounded-tag text-brand hover:text-brand-700">
                   <SpeakerHighIcon size={20} />
                 </button>
               )}
@@ -193,7 +197,7 @@ export default function Dashboard() {
             className={`flex flex-col rounded-panel border border-border-subtle bg-surface-card px-[26px] pt-[22px] pb-2 md:col-span-2 ${data.family.length > 1 ? 'xl:col-span-7' : 'xl:col-span-7 xl:col-start-6'}`}>
             <div className="flex items-baseline justify-between">
               <span className="text-[15px] font-semibold">Last sessions</span>
-              <Link to="/history" className="text-sm text-brand hover:text-brand-700 hover:underline">History</Link>
+              <Link to="/history" className="-my-3 inline-flex min-h-11 items-center text-sm text-brand hover:text-brand-700 hover:underline">History</Link>
             </div>
             {data.recent.length === 0 ? (
               <p className="py-4 text-[15px] text-text-secondary">Your finished sessions will appear here.</p>
@@ -269,7 +273,7 @@ function MistakeRow({ m }) {
     <div className="grid grid-cols-[minmax(0,1fr)_120px] items-center gap-4 border-b border-border-subtle py-[18px] last:border-0">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline gap-2.5">
-          <Link to={`/grammar/${m.type}`} className="font-display text-[22px] font-semibold tracking-[-0.02em] hover:text-brand hover:underline">
+          <Link to={`/grammar/${m.type}`} className="-my-1.5 inline-flex min-h-11 items-center font-display text-[22px] font-semibold tracking-[-0.02em] hover:text-brand hover:underline">
             {MISTAKE_LABELS[m.type] ?? 'Other'}
           </Link>
           <span className="text-sm text-text-secondary">{m.count} this week</span>

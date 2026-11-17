@@ -178,7 +178,7 @@ export default function ReadAloudPage() {
               <div className="min-w-0">
                 <div className="text-sm text-text-secondary">
                   <span className="capitalize">{passage.level}</span> · {passage.words} words
-                  {phase !== 'reading' && <a href="#passages" className="ml-2 text-brand xl:hidden">Other passages</a>}
+                  {phase !== 'reading' && <a href="#passages" className="ml-2 text-brand underline xl:hidden">Other passages</a>}
                 </div>
                 <h2 className="text-[28px] font-semibold tracking-[-0.03em]">{passage.title}</h2>
               </div>

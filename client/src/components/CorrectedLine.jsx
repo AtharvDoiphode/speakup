@@ -15,7 +15,7 @@ export default function CorrectedLine({ text, mistakes = [] }) {
           <span>Your last answer</span>
           {mistakes.length > 0 && (
             <button type="button" onClick={() => setRun((r) => r + 1)}
-              className="flex items-center gap-1.5 text-[13px] font-medium text-brand hover:text-brand-700">
+              className="-my-3 flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-brand hover:text-brand-700">
               <ArrowCounterClockwiseIcon size={14} />
               Replay correction
             </button>

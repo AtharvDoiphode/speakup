@@ -3,6 +3,9 @@ import { AnimatePresence, m as motion } from 'motion/react';
 import { anim, fadeUp } from '../../lib/motion';
 import { CaretDownIcon, MagnifyingGlassIcon, SpeakerHighIcon, TrashIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../../lib/api';
+import ErrorState from '../../components/ErrorState';
+import EmptyState from '../../components/EmptyState';
+import { ListSkeleton } from '../../components/Skeleton';
 import { dueLabel, stageOf } from '../../lib/vocab';
 import { speak, ttsSupported } from '../../lib/speak';
 import Segmented from '../Segmented';
@@ -21,16 +24,17 @@ export default function DeckTab() {
   const [open, setOpen] = useState(null);
   const [now, setNow] = useState(() => Date.now());
 
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
   // Search waits for a pause in typing; an older answer never replaces a newer one
   useEffect(() => {
     let current = true;
     const t = setTimeout(() => {
       api.get('/vocab/cards', { params: { status, ...(q.trim() && { q: q.trim() }) } })
         .then(({ data }) => { if (current) { setCards(data.cards); setNow(Date.now()); setError(''); } })
-        .catch((err) => current && setError(getErrorMessage(err)));
+        .catch((err) => current && setError(err));
     }, q ? 250 : 0);
     return () => { current = false; clearTimeout(t); };
-  }, [q, status]);
+  }, [q, status, attempt]);
 
   const update = (card) => setCards((cs) => cs.map((c) => (c.id === card.id ? card : c)));
   const remove = (id) => { setCards((cs) => cs.filter((c) => c.id !== id)); setOpen(null); };
@@ -49,15 +53,17 @@ export default function DeckTab() {
         </div>
       </div>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!cards && !error && <div className="h-48 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {!cards && !error && <ListSkeleton rows={4} label="Loading your deck" />}
 
       {cards && (
         <>
           <p className="text-sm text-text-secondary" aria-live="polite">
             {cards.length} word{cards.length === 1 ? '' : 's'}{q.trim() ? ` matching "${q.trim()}"` : ''}
           </p>
-          {cards.length === 0 ? (
+          {cards.length === 0 && !q.trim() && status === 'all' ? (
+            <EmptyState title="Your deck is empty" text="Add a few words and they'll come back for review at the right time." action={{ to: '/vocabulary?tab=add', label: 'Add words' }} />
+          ) : cards.length === 0 ? (
             <p className="rounded-panel border border-border-subtle bg-surface-card p-6 text-[15px] text-text-secondary">
               {q.trim() ? 'No words match that search.' : status === 'due' ? 'Nothing is due right now.' : status === 'learned' ? 'No learned words yet. Words count as learned after a few good reviews.' : 'Your deck is empty. Add words from the Today or Add words tab.'}
             </p>

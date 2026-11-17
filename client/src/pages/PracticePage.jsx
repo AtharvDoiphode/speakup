@@ -4,6 +4,8 @@ import { AnimatePresence, m as motion } from 'motion/react';
 import { SPRING, anim, backdrop, fadeUp, listItem, sheet } from '../lib/motion';
 import { CaretDownIcon, CheckIcon, MicrophoneIcon, XIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { useModal } from '../hooks/useModal';
 import { useAuth } from '../context/useAuth';
 import Segmented from '../components/Segmented';
 import { DIFFICULTIES } from '../lib/modes';
@@ -65,17 +67,19 @@ export default function PracticePage() {
   const [startError, setStartError] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
   useEffect(() => {
     let alive = true;
     api.get('/scenarios')
       .then(({ data }) => {
         if (!alive) return;
         setData(data);
+        setLoadError('');
         setSelId((id) => id ?? data.scenarios[0]?.id);
       })
-      .catch((err) => alive && setLoadError(getErrorMessage(err)));
+      .catch((err) => alive && setLoadError(err));
     return () => { alive = false; };
-  }, []);
+  }, [attempt]);
 
   // Interview focuses, debate topics and turn counts
   useEffect(() => {
@@ -157,7 +161,7 @@ export default function PracticePage() {
             onStart={pickPerson} onPeopleChange={onPeopleChange} />
         )}
 
-        {tab === 'scenes' && loadError && <p role="alert" className="text-mistake-text">{loadError}</p>}
+        {tab === 'scenes' && loadError && <ErrorState error={loadError} onRetry={() => { setLoadError(''); setAttempt((n) => n + 1); }} />}
         {tab === 'scenes' && !data && !loadError && <ListSkeleton />}
 
         {tab === 'scenes' && groups.map((g) => (
@@ -336,22 +340,20 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
 }
 
 function DetailSheet({ onClose, panelProps }) {
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  const { ref, backdropProps } = useModal(true, onClose);
 
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" onClick={onClose} {...anim(backdrop)} />
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" {...backdropProps} {...anim(backdrop)} />
       <motion.div
+        ref={ref}
         role="dialog"
+        aria-modal="true"
         aria-label={panelProps.scene.title}
         className="fixed inset-x-0 bottom-0 top-10 z-50 flex flex-col overflow-y-auto rounded-t-panel border-t border-border-subtle bg-surface-card px-5 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]"
         {...anim(sheet)}
       >
-        <button onClick={onClose} aria-label="Close" className="mb-2 self-end rounded-tag p-1.5 text-text-secondary">
+        <button type="button" onClick={onClose} aria-label="Close" className="mb-2 flex size-11 items-center justify-center self-end rounded-field text-text-secondary">
           <XIcon size={20} />
         </button>
         <DetailPanel {...panelProps} />

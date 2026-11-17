@@ -121,7 +121,7 @@ export default function VocabReviewPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[760px] flex-col gap-5 px-4 py-6 md:px-8 md:py-8">
       <div className="flex items-center justify-between gap-3">
-        <Link to="/vocabulary" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
+        <Link to="/vocabulary" className="-my-3 flex min-h-11 items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
           <ArrowLeftIcon size={16} /> {card ? 'End session' : 'Vocabulary'}
         </Link>
         {card && <span className="text-sm text-text-secondary tabular-nums">{left} left · {reviewed} reviewed</span>}

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowClockwiseIcon, CopyIcon, KeyIcon, LockKeyIcon, TrashIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { ListSkeleton } from '../components/Skeleton';
 import { useAuth } from '../context/useAuth';
 import { copyText } from '../lib/copyText';
 import { longDate } from '../lib/dates';
@@ -52,16 +54,17 @@ export default function FamilyPage() {
 function Members() {
   const [members, setMembers] = useState(null);
   const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
   useEffect(() => {
-    api.get('/admin/members').then(({ data }) => setMembers(data.members)).catch((err) => setError(getErrorMessage(err)));
-  }, []);
+    api.get('/admin/members').then(({ data }) => { setMembers(data.members); setError(''); }).catch((err) => setError(err));
+  }, [attempt]);
   const update = (id, patch) => setMembers((list) => list.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   return (
     <section className="flex flex-col gap-3" aria-label="Members">
       <h2 className="text-[17px] font-semibold">Members {members && <span className="font-normal text-text-secondary">· {members.length}</span>}</h2>
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!members && !error && <div className="h-40 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {!members && !error && <ListSkeleton rows={3} label="Loading the family" />}
       {members && (
         <ul className="flex flex-col overflow-hidden rounded-panel border border-border-subtle bg-surface-card">
           {members.map((m) => (

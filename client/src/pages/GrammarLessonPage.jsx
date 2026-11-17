@@ -4,6 +4,8 @@ import { m as motion } from 'motion/react';
 import { anim, fade } from '../lib/motion';
 import { ArrowLeftIcon, ArrowRightIcon, ArrowClockwiseIcon, SpeakerHighIcon, LightbulbIcon, PlayIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { PageSkeleton } from '../components/Skeleton';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { nextType, ownMistakesLabel } from '../lib/grammar';
 import { speak, ttsSupported } from '../lib/speak';
@@ -28,7 +30,7 @@ function Lesson({ type }) {
   useEffect(() => {
     api.get(`/grammar/lessons/${encodeURIComponent(type)}`)
       .then(({ data }) => setLesson(data.lesson))
-      .catch((err) => setError({ status: err.response?.status, message: getErrorMessage(err) }));
+      .catch((err) => setError({ status: err.response?.status, message: getErrorMessage(err), raw: err }));
   }, [type]);
 
   if (error?.status === 404) {
@@ -40,8 +42,8 @@ function Lesson({ type }) {
       </div>
     );
   }
-  if (error) return <div className="px-4 py-16 md:px-11"><p role="alert" className="text-mistake-text">{error.message}</p></div>;
-  if (!lesson) return <div className="px-4 py-16 text-text-secondary md:px-11">Loading…</div>;
+  if (error) return <div className="px-4 py-16 md:px-11"><h1 className="sr-only">Grammar lesson</h1><ErrorState error={error.raw} onRetry={() => window.location.reload()} /></div>;
+  if (!lesson) return <PageSkeleton label="Loading the lesson" />;
 
   const label = MISTAKE_LABELS[type] ?? lesson.title;
   const next = nextType(type);
@@ -70,14 +72,14 @@ function Lesson({ type }) {
   }
 
   const mineLink = (
-    <Link to={`/grammar/mine?type=${type}`} className="text-[15px] font-semibold text-brand hover:text-brand-700">
+    <Link to={`/grammar/mine?type=${type}`} className="-my-3 inline-flex min-h-11 items-center text-[15px] font-semibold text-brand hover:text-brand-700">
       {ownMistakesLabel(type)}
     </Link>
   );
 
   return (
     <div className="flex flex-col gap-7 px-4 py-8 md:px-11 md:py-10">
-      <Link to="/grammar" className="flex w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"><ArrowLeftIcon size={16} /> Grammar</Link>
+      <Link to="/grammar" className="-my-3 flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"><ArrowLeftIcon size={16} /> Grammar</Link>
       <header className="max-w-[760px]">
         <div className="text-sm text-text-secondary">{label} · {lesson.questions.length} practice questions</div>
         <h1 className="mt-1.5 text-[clamp(28px,3.4vw,38px)] font-semibold leading-[1.05] tracking-[-0.03em]">{lesson.title}</h1>
@@ -113,7 +115,7 @@ function Lesson({ type }) {
                     </div>
                     {ttsSupported && (
                       <button type="button" onClick={() => speak(ex.right, { rate: 0.9 })} aria-label={`Hear it: ${ex.right}`}
-                        className="flex h-10 w-fit shrink-0 items-center gap-1.5 rounded-[10px] border border-border-subtle px-3 text-sm font-medium hover:border-border-strong">
+                        className="flex h-10 max-md:h-11 w-fit shrink-0 items-center gap-1.5 rounded-[10px] border border-border-subtle px-3 text-sm font-medium hover:border-border-strong">
                         <SpeakerHighIcon size={16} /> Hear it
                       </button>
                     )}

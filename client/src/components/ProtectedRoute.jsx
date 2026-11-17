@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import { PageSkeleton } from './Skeleton';
 
 export default function ProtectedRoute() {
   const { user, loading } = useAuth();
@@ -8,9 +9,7 @@ export default function ProtectedRoute() {
   // Wait for the "who am I?" check, so a logged-in user doesn't flash the login page
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-canvas text-text-secondary">
-        Loading...
-      </div>
+      <div className="min-h-screen bg-surface-canvas"><PageSkeleton label="Checking your login" /></div>
     );
   }
 

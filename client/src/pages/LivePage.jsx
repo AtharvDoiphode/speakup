@@ -10,6 +10,7 @@ import {
   PaperPlaneRightIcon,
   SpeakerHighIcon,
   SpeakerSlashIcon,
+  StopIcon,
   XIcon,
 } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
@@ -20,6 +21,7 @@ import { matchScore } from '../lib/matchScore';
 import VoiceOrb from '../components/VoiceOrb';
 import CorrectedLine from '../components/CorrectedLine';
 import MarkerSweep from '../components/MarkerSweep';
+import { useModal } from '../hooks/useModal';
 import { isTurnMode, turnInfo, MODE_LABEL } from '../lib/modes';
 
 const LEVELS = ['friendly', 'neutral', 'tough'];
@@ -60,6 +62,7 @@ export default function LivePage() {
   const voice = useVoiceInput({ lang: 'en-IN', onAutoEnd: (t) => voiceRef.current?.(t) });
   const [inputMode, setInputMode] = useState(voice.supported ? 'voice' : 'type');
   const [speaking, setSpeaking] = useState(false);
+  const [heard, setHeard] = useState({ key: undefined, text: '' }); // the last correction, for screen readers
   const [micFor, setMicFor] = useState('reply'); // 'reply' | 'sayback'
   // { forAt, matched, total }: forAt ties the result to one answer, so a new
   // answer hides the old result without needing an effect to clear it
@@ -142,6 +145,16 @@ export default function LivePage() {
   const name = persona.name ?? 'Your partner';
   const lastAi = findLast(messages, (m) => m.role === 'ai');
   const lastUser = findLast(messages, (m) => m.role === 'user');
+  // Screen readers hear each new correction once (the visual card animates; this says it in words)
+  const lastUserKey = lastUser?._id ?? lastUser?.createdAt;
+  if (lastUserKey !== heard.key) {
+    const mistakes = lastUser?.mistakes ?? [];
+    setHeard({
+      key: lastUserKey,
+      text: heard.key === undefined ? '' // the answer that was already there when the page opened
+        : mistakes.length ? `Correction: ${mistakes.map((m) => `${m.wrong} should be ${m.right}`).join('. ')}.` : 'No mistakes in that answer.',
+    });
+  }
   const sending = busy === 'send';
   // Interviews and debates: the server counts the turns; the screen shows where you are
   const turns = isTurnMode(convo);
@@ -266,7 +279,7 @@ export default function LivePage() {
           {ttsSupported && (
             <button type="button" onClick={toggleVoiceOn} aria-pressed={voiceOn}
               aria-label={voiceOn ? 'Turn off read-aloud' : 'Turn on read-aloud'}
-              className="ml-auto rounded-tag p-2 text-text-secondary hover:bg-surface-card/60 hover:text-text-primary">
+              className="-m-1 ml-auto flex size-11 items-center justify-center rounded-tag text-text-secondary hover:bg-surface-card/60 hover:text-text-primary">
               {voiceOn ? <SpeakerHighIcon size={20} /> : <SpeakerSlashIcon size={20} />}
             </button>
           )}
@@ -295,7 +308,7 @@ export default function LivePage() {
               <VoiceOrb state={orbState} />
             </div>
             <div className="flex min-w-0 flex-col gap-2">
-              <span className="font-display text-[clamp(34px,5vw,60px)] font-semibold leading-[0.95] tracking-[-0.04em]">{name}</span>
+              <h1 className="font-display text-[clamp(34px,5vw,60px)] font-semibold leading-[0.95] tracking-[-0.04em]">{name}</h1>
               <span className="text-base text-text-secondary md:text-lg">{persona.roleLong ?? persona.role}</span>
               <span className="mt-2.5 flex items-center gap-2 text-[15px] font-semibold text-brand" aria-live="polite">
                 <span className={`size-2 rounded-full bg-brand ${sending || voice.listening || speaking ? 'animate-pulse' : ''}`} />
@@ -305,7 +318,7 @@ export default function LivePage() {
           </div>
 
           {lastAi && (
-            <div className="flex max-w-[780px] flex-col gap-1.5">
+            <div className="flex max-w-[780px] flex-col gap-1.5" aria-live="polite">
               <span className="text-sm text-text-secondary">{name}</span>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.p key={lastAi._id ?? lastAi.createdAt} {...anim(slideIn)}
@@ -338,6 +351,7 @@ export default function LivePage() {
           ) : (
             lastUser && <CorrectedLine key={lastUser._id ?? lastUser.createdAt} text={lastUser.text} mistakes={lastUser.mistakes} />
           )}
+          <p className="sr-only" aria-live="polite" data-correction-announcer>{heard.text}</p>
         </section>
 
         {!ended && finished && (
@@ -381,15 +395,34 @@ export default function LivePage() {
                     {listeningForReply ? <PaperPlaneRightIcon size={30} /> : <MicrophoneIcon size={32} />}
                   </motion.button>
                   <div className="flex flex-col gap-1 text-sm">
-                    <span className="text-text-secondary">{listeningForReply ? "Tap when you're done" : 'Tap to speak'}</span>
-                    <button type="button" onClick={() => { voice.cancel(); setInputMode('type'); }}
-                      className="flex items-center gap-1.5 font-medium text-text-secondary hover:text-text-primary">
-                      <KeyboardIcon size={18} /> Type instead
-                    </button>
+                    {/* The mic's state in words, so it never depends on colour or the icon alone */}
+                    <span className="font-medium text-text-primary" data-mic-state>
+                      {voice.listening && !voice.ready ? 'Getting the mic ready…'
+                        : listeningForReply ? "Listening. Tap the button when you're done"
+                        : sending ? 'Working on your answer…'
+                        : speaking ? `${name} is speaking`
+                        : 'Mic is off. Tap to speak'}
+                    </span>
+                    {voice.listening || speaking ? (
+                      <button type="button" onClick={() => { if (voice.listening) voice.cancel(); if (speaking) { stopSpeaking(); setSpeaking(false); } }}
+                        className="flex min-h-11 items-center gap-1.5 font-semibold text-mistake-text">
+                        <StopIcon size={18} weight="fill" aria-hidden="true" /> Stop {voice.listening ? 'listening' : 'speaking'}
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => { voice.cancel(); setInputMode('type'); }}
+                        className="flex min-h-11 items-center gap-1.5 font-medium text-text-secondary hover:text-text-primary">
+                        <KeyboardIcon size={18} aria-hidden="true" /> Type instead
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
-                <form onSubmit={(e) => { e.preventDefault(); sendText(draft.trim()); }} className="order-1 flex gap-2 lg:order-2">
+                <form onSubmit={(e) => { e.preventDefault(); sendText(draft.trim()); }} className="order-1 flex flex-wrap gap-2 lg:order-2">
+                  {!voice.supported && (
+                    <p className="w-full text-[13px] text-text-secondary" data-no-voice>
+                      Speaking out loud needs Chrome or Edge (on a computer or Android). You can type your answers here instead.
+                    </p>
+                  )}
                   <input
                     ref={inputRef}
                     value={draft}
@@ -464,7 +497,7 @@ export default function LivePage() {
 function ControlButton({ icon, children, ...props }) {
   return (
     <button type="button" {...props}
-      className="flex h-[42px] items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium transition hover:-translate-y-px press disabled:opacity-40 disabled:hover:translate-y-0">
+      className="flex h-[42px] max-md:h-11 items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium transition hover:-translate-y-px press disabled:opacity-40 disabled:hover:translate-y-0">
       {icon}
       {children}
     </button>
@@ -570,10 +603,12 @@ function Stat({ label, value, accent = false }) {
 function Summary({ convo, messages, onReview, onNew, note = '', newLabel = 'New scene' }) {
   const groups = groupMistakes(messages).slice(0, 3);
   const minutes = Math.max(1, Math.round((convo.durationSec ?? 0) / 60));
+  // Escape or a click outside closes it to review the conversation (nothing is lost)
+  const { ref, backdropProps } = useModal(true, onReview);
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" {...anim(backdrop)} />
-      <motion.div role="dialog" aria-modal="true" aria-labelledby="summary-title"
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" {...backdropProps} {...anim(backdrop)} />
+      <motion.div ref={ref} role="dialog" aria-modal="true" aria-labelledby="summary-title"
         className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-[460px] -translate-y-1/2 rounded-panel border border-border-subtle bg-surface-card p-7"
         {...anim(scaleIn)}>
         <span className="text-sm text-text-secondary">{convo.title} · {minutes} min</span>

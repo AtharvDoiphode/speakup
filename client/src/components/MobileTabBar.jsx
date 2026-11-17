@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, m as motion } from 'motion/react';
 import { anim, backdrop, drawer } from '../lib/motion';
 import { DotsThreeOutlineIcon, SignOutIcon, XIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
+import { useModal } from '../hooks/useModal';
 import { PRIMARY_NAV, MORE_NAV, visibleTo } from '../lib/nav';
 
 const tabClass = (active) =>
@@ -18,13 +19,8 @@ export default function MobileTabBar() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
-  // While the sheet is open, the Escape key closes it
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => e.key === 'Escape' && setOpen(false);
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  // While the sheet is open: Escape closes it, focus stays inside, the page behind doesn't scroll
+  const { ref: sheetRef } = useModal(open, () => setOpen(false));
 
   // "More" looks active while you're on one of the pages inside it
   const onMorePage = MORE_NAV.some((item) => pathname.startsWith(item.to));
@@ -44,6 +40,8 @@ export default function MobileTabBar() {
             />
             <motion.div
               id="more-menu"
+              ref={sheetRef}
+              aria-modal="true"
               role="dialog"
               aria-label="More pages"
               // Slides up from behind the tab bar

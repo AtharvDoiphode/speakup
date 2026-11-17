@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 // The files are built by scripts/make-icons.mjs from scripts/brand-colors.mjs.
 export default function Logo({ compact = false }) {
   return (
-    <Link to="/" aria-label="SpeakUp home" className="inline-flex shrink-0 rounded-field">
+    <Link to="/" aria-label="SpeakUp home" className="inline-flex min-h-11 shrink-0 items-center rounded-field">
       {compact ? (
         <img src="/brand/logo-mark.svg" alt="" width={40} height={40} className="size-10 [color-scheme:light]" />
       ) : (

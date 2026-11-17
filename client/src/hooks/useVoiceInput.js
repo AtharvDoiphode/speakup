@@ -5,11 +5,13 @@ const Recognition =
 
 export const voiceSupported = !!Recognition;
 
+// What went wrong with the mic, and exactly how to fix it (typing always works instead)
+const BLOCKED = 'The microphone is blocked. To fix it: tap the lock or mic icon next to the web address, set Microphone to Allow, then reload the page. Or tap "Type instead".';
 const ERRORS = {
-  'not-allowed': 'Microphone is blocked. Allow it from the icon in the address bar, or type instead.',
-  'service-not-allowed': 'Microphone is blocked. Allow it from the icon in the address bar, or type instead.',
-  'audio-capture': 'No microphone found. Plug one in, or type instead.',
-  network: 'Voice needs an internet connection. Check it, or type instead.',
+  'not-allowed': BLOCKED,
+  'service-not-allowed': BLOCKED,
+  'audio-capture': "We can't find a microphone. Plug one in or check it's switched on, then tap the mic again. Or tap \"Type instead\".",
+  network: 'Speaking needs an internet connection. Check your connection and tap the mic again, or tap "Type instead".',
 };
 
 // Chrome stops listening by itself after a stretch of silence. We quietly start

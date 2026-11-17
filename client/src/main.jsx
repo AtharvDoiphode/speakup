@@ -6,6 +6,7 @@ import { LazyMotion, MotionConfig, MotionGlobalConfig } from 'motion/react';
 import './index.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { ToastProvider } from './components/Toast.jsx';
 import { applyMotionCss } from './lib/motion';
 
 // The CSS reads the same durations and easings as the motion components
@@ -41,7 +42,9 @@ createRoot(document.getElementById('root')).render(
       <LazyMotion features={loadFeatures} strict>
         <MotionConfig reducedMotion="user">
           <AuthProvider>
-            <App />
+            <ToastProvider>
+              <App />
+            </ToastProvider>
           </AuthProvider>
         </MotionConfig>
       </LazyMotion>

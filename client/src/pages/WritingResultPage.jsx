@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, CheckIcon, ArrowRightIcon, CopySimpleIcon, SpeakerHighIcon, TrashIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { useToast } from '../components/useToast';
+import { PageSkeleton } from '../components/Skeleton';
 import { buildSegments, MISTAKE_LABELS } from '../lib/corrections';
 import { Fix } from '../components/CorrectedLine';
 import Segmented from '../components/Segmented';
@@ -15,6 +19,7 @@ const longDate = (iso) => new Date(iso).toLocaleDateString('en-IN', { day: 'nume
 export default function WritingResultPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const [check, setCheck] = useState(null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('marked');
@@ -23,17 +28,13 @@ export default function WritingResultPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    api.get(`/writing/${id}`).then(({ data }) => setCheck(data.check)).catch((err) => setError(getErrorMessage(err)));
+    api.get(`/writing/${id}`).then(({ data }) => setCheck(data.check)).catch((err) => setError(err));
   }, [id]);
 
-  useEffect(() => {
-    if (!confirmDelete) return;
-    const t = setTimeout(() => setConfirmDelete(false), 3000);
-    return () => clearTimeout(t);
-  }, [confirmDelete]);
+  const [deleting, setDeleting] = useState(false);
 
-  if (error) return <div className="px-6 py-16 text-center"><p className="text-mistake-text">{error}</p><Link to="/writing" className="mt-4 inline-block font-semibold text-brand">Back to Writing</Link></div>;
-  if (!check) return <div className="px-6 py-16 text-text-secondary">Loading…</div>;
+  if (error && typeof error === 'object') return <div className="flex flex-col gap-4 px-4 py-16 md:px-11"><h1 className="sr-only">Writing feedback</h1><ErrorState error={error} onRetry={() => window.location.reload()} /><Link to="/writing" className="font-semibold text-brand">Back to Writing</Link></div>;
+  if (!check) return <PageSkeleton label="Loading your writing check" />;
 
   const segments = buildSegments(check.text, check.mistakes);
 
@@ -66,8 +67,9 @@ export default function WritingResultPage() {
   }
 
   async function remove() {
-    if (!confirmDelete) return setConfirmDelete(true);
-    try { await api.delete(`/writing/${id}`); navigate('/writing'); } catch (err) { setError(getErrorMessage(err)); }
+    if (deleting) return;
+    setDeleting(true);
+    try { await api.delete(`/writing/${id}`); navigate('/writing'); } catch (err) { toast.error(getErrorMessage(err)); setDeleting(false); }
   }
 
   return (
@@ -153,9 +155,11 @@ export default function WritingResultPage() {
 
         <div className="mt-auto flex gap-2 pt-2">
           <Link to="/writing" className="flex h-11 flex-1 items-center justify-center rounded-field bg-brand font-semibold text-on-brand hover:bg-brand-700">Check another</Link>
-          <button onClick={remove} className="flex h-11 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-text">
-            <TrashIcon size={16} /> {confirmDelete ? 'Tap again' : 'Delete'}
+          <button type="button" onClick={() => setConfirmDelete(true)} className="flex h-11 items-center gap-1.5 rounded-field border border-mistake px-3 text-sm font-semibold text-mistake-text">
+            <TrashIcon size={16} /> Delete
           </button>
+          <ConfirmDialog open={confirmDelete} title="Delete this writing check?" message="Your text and its feedback are deleted for good."
+            busy={deleting} onConfirm={remove} onCancel={() => setConfirmDelete(false)} />
         </div>
       </aside>
     </div>

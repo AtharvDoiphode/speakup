@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, FilePdfIcon, TrashIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { PageSkeleton } from '../components/Skeleton';
 import { useAuth } from '../context/useAuth';
 import { buildSegments, MISTAKE_LABELS } from '../lib/corrections';
 import { longDate } from '../lib/dates';
@@ -35,14 +38,9 @@ export default function TranscriptPage() {
   useEffect(() => {
     api.get(`/conversations/${id}`)
       .then(({ data }) => setC(data.conversation))
-      .catch((err) => setError({ status: err.response?.status, message: getErrorMessage(err) }));
+      .catch((err) => setError({ status: err.response?.status, message: getErrorMessage(err), raw: err }));
   }, [id]);
 
-  useEffect(() => {
-    if (!confirm) return;
-    const t = setTimeout(() => setConfirm(false), 3000);
-    return () => clearTimeout(t);
-  }, [confirm]);
 
   // While printing (the button or Ctrl+P), the title becomes the PDF's file name
   useEffect(() => {
@@ -57,7 +55,7 @@ export default function TranscriptPage() {
   }, [c]);
 
   async function remove() {
-    if (!confirm) return setConfirm(true);
+    if (busy) return;
     setBusy(true);
     try {
       await api.delete(`/conversations/${id}`);
@@ -77,8 +75,8 @@ export default function TranscriptPage() {
       </div>
     );
   }
-  if (error && !c) return <div className="px-4 py-16 md:px-11"><p role="alert" className="text-mistake-text">{error.message}</p></div>;
-  if (!c) return <div className="px-4 py-16 text-text-secondary md:px-11">Loading…</div>;
+  if (error && !c) return <div className="px-4 py-16 md:px-11"><h1 className="sr-only">Transcript</h1><ErrorState error={error.raw} onRetry={() => window.location.reload()} /></div>;
+  if (!c) return <PageSkeleton label="Loading the transcript" />;
 
   const persona = c.persona ?? {};
   const mine = c.messages.filter((m) => m.role === 'user');
@@ -98,7 +96,7 @@ export default function TranscriptPage() {
         </div>
       </div>
 
-      <Link to="/history" className="flex w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary print:hidden"><ArrowLeftIcon size={16} /> History</Link>
+      <Link to="/history" className="-my-3 flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary print:hidden"><ArrowLeftIcon size={16} /> History</Link>
 
       <header className="flex flex-wrap items-center gap-5 print:hidden">
         {/* Interviews and debates show their scorecard ring below instead */}
@@ -116,10 +114,12 @@ export default function TranscriptPage() {
             className="flex h-11 items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-4 text-sm font-semibold hover:border-border-strong">
             <FilePdfIcon size={17} /> Save as PDF
           </button>
-          <button type="button" onClick={remove} disabled={busy}
+          <button type="button" onClick={() => setConfirm(true)} disabled={busy}
             className="flex h-11 items-center gap-1.5 rounded-field border border-mistake px-4 text-sm font-semibold text-mistake-text">
-            <TrashIcon size={16} /> {confirm ? 'Tap again' : 'Delete'}
+            <TrashIcon size={16} /> Delete
           </button>
+          <ConfirmDialog open={confirm} title={`Delete “${c.title}”?`} message="This conversation and its corrections are deleted for good."
+            busy={busy} onConfirm={remove} onCancel={() => setConfirm(false)} />
         </div>
       </header>
       {error && <p role="alert" className="text-sm text-mistake-text print:hidden">{error.message}</p>}
@@ -128,7 +128,7 @@ export default function TranscriptPage() {
 
       <div className="flex items-center gap-3 print:hidden">
         <button type="button" role="switch" aria-checked={showFixes} onClick={() => setShowFixes((v) => !v)}
-          className="flex items-center gap-2.5 text-[15px] font-medium">
+          className="flex min-h-11 items-center gap-2.5 text-[15px] font-medium">
           <span className={`relative h-6 w-10 rounded-full transition-colors ${showFixes ? 'bg-brand' : 'bg-border-strong'}`}>
             <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-surface-card transition-transform duration-(--motion-fast) ${showFixes ? 'translate-x-4' : ''}`} />
           </span>
@@ -159,7 +159,7 @@ export default function TranscriptPage() {
           <h2 className="text-[15px] font-semibold">What to practise</h2>
           <div className="flex flex-wrap gap-2">
             {types.map((t) => (
-              <Link key={t} to={`/grammar/${t}`} className="flex h-10 items-center rounded-tag border border-border-subtle bg-surface-card px-3 text-sm font-semibold hover:border-brand hover:text-brand print:h-auto print:border-0 print:p-0">
+              <Link key={t} to={`/grammar/${t}`} className="flex h-10 max-md:h-11 items-center rounded-tag border border-border-subtle bg-surface-card px-3 text-sm font-semibold hover:border-brand hover:text-brand print:h-auto print:border-0 print:p-0">
                 {MISTAKE_LABELS[t] ?? 'Other'} · {allMistakes.filter((m) => m.type === t).length}
               </Link>
             ))}

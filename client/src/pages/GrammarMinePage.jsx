@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeftIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { CardsSkeleton } from '../components/Skeleton';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { isGrammarType, mistakePhrase, shuffle } from '../lib/grammar';
 import Segmented from '../components/Segmented';
@@ -38,7 +40,7 @@ export default function GrammarMinePage() {
         setQuiz({ ...data, items: shuffle(data.items).map(toQuestion) });
         setRun((r) => r + 1);
       })
-      .catch((err) => setError(getErrorMessage(err)));
+      .catch((err) => setError(err));
   }, []);
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export default function GrammarMinePage() {
 
   return (
     <div className="flex flex-col gap-7 px-4 py-8 md:px-11 md:py-10">
-      <Link to={from ? `/grammar/${from}` : '/grammar'} className="flex w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
+      <Link to={from ? `/grammar/${from}` : '/grammar'} className="-my-3 flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary">
         <ArrowLeftIcon size={16} /> {from ? MISTAKE_LABELS[from] : 'Grammar'}
       </Link>
       <header className="max-w-[760px]">
@@ -97,8 +99,8 @@ export default function GrammarMinePage() {
       )}
 
       <div className="max-w-[760px]">
-        {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-        {!quiz && !error && <div className="h-48 animate-pulse rounded-panel bg-surface-card/70" />}
+        {error && <ErrorState error={error} onRetry={() => { setError(''); fetchRound(filter); }} />}
+        {!quiz && !error && <CardsSkeleton count={1} className="grid" label="Loading your mistakes" />}
 
         {quiz && quiz.items.length === 0 && (
           <div className="flex flex-col items-start gap-3 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8">
@@ -109,7 +111,7 @@ export default function GrammarMinePage() {
                 : `You have ${mistakePhrase(filter, quiz.have)} saved, and this needs ${quiz.needed}. Try all your mistakes instead.`}
             </p>
             {filter === 'all'
-              ? <Link to="/practice" className="font-semibold text-brand hover:text-brand-700">Go to Practice</Link>
+              ? <Link to="/practice" className="press flex min-h-11 items-center rounded-field bg-brand px-5 font-semibold text-on-brand hover:bg-brand-700">Go to Practice</Link>
               : <button type="button" onClick={() => changeFilter('all')} className="font-semibold text-brand hover:text-brand-700">Use all my mistakes</button>}
           </div>
         )}

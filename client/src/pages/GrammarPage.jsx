@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { m as motion } from 'motion/react';
 import { DURATION, listItem, reveal, stagger } from '../lib/motion';
 import { ArrowRightIcon } from '@phosphor-icons/react';
-import api, { getErrorMessage } from '../lib/api';
+import api from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { CardsSkeleton } from '../components/Skeleton';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { mistakePhrase } from '../lib/grammar';
 
@@ -12,12 +14,13 @@ const rise = listItem; // staggered fade-up, first render only
 export default function GrammarPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
 
   useEffect(() => {
     Promise.all([api.get('/grammar/overview'), api.get('/grammar/quiz')])
-      .then(([o, q]) => setData({ ...o.data, quiz: q.data }))
-      .catch((err) => setError(getErrorMessage(err)));
-  }, []);
+      .then(([o, q]) => { setData({ ...o.data, quiz: q.data }); setError(''); })
+      .catch((err) => setError(err));
+  }, [attempt]);
 
   // Most mistakes first; ties keep the lesson order (sort is stable)
   const lessons = data ? [...data.lessons].sort((a, b) => b.mistakeCount - a.mistakeCount) : [];
@@ -30,8 +33,8 @@ export default function GrammarPage() {
         <p className="mt-2 text-[15px] text-text-secondary">Short lessons built around the mistakes you actually make.</p>
       </header>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!data && !error && <div className="h-40 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {!data && !error && <CardsSkeleton label="Loading the lessons" />}
 
       {data && (
         <>

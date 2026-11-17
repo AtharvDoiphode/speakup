@@ -3,7 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { m as motion } from 'motion/react';
 import { anim, fadeUp, reveal, stagger } from '../lib/motion';
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from '@phosphor-icons/react';
-import api, { getErrorMessage } from '../lib/api';
+import api from '../lib/api';
+import ErrorState from '../components/ErrorState';
+import { ChartsSkeleton } from '../components/Skeleton';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { progressSummary } from '../lib/progressSummary';
 import { dayLabel, shortDay, weekday, istKey } from '../lib/dates';
@@ -23,14 +25,15 @@ export default function ProgressPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [goal, setGoal] = useState(null);
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
 
   useEffect(() => {
     let current = true;
     api.get('/progress', { params: { days } })
       .then(({ data }) => current && (setData(data), setError('')))
-      .catch((err) => current && setError(getErrorMessage(err)));
+      .catch((err) => current && setError(err));
     return () => { current = false; };
-  }, [days]);
+  }, [days, attempt]);
 
   // The daily goal comes from the Dashboard's numbers, so it follows the goal setting later
   useEffect(() => {
@@ -52,8 +55,8 @@ export default function ProgressPage() {
         </div>
       </header>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!shown && !error && <div className="h-96 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {!shown && !error && <ChartsSkeleton label="Loading your progress" />}
       {shown && <ProgressBody data={shown} goal={goal} />}
     </div>
   );
@@ -132,7 +135,7 @@ function ProgressBody({ data, goal }) {
           <MistakesCard items={mistakesByType} days={data.days} />
 
           <ChartCard title="Writing scores" note="One point per writing check"
-            empty={!wPoints.length && <><span>No writing checks in this period.</span><Link to="/writing" className="font-semibold text-brand hover:text-brand-700">Check an email or essay</Link></>}
+            empty={!wPoints.length && <><span>No writing checks in this period.</span><Link to="/writing" className="-my-3 inline-flex min-h-11 items-center font-semibold text-brand hover:text-brand-700">Check an email or essay</Link></>}
             table={{ columns: ['Day', 'Score', 'Mistakes per 100 words'], rows: wPoints.map((p) => [p.label, p.value, p.extra]) }}>
             <LineChart points={wPoints} domain={[0, 100]}
               summary={`${s(wPoints.length, 'writing check')}, scores from ${Math.min(...wPoints.map((p) => p.value))} to ${Math.max(...wPoints.map((p) => p.value))}. Latest ${wPoints.at(-1)?.value}.`}
@@ -140,7 +143,7 @@ function ProgressBody({ data, goal }) {
           </ChartCard>
 
           <ChartCard title="Reading speed" note="Words per minute, one point per read-aloud"
-            empty={!rPoints.length && <><span>No read-alouds in this period.</span><Link to="/read-aloud" className="font-semibold text-brand hover:text-brand-700">Read a passage aloud</Link></>}
+            empty={!rPoints.length && <><span>No read-alouds in this period.</span><Link to="/read-aloud" className="-my-3 inline-flex min-h-11 items-center font-semibold text-brand hover:text-brand-700">Read a passage aloud</Link></>}
             table={{ columns: ['Day', 'Words per minute', 'Accuracy'], rows: rPoints.map((p) => [p.label, p.value, `${p.extra}%`]) }}>
             <LineChart points={rPoints} unit="" summary={`${s(rPoints.length, 'read-aloud', 'read-alouds')}, from ${Math.min(...rPoints.map((p) => p.value))} to ${Math.max(...rPoints.map((p) => p.value))} words per minute.`}
               readout={(p) => `${p.label}: ${p.value} words per minute, ${p.extra}% accurate`} />
@@ -163,7 +166,7 @@ function MistakesCard({ items, days }) {
         {items.map((m, i) => (
           <li key={m.type}>
             <Link to={`/grammar/${m.type}`} aria-label={`${MISTAKE_LABELS[m.type] ?? 'Other'}: ${m.count}, ${changeText(m.change)}. Open the lesson.`}
-              className="group grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-3 rounded-field px-2 py-2 hover:bg-surface-sunken md:grid-cols-[130px_minmax(0,1fr)_auto]">
+              className="group grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-3 rounded-field px-2 py-2 max-md:min-h-11 hover:bg-surface-sunken md:grid-cols-[130px_minmax(0,1fr)_auto]">
               <span className="truncate text-[15px] font-medium group-hover:text-brand">{MISTAKE_LABELS[m.type] ?? 'Other'}</span>
               <span className="flex items-center gap-2">
                 <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-sunken">

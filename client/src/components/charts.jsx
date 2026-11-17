@@ -25,7 +25,7 @@ export function ChartCard({ title, note, table, empty, children, className = '' 
         </div>
         {!empty && table && (
           <button type="button" onClick={() => setAsTable((v) => !v)} aria-pressed={asTable}
-            className="flex h-8 items-center gap-1.5 rounded-[9px] border border-border-subtle px-2.5 text-[13px] font-medium text-text-secondary hover:text-text-primary">
+            className="flex h-8 max-md:h-11 items-center gap-1.5 rounded-[9px] border border-border-subtle px-2.5 text-[13px] font-medium text-text-secondary hover:text-text-primary">
             {asTable ? <ChartBarIcon size={14} /> : <TableIcon size={14} />} {asTable ? 'View as chart' : 'View as table'}
           </button>
         )}

@@ -4,6 +4,10 @@ import { AnimatePresence, m as motion } from 'motion/react';
 import { anim, fadeUp } from '../../lib/motion';
 import { CheckIcon, MicrophoneIcon, PencilSimpleIcon, PlusIcon, TrashIcon, UserCircleIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../../lib/api';
+import ErrorState from '../../components/ErrorState';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import { useToast } from '../../components/useToast';
+import { ListSkeleton } from '../../components/Skeleton';
 import { useAuth } from '../../context/useAuth';
 import { DIFFICULTIES } from '../../lib/modes';
 import Segmented from '../Segmented';
@@ -221,29 +225,30 @@ export function PeoplePanel({ extraTraits, moods, selectedId, onStart, onPeopleC
   const [editing, setEditing] = useState(null); // null | 'new' | a person id
   const [confirmId, setConfirmId] = useState(null);
 
+  const [attempt, setAttempt] = useState(0); // bumped by Try again
   useEffect(() => {
     api.get('/people')
-      .then(({ data }) => { setPeople(data.people); setMax(data.max); })
-      .catch((err) => setError(getErrorMessage(err)));
-  }, []);
+      .then(({ data }) => { setPeople(data.people); setMax(data.max); setError(''); })
+      .catch((err) => setError(err));
+  }, [attempt]);
   useEffect(() => { onPeopleChange?.(people ?? []); }, [people, onPeopleChange]);
 
-  // The two-tap delete resets itself after 3 seconds, as elsewhere
-  useEffect(() => {
-    if (!confirmId) return;
-    const t = setTimeout(() => setConfirmId(null), 3000);
-    return () => clearTimeout(t);
-  }, [confirmId]);
-
-  async function remove(p) {
-    if (confirmId !== p.id) return setConfirmId(p.id);
+  // Deleting asks first, naming the person (see ConfirmDialog below)
+  const toast = useToast();
+  const [deleting, setDeleting] = useState(false);
+  const target = people?.find((x) => x.id === confirmId);
+  async function remove() {
+    if (!target || deleting) return;
+    setDeleting(true);
     setError('');
     try {
-      await api.delete(`/people/${p.id}`);
-      setPeople((list) => list.filter((x) => x.id !== p.id));
+      await api.delete(`/people/${target.id}`);
+      setPeople((list) => list.filter((x) => x.id !== target.id));
+      toast.success(`Deleted ${target.name}`);
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     }
+    setDeleting(false);
     setConfirmId(null);
   }
 
@@ -272,8 +277,12 @@ export function PeoplePanel({ extraTraits, moods, selectedId, onStart, onPeopleC
         )}
       </AnimatePresence>
 
-      {error && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
-      {!people && !error && <div className="h-40 animate-pulse rounded-panel bg-surface-card/70" />}
+      {error && typeof error === 'object' && <ErrorState error={error} onRetry={() => { setError(''); setAttempt((n) => n + 1); }} />}
+      {error && typeof error === 'string' && <p role="alert" className="text-sm font-medium text-mistake-text">{error}</p>}
+      {!people && !error && <ListSkeleton rows={2} label="Loading your people" />}
+      <ConfirmDialog open={Boolean(target)} title={`Delete ${target?.name ?? 'this person'}?`}
+        message="Their details are removed. Conversations you've already had with them stay in your History."
+        busy={deleting} onConfirm={remove} onCancel={() => setConfirmId(null)} />
       {people && people.length === 0 && editing !== 'new' && (
         <div className="flex flex-col items-start gap-2 rounded-panel border border-dashed border-border-strong p-6">
           <UserCircleIcon size={32} className="text-text-secondary" />
@@ -308,9 +317,9 @@ export function PeoplePanel({ extraTraits, moods, selectedId, onStart, onPeopleC
                       className="flex min-h-11 items-center gap-1.5 rounded-field border border-border-subtle px-3.5 text-sm font-semibold hover:border-border-strong">
                       <PencilSimpleIcon size={16} /> Edit
                     </button>
-                    <button type="button" onClick={() => remove(p)}
+                    <button type="button" onClick={() => setConfirmId(p.id)}
                       className="flex min-h-11 items-center gap-1.5 rounded-field border border-mistake px-3.5 text-sm font-semibold text-mistake-text">
-                      <TrashIcon size={16} /> {confirmId === p.id ? 'Tap again' : 'Delete'}
+                      <TrashIcon size={16} /> Delete
                     </button>
                   </div>
                 </div>
