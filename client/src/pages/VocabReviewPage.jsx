@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, m as motion, useReducedMotion } from 'motion/react';
+import SuccessCheck from '../components/SuccessCheck';
+import { anim, enter, fade, fadeUp, move } from '../lib/motion';
 import { ArrowLeftIcon, ArrowClockwiseIcon, CheckCircleIcon, PlusIcon, SpeakerHighIcon, SpinnerGapIcon, WarningIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { dueLabel, gapLabel, markWord } from '../lib/vocab';
 import { speak, ttsSupported } from '../lib/speak';
 import { StageBadge } from '../components/vocab/DeckTab';
 
-const ease = [0.2, 0.8, 0.2, 1];
 
 export default function VocabReviewPage() {
   const [queue, setQueue] = useState(null); // cards still to see; "Again" cards go back on the end
@@ -140,7 +141,7 @@ export default function VocabReviewPage() {
       {card && (
         <>
           <div className="h-1.5 overflow-hidden rounded-full bg-border-subtle" aria-hidden="true">
-            <motion.div className="h-full rounded-full bg-brand" animate={{ width: `${(reviewed / (reviewed + left)) * 100}%` }} transition={{ duration: 0.3, ease }} />
+            <motion.div className="h-full w-full origin-left rounded-full bg-brand" initial={false} animate={{ scaleX: reviewed / (reviewed + left) }} transition={move('slow')} />
           </div>
           <Flashcard key={`${card.id}-${turn}`} card={card} flipped={flipped} onFlip={() => setFlipped((f) => !f)} cardRef={cardRef} />
           <div className="flex items-center justify-between gap-3">
@@ -154,7 +155,7 @@ export default function VocabReviewPage() {
           </div>
           {!flipped ? (
             <button type="button" onClick={() => setFlipped(true)}
-              className="flex min-h-13 items-center justify-center rounded-field bg-surface-inverse font-semibold text-text-inverse transition active:scale-[0.98]">
+              className="flex min-h-13 items-center justify-center rounded-field bg-surface-inverse font-semibold text-text-inverse transition press">
               Show meaning <span className="ml-2 hidden text-sm font-normal text-on-brand/60 md:inline">Space</span>
             </button>
           ) : (
@@ -165,7 +166,7 @@ export default function VocabReviewPage() {
                 ['easy', 'Easy', gapLabel(card.box, 2), 'border-success text-success-text hover:bg-success-tint'],
               ].map(([g, label, hint, cls], i) => (
                 <button key={g} type="button" onClick={() => grade(g)}
-                  className={`flex min-h-13 flex-col items-center justify-center rounded-field border bg-surface-card px-2 py-2 transition active:scale-[0.97] ${cls}`}>
+                  className={`flex min-h-13 flex-col items-center justify-center rounded-field border bg-surface-card px-2 py-2 transition press ${cls}`}>
                   <span className="font-semibold">{label} <span className="hidden text-[12px] font-normal text-text-muted md:inline">{i + 1}</span></span>
                   <span className="text-[12px] text-text-secondary">{hint}</span>
                 </button>
@@ -180,10 +181,10 @@ export default function VocabReviewPage() {
       )}
 
       {done && reviewed > 0 && (
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease }}
+        <motion.section {...anim(fadeUp)}
           className="flex flex-col gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-10">
           <div className="flex items-center gap-3">
-            <CheckCircleIcon size={34} weight="fill" className="text-success" />
+            <SuccessCheck size={34} className="text-success" />
             <h1 className="font-display text-[clamp(26px,3vw,34px)] font-semibold tracking-[-0.02em]">Session done</h1>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -272,7 +273,7 @@ function Flashcard({ card, flipped, onFlip, cardRef }) {
         {reduce ? (
           <div className="grid min-h-[300px] rounded-panel border border-border-subtle bg-surface-card md:min-h-[360px]">
             <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={flipped ? 'back' : 'front'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <motion.div key={flipped ? 'back' : 'front'} {...anim(fade)}>
                 {flipped ? back : front}
               </motion.div>
             </AnimatePresence>
@@ -280,7 +281,7 @@ function Flashcard({ card, flipped, onFlip, cardRef }) {
         ) : (
           <motion.div className="grid min-h-[300px] [transform-style:preserve-3d] md:min-h-[360px]"
             initial={{ rotateY: 0, opacity: 0, y: 10 }} animate={{ rotateY: flipped ? 180 : 0, opacity: 1, y: 0 }}
-            transition={{ rotateY: { duration: 0.45, ease }, opacity: { duration: 0.2 }, y: { duration: 0.25, ease } }}>
+            transition={{ rotateY: move('slow'), opacity: enter('base'), y: enter('base') }}>
             <div className="[grid-area:1/1] rounded-panel border border-border-subtle bg-surface-card [backface-visibility:hidden]">{front}</div>
             <div className="[grid-area:1/1] rounded-panel border border-brand/40 bg-surface-card [backface-visibility:hidden] [transform:rotateY(180deg)]">{back}</div>
           </motion.div>

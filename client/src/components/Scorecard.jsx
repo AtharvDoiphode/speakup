@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { anim, enter, fadeUp, stagger } from '../lib/motion';
 import { ArrowClockwiseIcon, ArrowRightIcon, CheckIcon, FilePdfIcon, QuotesIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { againBody, SCORE_TITLE } from '../lib/modes';
 import ScoreRing from './ScoreRing';
 import MarkerSweep from './MarkerSweep';
 
-const ease = [0.2, 0.8, 0.2, 1];
 
 // The heading takes focus when the scorecard appears, so screen readers start there
 const useFocusOnMount = () => useCallback((el) => el?.focus({ preventScroll: true }), []);
@@ -53,7 +53,7 @@ export default function Scorecard({ convo, onScorecard }) {
   const actions = (
     <div className="flex flex-wrap gap-2.5 print:hidden">
       <button type="button" onClick={practiseAgain} disabled={again}
-        className="flex min-h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 active:scale-[0.97] disabled:opacity-70">
+        className="flex min-h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 press disabled:opacity-70">
         <ArrowClockwiseIcon size={18} /> {again ? 'Starting…' : 'Practise again'}
       </button>
       {card && (
@@ -88,7 +88,7 @@ export default function Scorecard({ convo, onScorecard }) {
   }
 
   return (
-    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease }}
+    <motion.section {...anim(fadeUp)}
       aria-labelledby="scorecard-title" data-scorecard="ready"
       className="flex flex-col gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-8 print:gap-3 print:rounded-none print:border-0 print:border-b-2 print:border-print-ink print:p-0 print:pb-4">
       <div className="flex flex-wrap items-center gap-5 print:hidden">
@@ -110,7 +110,7 @@ export default function Scorecard({ convo, onScorecard }) {
             <span className="flex items-center gap-2.5 md:order-none">
               <span role="meter" aria-valuemin={1} aria-valuemax={5} aria-valuenow={c.score} aria-label={`${c.label}: ${c.score} out of 5`} className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <motion.span key={n} initial={{ scaleY: 0.3, opacity: 0 }} animate={{ scaleY: 1, opacity: 1 }} transition={{ delay: 0.15 + i * 0.06 + n * 0.03, duration: 0.25 }}
+                  <motion.span key={n} initial={{ scaleY: 0.3, opacity: 0 }} animate={{ scaleY: 1, opacity: 1 }} transition={enter('base', { delay: stagger(i * 2 + n) })}
                     className={`h-3 w-6 rounded-[3px] ${n <= c.score ? 'bg-brand print:bg-print-ink' : 'bg-surface-sunken print:border print:border-print-ink print:bg-print-paper'}`} />
                 ))}
               </span>

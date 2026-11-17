@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { ArrowRightIcon, CheckIcon, PlusIcon, SpinnerGapIcon } from '@phosphor-icons/react';
+import { m as motion } from 'motion/react';
+import SuccessCheck from '../components/SuccessCheck';
+import { listItem, reveal } from '../lib/motion';
+import { ArrowRightIcon, PlusIcon, SpinnerGapIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { STAGES } from '../lib/vocab';
 import Segmented from '../components/Segmented';
@@ -13,7 +15,6 @@ const TABS = [
   { value: 'deck', label: 'My deck' },
   { value: 'add', label: 'Add words' },
 ];
-const ease = [0.2, 0.8, 0.2, 1];
 
 export default function VocabularyPage() {
   const [params, setParams] = useSearchParams();
@@ -94,7 +95,7 @@ function TodayTab({ onGoAdd }) {
         <div className="flex flex-wrap gap-2.5">
           {due > 0 && (
             <Link to="/vocabulary/review"
-              className="flex h-13 items-center gap-2 rounded-field bg-brand px-6 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97]">
+              className="flex h-13 items-center gap-2 rounded-field bg-brand px-6 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press">
               Review {due} word{due === 1 ? '' : 's'} <ArrowRightIcon size={18} />
             </Link>
           )}
@@ -107,7 +108,7 @@ function TodayTab({ onGoAdd }) {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map(([label, n], i) => (
-          <motion.div key={label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i, duration: 0.3, ease }}
+          <motion.div key={label} {...listItem(i)}
             className="rounded-panel border border-border-subtle bg-surface-card px-5 py-4">
             <div className="font-display text-[34px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{n}</div>
             <div className="mt-1.5 text-sm text-text-secondary">{label}</div>
@@ -135,13 +136,14 @@ function StageBar({ boxes, total, onGoAdd }) {
         </p>
       ) : (
         <>
-          <div className="flex h-3 gap-0.5 overflow-hidden rounded-full" role="img"
-            aria-label={STAGES.map((s, i) => `${s.label} ${counts[i]}`).join(', ')}>
+          {/* The segments sit at their real sizes; the whole bar sweeps in once (transform only) */}
+          <motion.div className="flex h-3 origin-left gap-0.5 overflow-hidden rounded-full" role="img"
+            aria-label={STAGES.map((s, i) => `${s.label} ${counts[i]}`).join(', ')}
+            initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={reveal()}>
             {STAGES.map((s, i) => counts[i] > 0 && (
-              <motion.div key={s.key} className={`h-full ${s.dot}`} initial={{ flexGrow: 0 }} animate={{ flexGrow: counts[i] }}
-                transition={{ delay: 0.2, duration: 0.7, ease }} style={{ flexBasis: 0 }} />
+              <div key={s.key} className={`h-full ${s.dot}`} style={{ flexGrow: counts[i], flexBasis: 0 }} />
             ))}
-          </div>
+          </motion.div>
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {STAGES.map((s, i) => (
               <li key={s.key} className="flex items-center gap-2 text-sm">
@@ -197,7 +199,7 @@ function FromMistakes({ suggestions, onAdded }) {
             <button key={s.word} type="button" onClick={() => add(s)} disabled={!!st}
               aria-label={st === 'added' ? `${s.word}, added` : `Add "${s.word}". You said "${s.wrong}".`}
               className={`flex min-h-11 items-center gap-2 rounded-tag border px-3 py-1.5 text-left transition-colors ${st === 'added' ? 'border-success bg-success-tint text-success-text' : 'border-border-subtle hover:border-border-strong'}`}>
-              {st === 'adding' ? <SpinnerGapIcon size={15} className="animate-spin" /> : st === 'added' ? <CheckIcon size={15} /> : <PlusIcon size={15} className="text-brand" />}
+              {st === 'adding' ? <SpinnerGapIcon size={15} className="animate-spin" /> : st === 'added' ? <SuccessCheck plain size={15} /> : <PlusIcon size={15} className="text-brand" />}
               <span className="flex flex-col leading-tight">
                 <span className="text-[15px] font-semibold">{s.word}</span>
                 {s.wrong && <span className="text-[12px] text-text-secondary line-through decoration-mistake">{s.wrong}</span>}

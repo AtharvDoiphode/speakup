@@ -129,8 +129,8 @@ export default function TranscriptPage() {
       <div className="flex items-center gap-3 print:hidden">
         <button type="button" role="switch" aria-checked={showFixes} onClick={() => setShowFixes((v) => !v)}
           className="flex items-center gap-2.5 text-[15px] font-medium">
-          <span className={`relative h-6 w-10 rounded-full transition-colors ${showFixes ? 'bg-brand' : 'bg-border-subtle'}`}>
-            <span className={`absolute top-0.5 size-5 rounded-full bg-surface-card transition-all ${showFixes ? 'left-[18px]' : 'left-0.5'}`} />
+          <span className={`relative h-6 w-10 rounded-full transition-colors ${showFixes ? 'bg-brand' : 'bg-border-strong'}`}>
+            <span className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-surface-card transition-transform duration-(--motion-fast) ${showFixes ? 'translate-x-4' : ''}`} />
           </span>
           Show corrections
         </button>

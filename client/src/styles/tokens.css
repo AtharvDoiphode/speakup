@@ -158,6 +158,10 @@
   --text-body: 15px;
   --text-lead: 17px;
 
+  /* Motion: Tailwind's transition utilities use the motion tokens (set from lib/motion.js) */
+  --default-transition-duration: var(--motion-instant);
+  --default-transition-timing-function: var(--motion-ease-out);
+
   /* Spacing: Tailwind's 4px step, written down so it can't drift */
   --spacing: 0.25rem;
 

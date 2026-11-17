@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { SPRING } from '../lib/motion';
 import { SignOutIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
 import { NAV, visibleTo } from '../lib/nav';
@@ -57,7 +58,7 @@ export default function Sidebar({ compact = false }) {
                     <motion.span
                       layoutId={compact ? 'nav-pill-compact' : 'nav-pill-full'}
                       aria-hidden="true"
-                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      transition={SPRING.snappy}
                       className="absolute inset-0 rounded-field border border-border-subtle bg-surface-card"
                     />
                   )}

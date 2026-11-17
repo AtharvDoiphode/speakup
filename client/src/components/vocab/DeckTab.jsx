@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { anim, fadeUp } from '../../lib/motion';
 import { CaretDownIcon, MagnifyingGlassIcon, SpeakerHighIcon, TrashIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../../lib/api';
 import { dueLabel, stageOf } from '../../lib/vocab';
@@ -79,8 +80,7 @@ export default function DeckTab() {
                   </button>
                   <AnimatePresence initial={false}>
                     {open === c.id && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.22 }} className="overflow-hidden">
+                      <motion.div {...anim(fadeUp)} className="overflow-hidden">
                         <CardEditor card={c} now={now} onSaved={update} onDeleted={remove} />
                       </motion.div>
                     )}

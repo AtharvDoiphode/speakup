@@ -1,11 +1,23 @@
+import { useEffect, useRef } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { anim, page } from '../lib/motion';
 import Sidebar from './Sidebar';
 import MobileTabBar from './MobileTabBar';
 
 export default function AppShell() {
   const location = useLocation();
   const outlet = useOutlet(); // captured so the old page can animate out
+  const mainRef = useRef(null);
+  const firstRoute = useRef(true);
+
+  // Focus is never lost on a route change: if it was inside the page that is leaving
+  // (or already dropped to <body>), it moves to <main>, where the new page arrives.
+  useEffect(() => {
+    if (firstRoute.current) { firstRoute.current = false; return; }
+    const active = document.activeElement;
+    if (!active || active === document.body || mainRef.current?.contains(active)) mainRef.current?.focus({ preventScroll: true });
+  }, [location.pathname]);
 
   // The live conversation (/practice/<id>) and the flashcards need the room,
   // so the sidebar stays as the narrow icon rail there, even on wide screens
@@ -25,20 +37,15 @@ export default function AppShell() {
         )}
       </aside>
 
-      <main className="min-w-0 pb-[96px] md:pb-0 print:pb-0">
+      <main ref={mainRef} tabIndex={-1} className="relative min-w-0 pb-[96px] outline-none md:pb-0 print:pb-0">
         {/* No initial={false} here: it would be passed down and stop every animation
-            on the first page you land on (the dashboard's cards, bars and sparklines) */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-          >
-            {outlet}
-          </motion.div>
-        </AnimatePresence>
+            on the first page you land on (the dashboard's cards, bars and sparklines).
+            The old page is removed at once (keyed, no exit animation): one page mounted at a
+            time even with rapid clicks, and a change takes one page duration (under 0.4s).
+            AnimatePresence would only add a wait before the new page can start. */}
+        <motion.div key={location.pathname} {...anim(page)}>
+          {outlet}
+        </motion.div>
       </main>
 
       <MobileTabBar />

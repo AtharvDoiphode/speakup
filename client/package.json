@@ -11,7 +11,8 @@
     "icons": "node scripts/make-icons.mjs",
     "test:brand": "node --test scripts/brand.test.mjs",
     "test:tokens": "node --test scripts/tokens.test.mjs",
-    "contrast": "node scripts/check-contrast.mjs"
+    "contrast": "node scripts/check-contrast.mjs",
+    "test:motion": "node --test scripts/motion.test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

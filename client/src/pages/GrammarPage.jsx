@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { DURATION, listItem, reveal, stagger } from '../lib/motion';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { MISTAKE_LABELS } from '../lib/corrections';
 import { mistakePhrase } from '../lib/grammar';
 
-const ease = [0.2, 0.8, 0.2, 1];
-const rise = (i) => ({ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.04 * i, duration: 0.3, ease } });
+const rise = listItem; // staggered fade-up, first render only
 
 export default function GrammarPage() {
   const [data, setData] = useState(null);
@@ -49,7 +49,7 @@ export default function GrammarPage() {
             </div>
             {ready ? (
               <Link to="/grammar/mine"
-                className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-field bg-brand px-6 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97]">
+                className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-field bg-brand px-6 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press">
                 Start <ArrowRightIcon size={18} />
               </Link>
             ) : (
@@ -88,7 +88,7 @@ export default function GrammarPage() {
                           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-border-subtle"
                             role="progressbar" aria-label="Mastery" aria-valuenow={l.mastery} aria-valuemin={0} aria-valuemax={100}>
                             <motion.div className="h-full origin-left rounded-full bg-success"
-                              initial={{ scaleX: 0 }} animate={{ scaleX: l.mastery / 100 }} transition={{ delay: 0.3 + 0.04 * i, duration: 0.7, ease }} />
+                              initial={{ scaleX: 0 }} animate={{ scaleX: l.mastery / 100 }} transition={reveal(DURATION.slow + stagger(i))} />
                           </div>
                           <span className="text-sm font-medium text-success-text tabular-nums">{l.mastery}%</span>
                         </div>

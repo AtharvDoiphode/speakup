@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { SPRING, anim, backdrop, fadeUp, press, pressTransition, scaleIn, slideIn } from '../lib/motion';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -280,7 +281,7 @@ export default function LivePage() {
             <span className="flex flex-1 gap-1 md:max-w-[340px]" aria-hidden="true">
               {Array.from({ length: ti.total }, (_, k) => (
                 <span key={k} data-tick={k < ti.answered ? 'done' : k === ti.answered && !ti.done ? 'now' : 'todo'}
-                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${k < ti.answered ? 'bg-brand' : k === ti.answered && !ti.done ? 'bg-surface-inverse' : 'bg-border-subtle'}`} />
+                  className={`h-1.5 flex-1 rounded-full transition-colors duration-(--motion-slow) ${k < ti.answered ? 'bg-brand' : k === ti.answered && !ti.done ? 'bg-surface-inverse' : 'bg-border-subtle'}`} />
               ))}
             </span>
             {/* Read out when the turn changes: "Question 4 of 10" */}
@@ -307,9 +308,7 @@ export default function LivePage() {
             <div className="flex max-w-[780px] flex-col gap-1.5">
               <span className="text-sm text-text-secondary">{name}</span>
               <AnimatePresence mode="wait" initial={false}>
-                <motion.p key={lastAi._id ?? lastAi.createdAt}
-                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                <motion.p key={lastAi._id ?? lastAi.createdAt} {...anim(slideIn)}
                   className="text-[clamp(19px,2vw,24px)] leading-[1.4] text-text-secondary text-pretty">
                   {lastAi.text}
                 </motion.p>
@@ -345,7 +344,7 @@ export default function LivePage() {
           <footer className="flex flex-none flex-col items-start gap-3 border-t border-border-subtle px-4 py-4 md:flex-row md:items-center md:px-12 lg:py-5" data-finished>
             {shownError && <p role="alert" className="text-sm font-medium text-mistake-text">{shownError}</p>}
             <button type="button" onClick={endAndScore} disabled={!!busy} autoFocus
-              className="flex min-h-13 items-center gap-2 rounded-field bg-brand px-6 text-[17px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:opacity-70">
+              className="flex min-h-13 items-center gap-2 rounded-field bg-brand px-6 text-[17px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press disabled:opacity-70">
               See my scorecard
             </button>
             <span className="text-sm text-text-secondary">That was the last {convo.mode === 'debate' ? 'round' : 'question'}. Your answers are marked next.</span>
@@ -374,7 +373,7 @@ export default function LivePage() {
                     disabled={sending || (voice.listening && micFor === 'sayback')}
                     aria-pressed={voice.listening}
                     aria-label={voice.listening ? 'Stop and send' : 'Start speaking'}
-                    whileTap={{ scale: 0.94 }}
+                    whileTap={press} transition={pressTransition}
                     className={`flex size-[76px] items-center justify-center rounded-full text-on-brand transition-colors disabled:opacity-40 ${
                       listeningForReply ? 'bg-brand' : 'bg-surface-inverse hover:bg-surface-inverse/90'
                     }`}
@@ -403,12 +402,12 @@ export default function LivePage() {
                     className="h-12 min-w-0 flex-1 rounded-field border border-border-strong bg-surface-card px-4 text-base"
                   />
                   <button type="submit" disabled={!draft.trim() || !!busy} aria-label="Send"
-                    className="flex size-12 flex-none items-center justify-center rounded-field bg-brand text-on-brand transition hover:bg-brand-700 active:scale-[0.94] disabled:opacity-40">
+                    className="flex size-12 flex-none items-center justify-center rounded-field bg-brand text-on-brand transition hover:bg-brand-700 press disabled:opacity-40">
                     <PaperPlaneRightIcon size={20} />
                   </button>
                   {voice.supported && (
                     <button type="button" onClick={() => setInputMode('voice')} aria-label="Use voice" title="Use voice"
-                      className="flex size-12 flex-none items-center justify-center rounded-field border border-border-subtle bg-surface-card text-text-secondary transition hover:text-text-primary active:scale-[0.94]">
+                      className="flex size-12 flex-none items-center justify-center rounded-field border border-border-subtle bg-surface-card text-text-secondary transition hover:text-text-primary press">
                       <MicrophoneIcon size={20} />
                     </button>
                   )}
@@ -417,7 +416,7 @@ export default function LivePage() {
 
               <div className="order-3 flex flex-col gap-1 lg:items-end">
                 <button type="button" onClick={endSession} disabled={busy === 'end' || sending}
-                  className="flex min-h-11 w-fit items-center gap-1.5 rounded-field border border-mistake bg-surface-card px-4 text-sm font-semibold text-mistake-text transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-50">
+                  className="flex min-h-11 w-fit items-center gap-1.5 rounded-field border border-mistake bg-surface-card px-4 text-sm font-semibold text-mistake-text transition hover:-translate-y-px press disabled:opacity-50">
                   <XIcon size={16} />
                   {busy === 'end' ? 'Ending…' : confirmEnd ? 'Tap again to end' : turns ? 'End early' : 'End session'}
                 </button>
@@ -449,8 +448,7 @@ export default function LivePage() {
       {/* Marking an interview or debate: up to a minute */}
       <AnimatePresence>
         {marking && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-canvas/85 px-4"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-canvas/85 px-4" {...anim(backdrop)}>
             <div role="status" aria-live="polite" className="relative flex w-full max-w-[460px] flex-col gap-2 overflow-hidden rounded-panel border border-border-subtle bg-surface-card px-7 pt-28 pb-7" data-marking>
               <MarkerSweep rows={3} gap={30} top={24} />
               <span className="font-display text-[24px] font-semibold tracking-[-0.02em]">Marking your answers…</span>
@@ -466,7 +464,7 @@ export default function LivePage() {
 function ControlButton({ icon, children, ...props }) {
   return (
     <button type="button" {...props}
-      className="flex h-[42px] items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium transition hover:-translate-y-px active:scale-[0.96] disabled:opacity-40 disabled:hover:translate-y-0">
+      className="flex h-[42px] items-center gap-1.5 rounded-field border border-border-subtle bg-surface-card px-3 text-sm font-medium transition hover:-translate-y-px press disabled:opacity-40 disabled:hover:translate-y-0">
       {icon}
       {children}
     </button>
@@ -510,7 +508,7 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
         {groups.length === 0 && <p className="py-2.5 text-sm text-text-secondary">None yet. Keep talking.</p>}
         <AnimatePresence initial={false}>
           {groups.map((g) => (
-            <motion.div key={g.type} layout initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            <motion.div key={g.type} layout transition={SPRING.snappy} {...anim(fadeUp)}
               className="flex flex-col gap-1 border-b border-border-subtle py-[11px]">
               <div className="flex justify-between text-[15px]">
                 <span className="font-medium">{MISTAKE_LABELS[g.type] ?? 'Other'}</span>
@@ -533,14 +531,14 @@ function SessionRail({ messages, lastUser, onHear, onSayBack, sayBackListening, 
             <div className="flex flex-wrap gap-2">
               {ttsSupported && (
                 <button type="button" onClick={() => onHear(natural)} disabled={sayBackListening}
-                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border-subtle bg-surface-card px-3 text-sm font-medium active:scale-[0.96] disabled:opacity-40">
+                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border-subtle bg-surface-card px-3 text-sm font-medium press disabled:opacity-40">
                   <SpeakerHighIcon size={16} />
                   Hear it
                 </button>
               )}
               {voiceSupported && (
                 <button type="button" onClick={onSayBack} disabled={busy} aria-pressed={sayBackListening}
-                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] bg-brand px-3 text-sm font-medium text-on-brand transition hover:bg-brand-700 active:scale-[0.96] disabled:opacity-40">
+                  className="flex h-[38px] items-center gap-1.5 rounded-[10px] bg-brand px-3 text-sm font-medium text-on-brand transition hover:bg-brand-700 press disabled:opacity-40">
                   <MicrophoneIcon size={16} />
                   {sayBackListening ? 'Done' : 'Say it back'}
                 </button>
@@ -574,11 +572,10 @@ function Summary({ convo, messages, onReview, onNew, note = '', newLabel = 'New 
   const minutes = Math.max(1, Math.round((convo.durationSec ?? 0) / 60));
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" {...anim(backdrop)} />
       <motion.div role="dialog" aria-modal="true" aria-labelledby="summary-title"
         className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-[460px] -translate-y-1/2 rounded-panel border border-border-subtle bg-surface-card p-7"
-        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
+        {...anim(scaleIn)}>
         <span className="text-sm text-text-secondary">{convo.title} · {minutes} min</span>
         <h2 id="summary-title" className="mt-1 text-[30px] font-semibold tracking-[-0.03em]">Session complete</h2>
         <div className="mt-5 flex items-end gap-3">

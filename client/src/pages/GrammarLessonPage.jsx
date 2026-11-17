@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { anim, fade } from '../lib/motion';
 import { ArrowLeftIcon, ArrowRightIcon, ArrowClockwiseIcon, SpeakerHighIcon, LightbulbIcon, PlayIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { MISTAKE_LABELS } from '../lib/corrections';
@@ -137,7 +138,7 @@ function Lesson({ type }) {
               <p className="mt-1 text-[15px] text-text-secondary">{lesson.questions.length} quick questions. You'll see why after each one.</p>
             </div>
             <button type="button" onClick={start}
-              className="flex h-12 items-center justify-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97]">
+              className="flex h-12 items-center justify-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press">
               <PlayIcon size={18} weight="fill" /> Start practice
             </button>
             {mineLink}
@@ -159,7 +160,7 @@ function Lesson({ type }) {
               <ArrowClockwiseIcon size={18} /> Try again
             </button>
             <Link to={`/grammar/${next}`}
-              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 active:scale-[0.97]">
+              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 press">
               Next lesson: {MISTAKE_LABELS[next]} <ArrowRightIcon size={18} />
             </Link>
           </QuizResult>
@@ -168,7 +169,7 @@ function Lesson({ type }) {
       )}
 
       {phase !== 'learn' && (
-        <motion.button type="button" onClick={() => setPhase('learn')} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        <motion.button type="button" onClick={() => setPhase('learn')} {...anim(fade)}
           className="w-fit text-sm font-medium text-text-secondary hover:text-text-primary">
           Back to the lesson
         </motion.button>

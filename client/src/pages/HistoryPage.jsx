@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { STAGGER, anim, fadeUp, listItem } from '../lib/motion';
 import {
   CalendarBlankIcon, CaretRightIcon, ChatsCircleIcon, MagnifyingGlassIcon, MicrophoneIcon,
   PencilSimpleLineIcon, SpeakerHighIcon, SpinnerGapIcon, TrashIcon, XIcon,
@@ -95,6 +96,8 @@ export default function HistoryPage() {
     if (groups.at(-1)?.key !== k) groups.push({ key: k, items: [] });
     groups.at(-1).items.push(it);
   }
+  // Position in the whole list: only the first 12 rows fade up (and only when they first appear)
+  const order = new Map((items ?? []).map((it, i) => [it.id, i]));
 
   return (
     <div className="flex flex-col gap-6 px-4 py-8 md:px-11 md:py-10">
@@ -122,7 +125,7 @@ export default function HistoryPage() {
         </div>
         <AnimatePresence initial={false}>
           {showDates && (
-            <motion.div id="history-dates" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            <motion.div id="history-dates" {...anim(fadeUp)}
               className="overflow-hidden">
               <div className="flex flex-wrap items-end gap-3 pt-1">
                 <label className="flex flex-col gap-1 text-sm font-medium">From
@@ -172,10 +175,10 @@ export default function HistoryPage() {
               <h2 className="text-sm font-semibold text-text-secondary">{dayHeading(g.key, now)}</h2>
               <ul className="flex flex-col overflow-hidden rounded-panel border border-border-subtle bg-surface-card">
                 {g.items.map((it) => (
-                  <li key={it.id} className="border-b border-border-subtle last:border-0" data-type={it.type}>
+                  <RowItem key={it.id} n={order.get(it.id)} className="border-b border-border-subtle last:border-0" data-type={it.type}>
                     <Row item={it} q={q} open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
                       onDeleted={() => setItems((list) => list.filter((x) => x.id !== it.id))} />
-                  </li>
+                  </RowItem>
                 ))}
               </ul>
             </section>
@@ -229,7 +232,7 @@ function Row({ item, q, open, onToggle, onDeleted }) {
       <button type="button" onClick={onToggle} aria-expanded={open} className={cls}>{body}</button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+          <motion.div {...anim(fadeUp)} className="overflow-hidden">
             <ReadingDetail id={item.id} onDeleted={onDeleted} />
           </motion.div>
         )}
@@ -300,4 +303,9 @@ function ReadingDetail({ id, onDeleted }) {
       )}
     </div>
   );
+}
+
+// The first 12 rows fade up; the rest are plain list items, so long lists cost nothing extra
+function RowItem({ n, ...props }) {
+  return n < STAGGER.items ? <motion.li {...listItem(n)} {...props} /> : <li {...props} />;
 }

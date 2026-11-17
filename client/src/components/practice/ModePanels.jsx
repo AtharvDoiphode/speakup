@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { anim, fadeUp } from '../../lib/motion';
 import { CheckIcon, MicrophoneIcon, PencilSimpleIcon, PlusIcon, TrashIcon, UserCircleIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../../lib/api';
 import { useAuth } from '../../context/useAuth';
@@ -45,7 +46,7 @@ function DifficultyField({ value, onChange, layoutId }) {
 function StartButton({ busy, busyText, children, onClick }) {
   return (
     <button type="button" onClick={onClick} disabled={busy}
-      className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold text-on-brand transition duration-150 hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0">
+      className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold text-on-brand transition duration-(--motion-fast) hover:-translate-y-px hover:bg-brand-700 press disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0">
       {busy ? <><span className="size-2 animate-pulse rounded-full bg-surface-card" /> {busyText}</> : <><MicrophoneIcon size={20} /> {children}</>}
     </button>
   );
@@ -88,7 +89,7 @@ export function InterviewPanel({ modes }) {
         <div className="flex flex-wrap gap-2" aria-label="Suggestions">
           {ROLE_CHIPS.map((r) => (
             <button key={r} type="button" onClick={() => setRole(r)} aria-pressed={role === r}
-              className={`min-h-11 rounded-tag border px-3.5 text-sm font-medium transition active:scale-[0.97] ${role === r ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card hover:border-border-strong'}`}>
+              className={`min-h-11 rounded-tag border px-3.5 text-sm font-medium transition press ${role === r ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card hover:border-border-strong'}`}>
               {r}
             </button>
           ))}
@@ -257,7 +258,7 @@ export function PeoplePanel({ extraTraits, moods, selectedId, onStart, onPeopleC
         <p className="text-[15px] text-text-secondary">{people ? `${people.length} of ${max} saved. Only you can see them.` : ' '}</p>
         {editing !== 'new' && (
           <button type="button" onClick={() => setEditing('new')}
-            className="flex min-h-11 items-center gap-1.5 rounded-field bg-surface-inverse px-4 font-semibold text-text-inverse transition active:scale-[0.97]">
+            className="flex min-h-11 items-center gap-1.5 rounded-field bg-surface-inverse px-4 font-semibold text-text-inverse transition press">
             <PlusIcon size={18} /> New person
           </button>
         )}
@@ -265,7 +266,7 @@ export function PeoplePanel({ extraTraits, moods, selectedId, onStart, onPeopleC
 
       <AnimatePresence initial={false}>
         {editing === 'new' && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+          <motion.div {...anim(fadeUp)} className="overflow-hidden">
             <PersonForm extraTraits={extraTraits} moods={moods} onCancel={() => setEditing(null)} onSaved={(p) => saved(p, true)} />
           </motion.div>
         )}
@@ -366,7 +367,7 @@ function PersonForm({ initial, extraTraits, moods, onCancel, onSaved }) {
             const full = !on && p.traits.length >= 3;
             return (
               <button key={t} type="button" onClick={() => toggle(t)} disabled={full} aria-pressed={on}
-                className={`min-h-11 rounded-tag border px-3.5 text-sm font-medium transition active:scale-[0.96] disabled:opacity-40 ${on ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card'}`}>
+                className={`min-h-11 rounded-tag border px-3.5 text-sm font-medium transition press disabled:opacity-40 ${on ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card'}`}>
                 {t}
               </button>
             );

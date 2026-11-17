@@ -115,11 +115,11 @@ export default function WritingPage() {
             <div className="ml-auto flex gap-2">
               <input ref={fileRef} type="file" accept=".txt,.md,.docx" onChange={onFile} hidden />
               <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
-                className="flex h-12 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-medium transition hover:-translate-y-px active:scale-[0.97] disabled:opacity-50">
+                className="flex h-12 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-medium transition hover:-translate-y-px press disabled:opacity-50">
                 <UploadSimpleIcon size={18} /> Upload
               </button>
               <button type="button" onClick={check} disabled={busy || text.trim().length < 20}
-                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 text-[15px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0">
+                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 text-[15px] font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press disabled:opacity-50 disabled:hover:translate-y-0">
                 <CheckCircleIcon size={18} /> {busy ? 'Reading like a teacher…' : 'Check my writing'}
               </button>
             </div>

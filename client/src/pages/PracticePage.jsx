@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { SPRING, anim, backdrop, fadeUp, listItem, sheet } from '../lib/motion';
 import { CaretDownIcon, CheckIcon, MicrophoneIcon, XIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/useAuth';
@@ -8,7 +9,7 @@ import Segmented from '../components/Segmented';
 import { DIFFICULTIES } from '../lib/modes';
 import { InterviewPanel, DebatePanel, PeoplePanel } from '../components/practice/ModePanels';
 
-const spring = { type: 'spring', stiffness: 500, damping: 40 };
+const spring = SPRING.snappy; // tab and pill indicators slide with the shared snappy spring
 
 const TABS = [
   { value: 'scenes', label: 'Scenes' },
@@ -91,6 +92,8 @@ export default function PracticePage() {
     [data]
   );
   const scene = data?.scenarios.find((s) => s.id === selId);
+  // Position in the whole list: only the first 12 scenes fade up, on first render
+  const sceneOrder = new Map(groups.flatMap((g) => g.items).map((s, i) => [s.id, i]));
 
   function pick(id) {
     if (id !== selId) {
@@ -164,7 +167,7 @@ export default function PracticePage() {
               <span className="text-sm text-text-secondary">{g.items.length} scenes</span>
             </div>
             {g.items.map((s) => (
-              <SceneRow key={s.id} scene={s} selected={s.id === selId} onPick={() => pick(s.id)} />
+              <SceneRow key={s.id} scene={s} index={sceneOrder.get(s.id)} selected={s.id === selId} onPick={() => pick(s.id)} />
             ))}
           </section>
         ))}
@@ -185,9 +188,10 @@ export default function PracticePage() {
   );
 }
 
-function SceneRow({ scene, selected, onPick }) {
+function SceneRow({ scene, index, selected, onPick }) {
   return (
-    <button
+    <motion.button
+      {...listItem(index)}
       type="button"
       onClick={onPick}
       aria-pressed={selected}
@@ -205,7 +209,7 @@ function SceneRow({ scene, selected, onPick }) {
       <span className="relative hidden text-sm text-text-secondary md:block">{scene.who}, {scene.role}</span>
       <span className="relative text-sm text-text-secondary">{scene.minutes} min</span>
       <span className="relative hidden md:block">{selected && <CheckIcon size={18} className="text-brand" />}</span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -218,10 +222,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={scene.id}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.16 }}
+        {...anim(fadeUp)}
         className="flex flex-1 flex-col gap-[26px]"
       >
         <div>
@@ -271,15 +272,12 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
           <button type="button" onClick={() => setCustomOpen((o) => !o)} aria-expanded={customOpen}
             className="flex items-center justify-between text-sm font-semibold">
             Make it your own
-            <CaretDownIcon size={16} className={`text-text-secondary transition-transform duration-200 ${customOpen ? 'rotate-180' : ''}`} />
+            <CaretDownIcon size={16} className={`text-text-secondary transition-transform duration-(--motion-base) ${customOpen ? 'rotate-180' : ''}`} />
           </button>
           <AnimatePresence initial={false}>
             {customOpen && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+                {...anim(fadeUp)}
                 className="overflow-hidden"
               >
                 <div className="flex flex-col gap-4 pb-1">
@@ -291,7 +289,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
                         const full = !on && traits.length >= 3;
                         return (
                           <button key={t} type="button" onClick={() => toggleTrait(t)} disabled={full} aria-pressed={on}
-                            className={`h-[34px] rounded-tag border px-3 text-sm font-medium transition active:scale-[0.96] disabled:opacity-40 ${
+                            className={`h-[34px] rounded-tag border px-3 text-sm font-medium transition press disabled:opacity-40 ${
                               on ? 'border-surface-inverse bg-surface-inverse text-text-inverse' : 'border-border-subtle bg-surface-card text-text-primary'
                             }`}>
                             {t}
@@ -317,7 +315,7 @@ function DetailPanel({ scene, difficulty, setDifficulty, traits, toggleTrait, mo
             type="button"
             onClick={onStart}
             disabled={starting}
-            className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand text-[17px] font-semibold text-on-brand transition duration-150 hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0"
+            className="flex h-14 items-center justify-center gap-2.5 rounded-field bg-brand text-[17px] font-semibold text-on-brand transition duration-(--motion-fast) hover:-translate-y-px hover:bg-brand-700 press disabled:cursor-wait disabled:opacity-80 disabled:hover:translate-y-0"
           >
             {starting ? (
               <>
@@ -346,14 +344,12 @@ function DetailSheet({ onClose, panelProps }) {
 
   return (
     <>
-      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" onClick={onClose}
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+      <motion.div className="fixed inset-0 z-40 bg-surface-overlay" onClick={onClose} {...anim(backdrop)} />
       <motion.div
         role="dialog"
         aria-label={panelProps.scene.title}
         className="fixed inset-x-0 bottom-0 top-10 z-50 flex flex-col overflow-y-auto rounded-t-panel border-t border-border-subtle bg-surface-card px-5 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]"
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 420, damping: 40 }}
+        {...anim(sheet)}
       >
         <button onClick={onClose} aria-label="Close" className="mb-2 self-end rounded-tag p-1.5 text-text-secondary">
           <XIcon size={20} />

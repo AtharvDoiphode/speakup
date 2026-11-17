@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { anim, fadeUp, reveal, stagger } from '../lib/motion';
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { MISTAKE_LABELS } from '../lib/corrections';
@@ -14,7 +15,6 @@ const RANGES = [
   { value: '30', label: '30 days' },
   { value: '90', label: '90 days' },
 ];
-const ease = [0.2, 0.8, 0.2, 1];
 const s = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export default function ProgressPage() {
@@ -93,7 +93,7 @@ function ProgressBody({ data, goal }) {
 
   return (
     <>
-      <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease }}
+      <motion.p {...anim(fadeUp)}
         className="max-w-[70ch] text-[17px] leading-relaxed text-pretty" data-summary>
         {progressSummary(data)}
       </motion.p>
@@ -168,7 +168,7 @@ function MistakesCard({ items, days }) {
               <span className="flex items-center gap-2">
                 <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-sunken">
                   <motion.span className="block h-full origin-left rounded-full bg-brand" style={{ width: `${(m.count / max) * 100}%` }}
-                    initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.3, ease, delay: i * 0.04 }} />
+                    initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={reveal(stagger(i))} />
                 </span>
                 <span className="w-6 text-right text-sm font-semibold tabular-nums">{m.count}</span>
               </span>

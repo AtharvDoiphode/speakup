@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { DURATION, listItem, reveal, stagger } from '../lib/motion';
 import { ArrowRightIcon, BookOpenIcon, MicrophoneIcon, SpeakerHighIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/useAuth';
@@ -9,12 +10,7 @@ import { wordOfTheDay } from '../lib/words';
 import { speak, ttsSupported } from '../lib/speak';
 import VoiceOrb from '../components/VoiceOrb';
 
-const ease = [0.2, 0.8, 0.2, 1];
-const card = (i) => ({
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  transition: { delay: 0.05 * i, duration: 0.35, ease },
-});
+const card = listItem; // staggered fade-up, first render only
 
 const firstName = (n = '') => n.trim().split(/\s+/)[0] || 'there';
 const weekday = (key) => new Date(`${key}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'narrow' });
@@ -78,7 +74,7 @@ export default function Dashboard() {
           )}
         </div>
         <Link to="/practice"
-          className="flex h-11 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-semibold transition hover:-translate-y-px active:scale-[0.97]">
+          className="flex h-11 items-center gap-2 rounded-field border border-border-subtle bg-surface-card px-4 text-[15px] font-semibold transition hover:-translate-y-px press">
           <MicrophoneIcon size={18} /> All scenes
         </Link>
       </header>
@@ -108,7 +104,7 @@ export default function Dashboard() {
             </div>
             <div className="relative mt-auto flex flex-wrap items-center gap-4 pt-8">
               <button onClick={startChallenge} disabled={starting}
-                className="flex h-14 items-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-80">
+                className="flex h-14 items-center gap-2.5 rounded-field bg-brand px-6 text-[17px] font-semibold transition hover:-translate-y-px hover:bg-brand-700 press disabled:cursor-wait disabled:opacity-80">
                 <MicrophoneIcon size={20} />
                 {starting ? `${data.challenge.who} is getting ready…` : `Start with ${data.challenge.who}`}
               </button>
@@ -126,9 +122,8 @@ export default function Dashboard() {
               <span className="text-[17px] text-text-secondary">of {data.goalMin} min</span>
             </div>
             <div className="h-2 overflow-hidden rounded-[4px] border border-border-subtle bg-surface-sunken">
-              <motion.div className="h-full bg-brand" initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (data.today.minutes / data.goalMin) * 100)}%` }}
-                transition={{ delay: 0.3, duration: 0.7, ease }} />
+              <motion.div className="h-full origin-left bg-brand" style={{ width: `${Math.min(100, (data.today.minutes / data.goalMin) * 100)}%` }}
+                initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={reveal(DURATION.slow)} />
             </div>
             <div className="text-sm text-text-secondary">
               {data.today.yesterdayMinutes ? `Yesterday you spoke for ${data.today.yesterdayMinutes}.` : 'Minutes count when you end a session.'}
@@ -183,9 +178,9 @@ export default function Dashboard() {
                       <span className="text-text-secondary">{f.minutes} min</span>
                     </div>
                     <div className="h-1 rounded-[2px] bg-surface-sunken">
-                      <motion.div className={`h-full rounded-[2px] ${f.isMe ? 'bg-brand' : 'bg-text-secondary'}`}
-                        initial={{ width: 0 }} animate={{ width: `${(f.minutes / max) * 100}%` }}
-                        transition={{ delay: 0.4 + i * 0.08, duration: 0.6, ease }} />
+                      <motion.div className={`h-full origin-left rounded-[2px] ${f.isMe ? 'bg-brand' : 'bg-text-secondary'}`}
+                        style={{ width: `${(f.minutes / max) * 100}%` }}
+                        initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={reveal(DURATION.slow + stagger(i))} />
                     </div>
                   </div>
                 );
@@ -247,7 +242,7 @@ function StreakCard({ streak, last7 }) {
                   <motion.div className="h-10 w-[9px] origin-bottom rounded-[5px_4px_6px_3px] bg-brand"
                     style={{ rotate: rots[i] }}
                     initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
-                    transition={{ delay: 0.35 + i * 0.06, duration: 0.4, ease }} />
+                    transition={reveal(DURATION.slow + stagger(i))} />
                 ) : isToday ? (
                   <div className="h-10 w-[9px] rounded-[5px] border-[1.5px] border-dashed border-text-secondary" />
                 ) : (
@@ -304,7 +299,7 @@ function Sparkline({ values }) {
     <svg viewBox="0 0 120 32" className="h-8 w-[120px] overflow-visible" role="img" aria-label={`Daily counts: ${values.join(', ')}`}>
       <motion.polyline points={points} fill="none" className="stroke-mistake" strokeWidth="1.75"
         strokeLinejoin="round" strokeLinecap="round"
-        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.5, duration: 0.8, ease }} />
+        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={reveal(DURATION.slow)} />
     </svg>
   );
 }

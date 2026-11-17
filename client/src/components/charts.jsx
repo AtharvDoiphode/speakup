@@ -1,12 +1,12 @@
 import { useId, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { m as motion, useReducedMotion } from 'motion/react';
 import { ChartBarIcon, TableIcon } from '@phosphor-icons/react';
 import { useWidth, niceMax, tickIndexes } from '../lib/chartMath';
+import { reveal, stagger } from '../lib/motion';
 
 // Hand-written SVG charts (no chart library). Each SVG's viewBox matches its real pixel
 // width, measured with a ResizeObserver, so text and lines stay crisp from 390px to 1440px.
 
-const ease = [0.2, 0.8, 0.2, 1];
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
 /**
@@ -118,7 +118,7 @@ export function BarChart({ points, height = 200, goal, readout, summary, unit = 
               // a CSS animation (.bar-grow in index.css), which reduced motion and print switch off.
               <rect key={p.key} x={PAD.l + i * step + (step - bw) / 2} y={y(p.value)} width={bw} height={h} rx={Math.min(3, bw / 2)}
                 className={`bar-grow ${p.highlight ? 'fill-chart-1' : 'fill-chart-1/70'}`} data-value={p.value}
-                style={{ animationDelay: `${Math.min(i * 4, 100)}ms` }} />
+                style={{ animationDelay: `${stagger(i)}s` }} />
             ) : null;
           })}
           {goal != null && goal > 0 && (
@@ -188,7 +188,7 @@ export function LineChart({ points, height = 180, domain, readout, summary, unit
             <motion.path key={r[0]} d={r.map((i, k) => `${k ? 'L' : 'M'}${x(i).toFixed(1)},${y(points[i].value).toFixed(1)}`).join(' ')}
               fill="none" className="stroke-chart-1" strokeWidth="2.25" strokeLinejoin="round" strokeLinecap="round" data-run={r.length}
               // A fade, not a draw-on: a resize mid-draw can never leave half a line
-              initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease }} />
+              initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={reveal()} />
           ))}
           {points.map((p, i) => {
             if (p.value == null) return null;

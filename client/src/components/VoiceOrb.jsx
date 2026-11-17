@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { DURATION, LOOP } from '../lib/motion';
 
 // Three stacked blobs: blue outside, pink inside it, a yellow core.
 // Colours come from the design tokens (styles/tokens.css), read once when the orb mounts.
@@ -9,7 +10,17 @@ const LAYERS = [
 ];
 
 const POINTS = 96; // more points = smoother outline
-const SPEED = { idle: 1, listening: 1.5, speaking: 1.9, thinking: 3.2 };
+// What each state looks like (the timings live in lib/motion.js):
+//  idle: slow breathing (scale 1 to 1.04); listening: reacts to the mic level;
+//  thinking: a gentle turn, a little smaller; speaking: a steady pulse with a speech rhythm.
+// Every value eases toward its target, so a state change cross-fades instead of snapping.
+const STATES = {
+  idle: { wobble: 1, breathe: 1, spin: 0, pulse: 0, size: 1 },
+  listening: { wobble: 1.5, breathe: 0, spin: 0, pulse: 0, size: 1 },
+  thinking: { wobble: 1.2, breathe: 0, spin: 1, pulse: 0, size: 0.92 },
+  speaking: { wobble: 1.4, breathe: 0, spin: 0, pulse: 1, size: 1 },
+};
+const TAU = Math.PI * 2;
 
 /**
  * props:
@@ -41,16 +52,24 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
     let raf = 0;
     let t = 3; // animation time
     let smooth = 0; // smoothed loudness
-    let sizeNow = 1; // shrinks a little while "thinking"
+    const cur = { ...STATES.idle }; // the current mix of the state values, eased toward the target
+    let scale = 1; // breathing / pulse / size, combined
+    let angle = 0; // the thinking turn
+    let breathePhase = 0;
+    let pulsePhase = 0;
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
     // Draws one frame using the current values above
     const render = () => {
       ctx.clearRect(0, 0, w, h);
       const amp = 0.05 + smooth * 0.24;
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(angle);
+      ctx.translate(-w / 2, -h / 2);
 
       LAYERS.forEach((layer, index) => {
-        const base = Math.min(w, h) * 0.3 * sizeNow * layer.size;
+        const base = Math.min(w, h) * 0.3 * scale * layer.size;
         // Inner layers drift around slowly, so the colors never sit as a bullseye
         const drift = base * 0.16 * index;
         const cx = w / 2 + pointer.x * 22 * layer.depth + Math.cos(t * 0.7 + layer.phase) * drift;
@@ -88,6 +107,7 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
       });
 
       ctx.globalAlpha = 1;
+      ctx.restore();
     };
 
     // Match the canvas to its parent's size, sharp on high-DPI screens
@@ -118,7 +138,15 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
       last = now;
       const state = stateRef.current;
 
-      t += dt * (SPEED[state] ?? 1);
+      const target0 = STATES[state] ?? STATES.idle;
+      // Cross-fade: every value moves most of the way to its target within one slow duration
+      const mix = 1 - Math.exp(-dt / (DURATION.slow / 3));
+      for (const k of Object.keys(cur)) cur[k] += (target0[k] - cur[k]) * mix;
+      t += dt * cur.wobble;
+      breathePhase = (breathePhase + (dt * TAU) / LOOP.breathe) % TAU;
+      pulsePhase = (pulsePhase + (dt * TAU) / LOOP.pulse) % TAU;
+      angle = (angle + (dt * TAU * cur.spin) / LOOP.spin) % TAU;
+      scale = cur.size * (1 + 0.02 * (1 - Math.cos(breathePhase)) * cur.breathe + 0.015 * (1 - Math.cos(pulsePhase)) * cur.pulse);
 
       // Where should the loudness be heading?
       let target = levelRef?.current ?? 0;
@@ -130,7 +158,6 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
         target = 0.3 + 0.3 * Math.abs(Math.sin(t * 3.3) * Math.sin(t * 1.3 + 1));
       }
       smooth += (target - smooth) * Math.min(1, dt * 9);
-      sizeNow += ((state === 'thinking' ? 0.88 : 1) - sizeNow) * Math.min(1, dt * 6);
       pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 4);
       pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 4);
 
@@ -138,15 +165,26 @@ export default function VoiceOrb({ levelRef, state = 'idle' }) {
       raf = requestAnimationFrame(tick);
     };
 
+    // The loop rests while the tab is in the background, and picks up where it left off
+    const start = () => {
+      if (reduceMotion || raf || document.hidden) return;
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; };
+    const onVisibility = () => (document.hidden ? stop() : start());
+
     if (!reduceMotion) {
       window.addEventListener('pointermove', onMove);
-      raf = requestAnimationFrame(tick);
+      document.addEventListener('visibilitychange', onVisibility);
+      start();
     }
 
     // Stop everything when the orb leaves the page
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
       window.removeEventListener('pointermove', onMove);
+      document.removeEventListener('visibilitychange', onVisibility);
       observer.disconnect();
     };
   }, [levelRef]);

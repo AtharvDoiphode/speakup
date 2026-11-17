@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
 import { ArrowRightIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
 import ScoreRing from './ScoreRing';
+import SuccessCheck from './SuccessCheck';
+import { anim, fadeUp, markerSweep, shake, slideIn } from '../lib/motion';
 
 const BLANK = '___';
 const isNone = (o) => /^no article$/i.test(o);
@@ -83,7 +85,7 @@ export function Quiz({ items, onDone }) {
         </div>
         <div className="flex gap-1.5" aria-hidden="true">
           {items.map((it, k) => (
-            <span key={it.key} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+            <span key={it.key} className={`h-1.5 flex-1 rounded-full transition-colors duration-(--motion-slow) ${
               k < results.length ? (results[k].right ? 'bg-success' : 'bg-mistake-tint ring-2 ring-mistake ring-inset') : k === i ? 'bg-surface-inverse' : 'bg-border-subtle'
             }`} />
           ))}
@@ -91,8 +93,7 @@ export function Quiz({ items, onDone }) {
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={item.key} initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }}
-          transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }} className="flex flex-col gap-6">
+        <motion.div key={item.key} {...anim(slideIn)} className="flex flex-col gap-6">
           <h2 ref={focusOnMount} tabIndex={-1}
             className="font-display text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.3] tracking-[-0.02em] outline-none text-pretty">
             {item.prompt.includes(BLANK) ? (
@@ -113,13 +114,15 @@ export function Quiz({ items, onDone }) {
                 : isPicked ? 'border-mistake bg-mistake-tint text-mistake-text'
                 : 'border-border-subtle bg-surface-card opacity-55';
               return (
-                <button key={k} type="button" onClick={() => pick(k)} disabled={answered} aria-pressed={isPicked}
-                  className={`flex min-h-13 items-center gap-3 rounded-field border px-4 py-3 text-left text-[17px] font-medium transition-colors duration-200 disabled:cursor-default ${tone}`}>
+                <motion.button key={k} type="button" onClick={() => pick(k)} disabled={answered} aria-pressed={isPicked}
+                  // A wrong pick shakes once, calmly (4px); never repeated
+                  animate={answered && isPicked && !isRight ? shake : undefined}
+                  className={`flex min-h-13 items-center gap-3 rounded-field border px-4 py-3 text-left text-[17px] font-medium transition-colors duration-(--motion-fast) disabled:cursor-default ${tone}`}>
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-current/25 text-[13px] font-semibold" aria-hidden="true">{k + 1}</span>
                   <span className="min-w-0 flex-1">{o}</span>
-                  {answered && isRight && <CheckCircleIcon size={22} weight="fill" className="shrink-0" aria-label="Right answer" />}
+                  {answered && isRight && (isPicked ? <SuccessCheck size={22} label="Right answer" /> : <CheckCircleIcon size={22} weight="fill" className="shrink-0" aria-label="Right answer" />)}
                   {answered && isPicked && !isRight && <XCircleIcon size={22} weight="fill" className="shrink-0" aria-label="Your answer" />}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -127,8 +130,7 @@ export function Quiz({ items, onDone }) {
           {/* Always in the page, so screen readers announce what appears in it */}
           <div aria-live="polite" className="min-h-6">
             {answered && (
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
-                className="flex flex-col gap-1.5">
+              <motion.div {...anim(fadeUp)} className="flex flex-col gap-1.5">
                 <p className={`text-[15px] font-semibold ${gotIt ? 'text-success-text' : 'text-mistake-text'}`}>
                   {gotIt ? 'Right.' : `Not quite. The answer is "${rightText}".`}
                   {item.tag && <span className="ml-2 rounded-tag bg-surface-sunken px-2 py-0.5 text-[13px] font-medium text-text-secondary">{item.tag}</span>}
@@ -141,7 +143,7 @@ export function Quiz({ items, onDone }) {
           {answered && (
             <div className="flex items-center gap-3">
               <button ref={nextRef} type="button" onClick={next}
-                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 active:scale-[0.97]">
+                className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 press">
                 {last ? 'See my score' : 'Next question'} <ArrowRightIcon size={18} />
               </button>
               <span className="hidden text-sm text-text-muted md:inline">or press Enter</span>
@@ -160,7 +162,7 @@ function Blank({ filled }) {
   return (
     <span className="relative mx-1 inline-block px-1">
       <motion.span aria-hidden="true" className="absolute inset-x-0 bottom-[6%] top-[14%] origin-left rounded-[3px_6px_4px_7px] bg-marker"
-        initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }} />
+        initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={markerSweep()} />
       <span className={`relative ${isNone(filled) ? 'text-[0.7em] font-medium italic text-text-secondary' : ''}`}>{filled}</span>
     </span>
   );
@@ -178,7 +180,7 @@ export function QuizResult({ results, saving, saveError, children }) {
   const pct = Math.round((correct / total) * 100);
   const missed = results.filter((r) => !r.right);
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+    <motion.div {...anim(fadeUp)}
       className="flex flex-col gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:p-10">
       <div className="flex flex-wrap items-center gap-5">
         <ScoreRing score={pct} />

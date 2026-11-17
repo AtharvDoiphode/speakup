@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { SPRING, anim, fadeUp } from '../lib/motion';
 import { MicrophoneIcon, StopIcon, SpeakerHighIcon, ArrowClockwiseIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import api, { getErrorMessage } from '../lib/api';
 import { useVoiceInput } from '../hooks/useVoiceInput';
@@ -9,7 +10,7 @@ import ScoreRing from '../components/ScoreRing';
 import VoiceOrb from '../components/VoiceOrb';
 
 const LEVELS = [['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']];
-const spring = { type: 'spring', stiffness: 520, damping: 42 };
+const spring = SPRING.snappy; // tab and pill indicators slide with the shared snappy spring
 const pace = (wpm) =>
   wpm < 90 ? ['Slow and careful', 'Good for accuracy. Try a little faster next time.']
   : wpm <= 160 ? ['Natural pace', 'This is comfortable conversational speed.']
@@ -189,11 +190,11 @@ export default function ReadAloudPage() {
                   </button>
                 )}
                 {phase === 'reading' ? (
-                  <button onClick={() => finish()} className="flex h-12 items-center gap-2 rounded-field bg-surface-inverse px-5 font-semibold text-text-inverse active:scale-[0.97]">
+                  <button onClick={() => finish()} className="flex h-12 items-center gap-2 rounded-field bg-surface-inverse px-5 font-semibold text-text-inverse press">
                     <StopIcon size={18} /> Finish
                   </button>
                 ) : phase !== 'saving' && (
-                  <button onClick={start} className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97]">
+                  <button onClick={start} className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:-translate-y-px hover:bg-brand-700 press">
                     {phase === 'done' ? <ArrowClockwiseIcon size={18} /> : <MicrophoneIcon size={18} />}
                     {phase === 'done' ? 'Read again' : 'Start reading'}
                   </button>
@@ -214,7 +215,7 @@ export default function ReadAloudPage() {
                   return (
                     // The space sits outside the word, so the marker covers only the word
                     <Fragment key={i}>
-                      <span className={`relative inline-block transition-colors duration-200 ${cls}`}>
+                      <span className={`relative inline-block transition-colors duration-(--motion-base) ${cls}`}>
                         {current && <motion.span layoutId="read-cursor" transition={spring} className="absolute -inset-x-1 inset-y-[12%] rounded-[3px_6px_4px_7px] bg-marker" />}
                         <span className="relative">{tok}</span>
                       </span>{' '}
@@ -226,7 +227,7 @@ export default function ReadAloudPage() {
 
             <AnimatePresence>
               {phase === 'done' && result && (
-                <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                <motion.section {...anim(fadeUp)}
                   className="grid gap-6 rounded-panel border border-border-subtle bg-surface-card p-6 md:grid-cols-[auto_1fr] md:p-8">
                   <div className="flex items-center gap-5">
                     <ScoreRing score={result.accuracy} />

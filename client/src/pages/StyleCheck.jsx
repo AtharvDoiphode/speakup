@@ -1,4 +1,5 @@
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { breathe, press, pressTransition } from '../lib/motion';
 
 const swatches = [
   ['bg-surface-sunken', 'canvas'],
@@ -34,20 +35,19 @@ export default function StyleCheck() {
       </p>
 
       <div className="mt-10 flex items-center gap-8">
-        {/* Spring button: bounces on hover and press */}
+        {/* Press feedback from the motion tokens */}
         <motion.button
-          whileHover={{ y: -3 }}
-          whileTap={{ scale: 0.93 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+          whileTap={press}
+          transition={pressTransition}
           className="rounded-full bg-brand px-6 py-3 font-semibold text-on-brand"
         >
           Press me
         </motion.button>
 
-        {/* Looping pulse: proves continuous animation works */}
+        {/* Slow breathing loop, as on the orb at rest */}
         <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={breathe.animate}
+          transition={breathe.transition}
           className="h-14 w-14 rounded-full bg-brand"
         />
       </div>

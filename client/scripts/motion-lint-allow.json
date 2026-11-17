@@ -1,0 +1,15 @@
+{
+  "about": "The only places allowed to hold motion timing. motion.js defines every duration, easing and spring; the reduced-motion CSS rule must use a literal near-zero time to switch CSS animations off. Tailwind's built-in animate-spin (spinners) and animate-pulse (skeletons) are allowed: they loop, pause while the tab is hidden (index.css) and stop under reduced motion.",
+  "files": [
+    "src/lib/motion.js"
+  ],
+  "lines": {
+    "src/index.css": [
+      "animation-duration: 0.01ms",
+      "transition-duration: 0.01ms"
+    ],
+    "src/components/charts.jsx": [
+      "animationDelay: `${stagger(i)}s`"
+    ]
+  }
+}

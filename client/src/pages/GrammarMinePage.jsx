@@ -119,7 +119,7 @@ export default function GrammarMinePage() {
         {results && (
           <QuizResult results={results} saving={saving} saveError={saveError}>
             <button type="button" onClick={again}
-              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 active:scale-[0.97]">
+              className="flex h-12 items-center gap-2 rounded-field bg-brand px-5 font-semibold text-on-brand transition hover:bg-brand-700 press">
               <ArrowClockwiseIcon size={18} /> Try again
             </button>
             <Link to={from ? `/grammar/${from}` : '/grammar'}

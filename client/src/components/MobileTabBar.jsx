@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { anim, backdrop, drawer } from '../lib/motion';
 import { DotsThreeOutlineIcon, SignOutIcon, XIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
 import { PRIMARY_NAV, MORE_NAV, visibleTo } from '../lib/nav';
@@ -38,9 +39,7 @@ export default function MobileTabBar() {
               type="button"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              {...anim(backdrop)}
               className="fixed inset-0 z-30 bg-surface-overlay"
             />
             <motion.div
@@ -48,10 +47,7 @@ export default function MobileTabBar() {
               role="dialog"
               aria-label="More pages"
               // Slides up from behind the tab bar
-              initial={{ opacity: 0, y: 48 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 48 }}
-              transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+              {...anim(drawer)}
               className="fixed inset-x-3 bottom-22 z-40 rounded-panel border border-border-subtle bg-surface-card p-2"
             >
               {MORE_NAV.filter(visibleTo(user)).map((item) => {

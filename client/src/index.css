@@ -41,7 +41,32 @@
   }
 }
 
-/* Chart bars grow up from the axis (components/charts.jsx). The reduced-motion rule above
+/* Motion timings are custom properties set from lib/motion.js (applyMotionCss in main.jsx);
+   this file never holds its own durations or easings. */
+
+/* Press feedback: everything tappable settles to 0.97 while pressed, within the instant duration */
+@media (prefers-reduced-motion: no-preference) {
+  :where(button, [role="button"], [role="tab"], [role="radio"], [role="switch"], .press) {
+    transition: scale var(--motion-instant) var(--motion-ease-out); /* a transition class on the element wins */
+  }
+  :where(button, [role="button"], [role="tab"], [role="radio"], [role="switch"], .press):not(:disabled):active {
+    scale: 0.97;
+  }
+}
+
+/* If the animation features could not load (main.jsx), nothing may stay hidden waiting to animate */
+:root[data-motion-off] [style*="opacity"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Looping CSS animations (spinners, skeletons) rest while the tab is in the background */
+:root[data-page-hidden] .animate-spin,
+:root[data-page-hidden] .animate-pulse {
+  animation-play-state: paused;
+}
+
+/* Chart bars grow up from the axis (components/charts.jsx), once. The reduced-motion rule above
    and the print rules below shorten or remove it. */
 @keyframes bar-grow {
   from {
@@ -51,7 +76,7 @@
 .bar-grow {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: bar-grow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation: bar-grow var(--motion-chart) var(--motion-ease-out) backwards;
 }
 
 /* Printing (Save as PDF from a transcript): paper, not screen */

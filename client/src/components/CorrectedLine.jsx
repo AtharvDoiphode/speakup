@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
 import { ArrowCounterClockwiseIcon, CheckIcon } from '@phosphor-icons/react';
 import { buildSegments } from '../lib/corrections';
-
-// The correction rewrite moment
-const T = { strike: 0.5, mark: 0.82, notes: 1.3 };
+import { CORRECTION as T, afterStrike, anim, enter, fadeUp, markerSweep, strike } from '../lib/motion';
 
 export default function CorrectedLine({ text, mistakes = [] }) {
   const [run, setRun] = useState(0);
@@ -30,9 +28,7 @@ export default function CorrectedLine({ text, mistakes = [] }) {
 
       <motion.ol
         key={run}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: mistakes.length ? T.notes : 0.2, duration: 0.24 }}
+        {...anim(fadeUp, mistakes.length ? T.notes : T.strike)}
         className="flex flex-col gap-4 md:gap-[22px] md:border-l md:border-border-subtle md:pl-[18px] md:pt-[34px]"
       >
         {mistakes.length ? (
@@ -56,12 +52,12 @@ export default function CorrectedLine({ text, mistakes = [] }) {
 /**
  * One correction: the wrong words struck through, then the fix on a yellow marker.
  * All props after seg are optional; the live screen passes none of them.
- *  - delay: when the strike starts (seconds). The marker follows 0.32s later, as on the live screen.
+ *  - delay: when the strike starts (seconds). The marker follows once the strike has drawn, as on the live screen.
  *  - n: sets data-fix={n} on the element, so a page can find or scroll to it
  *  - onSelect / active: makes the fix a button; active shows a 2px brand outline
  */
 export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
-  const markAt = delay + (T.mark - T.strike);
+  const markAt = afterStrike(delay);
   const body = (
     <>
       <del className="relative text-mistake-text no-underline">
@@ -69,7 +65,7 @@ export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
         <motion.span aria-hidden="true"
           className="absolute inset-x-0 top-[58%] h-[3px] origin-left bg-mistake"
           initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-          transition={{ delay, duration: 0.26, ease: [0.3, 0.7, 0.3, 1] }} />
+          transition={strike(delay)} />
       </del>
       {seg.right && (
         <>
@@ -78,9 +74,9 @@ export function Fix({ seg, delay = T.strike, n, active = false, onSelect }) {
             <motion.span aria-hidden="true"
               className="absolute inset-x-0 bottom-[8%] top-[18%] origin-left rounded-[3px_6px_4px_7px] bg-marker"
               initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-              transition={{ delay: markAt, duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }} />
+              transition={markerSweep(markAt)} />
             <motion.span className="relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: markAt, duration: 0.16 }}>
+              transition={enter('fast', { delay: markAt })}>
               {seg.right}
             </motion.span>
             <sup className="relative ml-0.5 text-[0.45em] font-semibold text-text-secondary">{seg.n}</sup>

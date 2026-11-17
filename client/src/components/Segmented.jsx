@@ -1,6 +1,7 @@
-import { motion } from 'motion/react';
+import { m as motion } from 'motion/react';
+import { SPRING } from '../lib/motion';
 
-const spring = { type: 'spring', stiffness: 500, damping: 40 };
+const spring = SPRING.snappy; // tab and pill indicators slide with the shared snappy spring
 
 /**
  * A row of options where exactly one is chosen, with a white pill that slides to it.

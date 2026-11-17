@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m as motion } from 'motion/react';
+import { CORRECTION, SPRING, anim, enter, fadeUp, markerSweep, strike } from '../lib/motion';
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useAuth } from '../context/useAuth';
 import { getErrorMessage } from '../lib/api';
 import Logo from '../components/Logo';
 import VoiceOrb from '../components/VoiceOrb';
 
-const spring = { type: 'spring', stiffness: 500, damping: 40 };
+const spring = SPRING.snappy; // tab and pill indicators slide with the shared snappy spring
 const EMPTY = { name: '', email: '', password: '', signupCode: '' };
 
 export default function AuthPage() {
@@ -121,10 +122,7 @@ export default function AuthPage() {
               key={mode}
               onSubmit={onSubmit}
               noValidate
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18 }}
+              {...anim(fadeUp)}
             >
               {mode === 'login' ? (
                 <>
@@ -205,14 +203,14 @@ function SubmitButton({ busy, label, busyLabel }) {
     <button
       type="submit"
       disabled={busy}
-      className="mt-2 h-[54px] rounded-field bg-brand text-[17px] font-semibold text-on-brand transition duration-150 hover:-translate-y-px hover:bg-brand-700 active:scale-[0.97] disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
+      className="mt-2 h-[54px] rounded-field bg-brand text-[17px] font-semibold text-on-brand transition duration-(--motion-fast) hover:-translate-y-px hover:bg-brand-700 press disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
     >
       {busy ? busyLabel : label}
     </button>
   );
 }
 
-// The correction rewrite moment: strike 260ms, marker 380ms, note 240ms
+// The correction rewrite moment, with the same timing as the live screen (CORRECTION in lib/motion.js)
 function CorrectionCard({ className = '' }) {
   return (
     <div className={`flex flex-col gap-2.5 rounded-panel border border-border-subtle bg-surface-card px-[22px] py-5 ${className}`}>
@@ -227,7 +225,7 @@ function CorrectionCard({ className = '' }) {
           className="absolute inset-x-0 top-1/2 h-[2px] origin-left bg-mistake"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ delay: 0.8, duration: 0.26, ease: 'easeOut' }}
+          transition={strike(CORRECTION.strike)}
         />
       </p>
       <p className="relative w-fit text-[19px] leading-snug">
@@ -236,22 +234,20 @@ function CorrectionCard({ className = '' }) {
           className="absolute -inset-x-1.5 inset-y-0 origin-left rounded-[3px_6px_4px_7px] bg-marker"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ delay: 1.1, duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }}
+          transition={markerSweep(CORRECTION.mark)}
         />
         <motion.span
           className="relative"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.2 }}
+          transition={enter('fast', { delay: CORRECTION.mark })}
         >
           She doesn't like coffee
         </motion.span>
       </p>
       <motion.p
         className="border-t border-border-subtle pt-2 text-[13px] leading-snug text-text-secondary"
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.55, duration: 0.24 }}
+        {...anim(fadeUp, CORRECTION.notes)}
       >
         With he, she or it, use <b className="font-semibold text-text-primary">doesn't</b> in the present tense.
       </motion.p>
