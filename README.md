@@ -4,9 +4,15 @@
 
 # SpeakUp
 
-**An AI English-speaking tutor for my family.** You talk out loud to an AI partner in real-life situations: a job interview, a salary conversation, a doctor's appointment. Every sentence comes back corrected, with the mistake struck through and the better version highlighted, and a short reason why. Speak first. We tidy the grammar after.
+**An AI English-speaking tutor for my family.** ... (your existing paragraphs, lines 7 to 9)
 
-It's a full-stack app: React on the front, Node.js and Express on the back, MongoDB Atlas for data and Google Gemini for the AI. One server serves both the API and the built React app.
+**Live demo:** https://speakup-kfcg.onrender.com (login-only, family signup code required)
+
+(drag brag.mp4 here, GitHub inserts the video link)
+
+[![SpeakUp demo](docs/speakup-demo.gif)](https://speakup-kfcg.onrender.com)   ← only if you want the GIF fallback instead
+
+## Features
 
 ## Features
 
