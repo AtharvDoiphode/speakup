@@ -5,7 +5,6 @@
     <img src="docs/media/speakup-demo.gif" alt="SpeakUp demo: an AI interviewer asks a question, the learner answers, and the mistake is struck through and corrected" width="800">
   </a>
   <br>
-  <sub>▶ 20-second demo. <a href="docs/media/speakup-demo.mp4">Watch the full video with sound</a>.</sub>
 </p>
 
 <p align="center">
