@@ -2,7 +2,8 @@ import axios from 'axios';
 import { errorInfo } from './errors';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  // Same origin as the app: in production the server serves both, in dev Vite proxies /api
+  baseURL: '/api',
   // Sends the login cookie with every request. Without this,
   // the backend would never see that you're logged in.
   withCredentials: true,

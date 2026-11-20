@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['member', 'admin'], default: 'member' },
     // Set when an admin resets the password: the app is blocked until it's changed
     mustChangePassword: { type: Boolean, default: false },
+    // Goes up whenever the password changes; login cookies carrying an older number stop working
+    tokenVersion: { type: Number, default: 0 },
     settings: {
       goalMin: { type: Number, enum: [10, 15, 20, 30], default: 15 },
       voiceName: { type: String, default: '', maxlength: 100 }, // '' = the device's usual choice
@@ -30,6 +32,7 @@ const userSchema = new mongoose.Schema(
 // Hash the password whenever it is set or changed
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
+  if (!this.isNew) this.tokenVersion = (this.tokenVersion ?? 0) + 1;
   this.password = await bcrypt.hash(this.password, 12);
 });
 
@@ -44,6 +47,7 @@ userSchema.set('toJSON', {
     delete ret._id;
     delete ret.__v;
     delete ret.password;
+    delete ret.tokenVersion;
     return ret;
   },
 });

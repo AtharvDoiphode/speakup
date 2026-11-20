@@ -16,6 +16,8 @@ export const protect = async (req, res, next) => {
 
   const user = await User.findById(payload.id);
   if (!user) throw new HttpError(401, 'Account no longer exists');
+  // Cookies from before the latest password change (or admin reset) no longer work
+  if ((payload.v ?? 0) !== (user.tokenVersion ?? 0)) throw new HttpError(401, 'Session expired, please log in again');
 
   // After an admin reset, only the password change (and reading your own account) works
   if (user.mustChangePassword && !/^\/api\/(auth|me)\//.test(req.originalUrl)) {

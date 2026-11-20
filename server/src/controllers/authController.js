@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import User from '../models/User.js';
 import { getSignupCode } from '../models/AppSettings.js';
@@ -39,6 +40,9 @@ const safeEqual = (a, b) => {
   return crypto.timingSafeEqual(hashA, hashB);
 };
 
+// A real bcrypt hash (cost 12, like every password) to compare against when the email has no account
+const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 12);
+
 export const register = async (req, res) => {
   const { name, email, password, signupCode } = parse(registerSchema, req.body);
 
@@ -52,10 +56,12 @@ export const register = async (req, res) => {
 
   // The person whose email matches ADMIN_EMAIL becomes admin; everyone else is a member
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const role = adminEmail && email.toLowerCase() === adminEmail ? 'admin' : 'member';
+  // Only while there is no admin yet, so nobody can claim it later by registering that email first
+  const isAdmin = adminEmail && email.toLowerCase() === adminEmail && !(await User.exists({ role: 'admin' }));
+  const role = isAdmin ? 'admin' : 'member';
 
   const user = await User.create({ name, email, password, role });
-  setAuthCookie(res, user.id);
+  setAuthCookie(res, user);
   res.status(201).json({ user });
 };
 
@@ -63,12 +69,13 @@ export const login = async (req, res) => {
   const { email, password } = parse(loginSchema, req.body);
 
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-  // Same message for both cases, so nobody can find out which emails are registered
+  // Same message and the same bcrypt work for both cases, so nobody can find out which emails are registered
+  if (!user) await bcrypt.compare(password, DUMMY_HASH);
   if (!user || !(await user.comparePassword(password))) {
     throw new HttpError(401, 'Invalid email or password');
   }
 
-  setAuthCookie(res, user.id);
+  setAuthCookie(res, user);
   res.json({ user });
 };
 
@@ -90,7 +97,8 @@ export const changePassword = async (req, res) => {
 
   user.password = newPassword; // hashed with bcrypt by the model's pre-save hook
   user.mustChangePassword = false;
-  await user.save();
+  await user.save(); // raises tokenVersion: every other session ends
+  setAuthCookie(res, user); // this one carries on
   res.json({ user });
 };
 

@@ -10,13 +10,14 @@ const cookieOptions = () => ({
   maxAge: SEVEN_DAYS_MS,
 });
 
-export const signToken = (userId) =>
-  jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+// v: the user's tokenVersion, so a password change ends every older session
+export const signToken = (user) =>
+  jwt.sign({ id: user.id, v: user.tokenVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
 export const verifyToken = (token) => jwt.verify(token, process.env.JWT_SECRET);
 
-export const setAuthCookie = (res, userId) => {
-  res.cookie(COOKIE_NAME, signToken(userId), cookieOptions());
+export const setAuthCookie = (res, user) => {
+  res.cookie(COOKIE_NAME, signToken(user), cookieOptions());
 };
 
 export const clearAuthCookie = (res) => {

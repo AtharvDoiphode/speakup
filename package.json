@@ -1,0 +1,14 @@
+{
+  "name": "speakup",
+  "private": true,
+  "description": "SpeakUp: one server for the API and the built React app",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm ci --prefix server --omit=dev && npm ci --prefix client --include=dev && npm run build --prefix client",
+    "postbuild": "node -e \"if(!require('fs').existsSync('client/dist/index.html')){console.error('Build failed: client/dist/index.html is missing');process.exit(1)}console.log('Build OK: client/dist/index.html')\"",
+    "start": "node server/src/server.js",
+    "test": "npm test --prefix server && npm run test:brand --prefix client && npm run test:tokens --prefix client && npm run test:motion --prefix client && npm run test:ux --prefix client"
+  }
+}

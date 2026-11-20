@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "ai:models": "node scripts/listModels.js",
-    "ai:test": "node scripts/aiTest.js"
+    "ai:test": "node scripts/aiTest.js",
+    "test": "node --test \"test/**/*.test.js\""
   },
   "nodemonConfig": {
     "watch": [
@@ -22,6 +23,7 @@
   "dependencies": {
     "@google/genai": "^2.28.0",
     "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
@@ -35,5 +37,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
+  },
+  "overrides": {
+    "minimatch": "^11.0.9"
   }
 }
