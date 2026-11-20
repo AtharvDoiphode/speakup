@@ -5,3 +5,19 @@ node_modules
 .DS_Store
 dist
 graphify-out/
+
+# Logs and test output
+*.log
+logs/
+coverage/
+.nyc_output/
+
+# Editors and OS files
+.vscode/
+.idea/
+Thumbs.db
+
+# Database dumps
+dump/
+*.bson
+*.archive
