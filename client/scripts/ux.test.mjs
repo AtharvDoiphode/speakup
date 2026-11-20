@@ -137,3 +137,11 @@ test('EmptyState and skeletons render', async () => {
     assert.match(html, /aria-busy="true"/, name); assert.match(html, /Loading/, name);
   }
 });
+
+test('a broken .docx gives a plain message, never the parser internals (Step 18.5)', async () => {
+  const { readTextFile } = await vite.ssrLoadModule('/src/lib/readTextFile.js');
+  const junk = { name: 'essay.docx', size: 12, arrayBuffer: async () => new TextEncoder().encode('not a zip file').buffer };
+  await assert.rejects(readTextFile(junk), (e) => /couldn.t be read/i.test(e.message) && !/zip|http|jszip|central directory/i.test(e.message));
+  await assert.rejects(readTextFile({ name: 'a.exe', size: 10 }), /\.txt or \.docx/);
+  await assert.rejects(readTextFile({ name: 'big.docx', size: 3_000_000 }), /too big/);
+});

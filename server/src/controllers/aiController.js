@@ -5,6 +5,7 @@ import { parse } from '../utils/validate.js';
 import { isRealMistake, ensureCorrected } from '../utils/mistakes.js';
 import { generateJson } from '../services/aiService.js';
 import { buildCorrectionPrompt, MISTAKE_TYPES } from '../prompts/correctionPrompt.js';
+import { learnerText } from '../prompts/roleplayPrompt.js';
 
 // What the client is allowed to send
 const bodySchema = z.object({
@@ -38,8 +39,8 @@ export const correctText = asyncHandler(async (req, res) => {
 
   const raw = await generateJson({
     system: buildCorrectionPrompt(req.user.level),
-    // The tags tell the AI where the learner's text starts and ends
-    prompt: `<learner_text>\n${text}\n</learner_text>`,
+    // The tags tell the AI where the learner's text starts and ends; the learner can't type them
+    prompt: learnerText(text),
     temperature: 0.2, // low = consistent corrections
   });
 

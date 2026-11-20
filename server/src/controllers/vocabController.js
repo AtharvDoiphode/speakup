@@ -122,6 +122,9 @@ export const postReview = asyncHandler(async (req, res) => {
   const { cardId, grade } = parse(reviewSchema, req.body ?? {});
   const card = await findOwned(req, cardId);
   const now = new Date();
+  // A card moves only when it's due, or straight after "Again" (box 0, back in the same session).
+  // Otherwise grading the same card again and again would fake "learned" words.
+  if (card.box > 0 && card.dueAt > now) throw httpError(409, 'This card is not due yet');
   card.set(schedule(card, grade, now));
   await card.save();
   res.json({ card, nextLabel: nextLabel(card.dueAt, now) });

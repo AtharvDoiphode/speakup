@@ -17,7 +17,7 @@ const registerSchema = z.object({
   password: z
     .string({ error: 'Password is required' })
     .min(8, 'Password must be at least 8 characters')
-    .max(100, 'Password must be at most 100 characters'),
+    .max(72, 'Password must be at most 72 characters'), // bcrypt only reads 72 bytes
   signupCode: z.string({ error: 'Signup code is required' }).min(1, 'Signup code is required'),
 });
 

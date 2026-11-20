@@ -20,6 +20,8 @@ const schema = z.object({
   GEMINI_MODEL: z.string().trim().min(1).default('gemini-3-flash-preview'),
   GEMINI_FALLBACK_MODELS: z.string().default('gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.1-flash-lite-preview'),
   APP_TIMEZONE: z.string().trim().min(1).default('Asia/Kolkata'),
+  // AI requests per person per day, on top of the per-minute limit
+  AI_DAILY_LIMIT: z.coerce.number({ error: 'AI_DAILY_LIMIT must be a whole number' }).int('AI_DAILY_LIMIT must be a whole number').min(1, 'AI_DAILY_LIMIT must be at least 1').default(100),
 });
 
 /** Validates raw env vars; throws one Error listing every problem. MONGO_URI and CLIENT_URL are the older names. */
@@ -34,6 +36,7 @@ export function parseEnv(raw) {
     APP_TIMEZONE: blank(raw.APP_TIMEZONE),
     PORT: blank(raw.PORT),
     SIGNUP_CODE: blank(raw.SIGNUP_CODE),
+    AI_DAILY_LIMIT: blank(raw.AI_DAILY_LIMIT),
     NODE_ENV: blank(raw.NODE_ENV),
   });
   if (!result.success) {

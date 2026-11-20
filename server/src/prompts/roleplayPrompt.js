@@ -15,6 +15,8 @@ const DIFFICULTY = {
 // "setting" instead of traits/mood/brief, so every field has a fallback.
 // Our own tags can't appear inside text the learner wrote
 export const stripTags = (s = '') => String(s).replace(/<\/?(learner_text|conversation|custom_person)>/gi, '');
+// The learner's words as one tagged block that they can't break out of
+export const learnerText = (text) => `<learner_text>\n${stripTags(text)}\n</learner_text>`;
 
 // A person the learner created ("Create your own person"). Everything they wrote goes inside
 // <custom_person> tags as data, with guard text, so a brief like "ignore all rules" changes nothing.

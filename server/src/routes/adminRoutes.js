@@ -8,6 +8,7 @@ import ReadingSession from '../models/ReadingSession.js';
 import GrammarAttempt from '../models/GrammarAttempt.js';
 import VocabCard from '../models/VocabCard.js';
 import CustomPerson from '../models/CustomPerson.js';
+import AiUsage from '../models/AiUsage.js';
 import { getSignupCode, setSignupCode } from '../models/AppSettings.js';
 import { weekSecondsByUser } from '../services/activity.js';
 import { toMin } from '../utils/days.js';
@@ -15,7 +16,7 @@ import { protect, adminOnly } from '../middleware/auth.js';
 import { HttpError } from '../utils/httpError.js';
 
 // Everything a person owns, removed with them
-const OWNED = [Conversation, WritingCheck, ReadingSession, GrammarAttempt, VocabCard, CustomPerson];
+const OWNED = [Conversation, WritingCheck, ReadingSession, GrammarAttempt, VocabCard, CustomPerson, AiUsage];
 
 // No 0/O, 1/l/I: easy to read out to a family member
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';

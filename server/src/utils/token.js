@@ -12,9 +12,9 @@ const cookieOptions = () => ({
 
 // v: the user's tokenVersion, so a password change ends every older session
 export const signToken = (user) =>
-  jwt.sign({ id: user.id, v: user.tokenVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  jwt.sign({ id: user.id, v: user.tokenVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '7d', algorithm: 'HS256' });
 
-export const verifyToken = (token) => jwt.verify(token, process.env.JWT_SECRET);
+export const verifyToken = (token) => jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
 export const setAuthCookie = (res, user) => {
   res.cookie(COOKIE_NAME, signToken(user), cookieOptions());

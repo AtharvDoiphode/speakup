@@ -12,8 +12,13 @@ export async function readTextFile(file) {
     // as the "default" export.
     const mod = await import('mammoth/mammoth.browser');
     const mammoth = mod.default ?? mod;
-    const { value } = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-    text = value;
+    try {
+      const { value } = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      text = value;
+    } catch {
+      // The parser's own message is technical (zip internals, library links): never show it
+      throw new Error("That file couldn't be read. Save it again as .docx or .txt and try once more.");
+    }
   } else {
     throw new Error('Upload a .txt or .docx file.');
   }

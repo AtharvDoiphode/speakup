@@ -45,6 +45,11 @@ export const createPerson = asyncHandler(async (req, res) => {
     throw httpError(409, `You can save up to ${MAX_PEOPLE} people`);
   }
   const person = await CustomPerson.create({ user: req.user._id, ...body });
+  // Parallel saves can all pass the count above: any beyond the limit (by creation order) is undone
+  if ((await CustomPerson.countDocuments({ user: req.user._id, _id: { $lte: person._id } })) > MAX_PEOPLE) {
+    await person.deleteOne();
+    throw httpError(409, `You can save up to ${MAX_PEOPLE} people`);
+  }
   res.status(201).json({ person });
 });
 
