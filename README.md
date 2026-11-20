@@ -1,8 +1,18 @@
+# SpeakUp
+
 <p align="center">
-  <img src="client/public/og-image.png" alt="SpeakUp: Speak first. We tidy the grammar after." width="720">
+  <a href="docs/media/speakup-demo.mp4">
+    <img src="docs/media/speakup-demo.gif" alt="SpeakUp demo: an AI interviewer asks a question, the learner answers, and the mistake is struck through and corrected" width="800">
+  </a>
+  <br>
+  <sub>▶ 20-second demo. <a href="docs/media/speakup-demo.mp4">Watch the full video with sound</a>.</sub>
 </p>
 
-# SpeakUp
+<p align="center">
+  <a href="https://speakup-kfcg.onrender.com"><b>Live app: speakup-kfcg.onrender.com</b></a>
+  <br>
+  <sub>Login-only: registering needs the family signup code. The free server may take about a minute to wake up.</sub>
+</p>
 
 **An AI English-speaking tutor for my family.** You talk out loud to an AI partner in real-life situations: a job interview, a salary conversation, a doctor's appointment. Every sentence comes back corrected, with the mistake struck through and the better version highlighted, and a short reason why. Speak first. We tidy the grammar after.
 
